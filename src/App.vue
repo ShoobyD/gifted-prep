@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import UpdateBanner from './components/UpdateBanner.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -35,6 +36,8 @@ function goBack() {
 		<!-- Keyed so a new practice set always starts a fresh session. -->
 		<RouterView :key="route.fullPath" />
 	</main>
+
+	<UpdateBanner />
 </template>
 
 <style scoped>
