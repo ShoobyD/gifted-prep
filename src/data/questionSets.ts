@@ -1,4 +1,3 @@
-import { toRaw } from 'vue';
 import { useLevels } from '@/composables/useLevels';
 import { useProgress } from '@/composables/useProgress';
 import { isMathType, MATH_GENERATORS, MATH_TYPES } from '@/generators';
@@ -27,9 +26,7 @@ const REVIEW = 'review';
 // Up to a session of the oldest mistakes. Copies get session-unique ids, because
 // generated questions saved on different days can share an id.
 function reviewSet(): PracticeSet | undefined {
-	// Read untracked: the router's props function must not re-run (and rebuild the
-	// session) every time an answer updates the mistakes list.
-	const entries = toRaw(useProgress().state).mistakes.slice(0, SESSION_LENGTH);
+	const entries = useProgress().state.mistakes.slice(0, SESSION_LENGTH);
 	if (!entries.length) return undefined;
 	const passages = new Map<string, Passage | undefined>();
 	const questions = entries.map((entry, i) => {
