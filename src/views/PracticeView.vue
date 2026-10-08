@@ -9,13 +9,15 @@ import { useProgress } from '@/composables/useProgress';
 import { useQuizSession } from '@/composables/useQuizSession';
 import type { Sticker } from '@/progress/stickers';
 import { starsFor } from '@/progress/state';
-import type { Passage, QuestionSource } from '@/types';
+import type { Passage, Question, QuestionSource } from '@/types';
 
 const props = defineProps<{
 	set: string;
 	source: QuestionSource;
 	// Reading practice: the text stays visible while answering.
 	passage?: Passage;
+	// Mixed sessions (review): each reading question brings its own passage.
+	passageOf?: (question: Question) => Passage | undefined;
 }>();
 
 const router = useRouter();
@@ -24,7 +26,10 @@ const startedAt = Date.now();
 const earnedStickers = ref<Sticker[]>([]);
 
 const session = useQuizSession(props.source, {
-	onClose: (question, outcome) => progress.recordAnswer(question.type, outcome),
+	onClose: (question, outcome) => {
+		progress.recordAnswer(question.type, outcome);
+		progress.recordMistake(question, outcome, passageFor(question)?.id);
+	},
 	onFinish: () => {
 		earnedStickers.value = progress.finishSession(
 			{
@@ -41,6 +46,15 @@ const session = useQuizSession(props.source, {
 });
 const { index, current, status, finished, correctCount, outcomes, total, submit, next } = session;
 
+// Captured once, like the source: the session must not change under the child mid-way.
+const { passage, passageOf } = props;
+
+function passageFor(question: Question): Passage | undefined {
+	return passage ?? passageOf?.(question);
+}
+
+const currentPassage = computed(() => (current.value ? passageFor(current.value) : undefined));
+
 const stars = computed(() => outcomes.value.reduce((sum, o) => sum + starsFor(o), 0));
 
 // Same set again; the changed query remounts the view (App keys RouterView by full path).
@@ -50,8 +64,8 @@ function again() {
 </script>
 
 <template>
-	<div v-if="!finished && current" class="practice" :class="{ 'practice--reading': passage }">
-		<PassagePanel v-if="passage" :passage="passage" />
+	<div v-if="!finished && current" class="practice" :class="{ 'practice--reading': currentPassage }">
+		<PassagePanel v-if="currentPassage" :key="currentPassage.id" :passage="currentPassage" />
 
 		<div class="question-col">
 			<div class="progress" role="progressbar" :aria-valuenow="index" :aria-valuemax="total">
@@ -66,12 +80,12 @@ function again() {
 				/>
 			</div>
 
-			<QuestionCard :key="current.id" :question="current" :status="status" :speakable="!passage" @submit="submit" />
+			<QuestionCard :key="current.id" :question="current" :status="status" :speakable="!currentPassage" @submit="submit" />
 			<FeedbackPanel
 				:status="status"
 				:explanation="current.explanation"
 				:is-last="index === total - 1"
-				:speakable="!passage"
+				:speakable="!currentPassage"
 				@next="next"
 			/>
 		</div>

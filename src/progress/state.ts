@@ -1,9 +1,10 @@
 // Progress model and pure update logic; persistence lives in useProgress.
-import type { Level, MathQuestionType, Outcome, QuestionType } from '@/types';
+import type { Level, MathQuestionType, Outcome, Question, QuestionType } from '@/types';
 
 export const STORAGE_KEY = 'gifted-prep:progress';
 export const PROGRESS_VERSION = 1;
 const MAX_SESSIONS = 300;
+const MAX_MISTAKES = 60;
 
 export interface TypeStats {
 	first: number;
@@ -33,6 +34,19 @@ export interface ProgressState {
 	passages: Record<string, number>;
 	sessions: SessionRecord[];
 	settings: Settings;
+	// Questions to practice again, oldest first.
+	mistakes: MistakeEntry[];
+	// How many mistakes were later answered right on the first try.
+	mistakesFixed: number;
+}
+
+// A full copy of the question, since generated questions can't be recreated from an id.
+export interface MistakeEntry {
+	key: string;
+	question: Question;
+	// Reading questions are shown next to their passage.
+	passageId?: string;
+	at: string;
 }
 
 export interface Settings {
@@ -58,6 +72,8 @@ export function defaultProgress(): ProgressState {
 		passages: {},
 		sessions: [],
 		settings: { speech: true },
+		mistakes: [],
+		mistakesFixed: 0,
 	};
 }
 
@@ -126,4 +142,29 @@ export function successRate(stats: TypeStats | undefined): number | undefined {
 
 export function attempts(stats: TypeStats | undefined): number {
 	return stats ? stats.first + stats.second + stats.failed : 0;
+}
+
+// Identifies a question by its content (generated ids restart on every app load);
+// the passage tells apart identical reading questions on different texts.
+export function mistakeKey(question: Question, passageId?: string): string {
+	return [passageId ?? '', question.type, question.body ?? '', question.math ?? '', (question.lines ?? []).join(';')].join('|');
+}
+
+// A first-try answer clears the question from the list; any other outcome (re)adds it at the end.
+export function applyMistake(
+	state: ProgressState,
+	question: Question,
+	outcome: Outcome,
+	passageId: string | undefined,
+	at: string,
+): void {
+	const key = mistakeKey(question, passageId);
+	const index = state.mistakes.findIndex((m) => m.key === key);
+	if (index >= 0) state.mistakes.splice(index, 1);
+	if (outcome === 'first') {
+		if (index >= 0) state.mistakesFixed++;
+		return;
+	}
+	state.mistakes.push({ key, question, passageId, at });
+	if (state.mistakes.length > MAX_MISTAKES) state.mistakes.splice(0, state.mistakes.length - MAX_MISTAKES);
 }

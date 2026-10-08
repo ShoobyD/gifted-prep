@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { newStickers } from './stickers';
+import type { Question } from '@/types';
 import {
 	applyAnswer,
+	applyMistake,
 	applySession,
 	dayStreak,
 	defaultProgress,
@@ -46,6 +48,34 @@ describe('progress state', () => {
 		expect(parseProgress(JSON.stringify(state))?.stars).toBe(42);
 		expect(parseProgress('{"hello":1}')).toBeUndefined();
 		expect(parseProgress('not json')).toBeUndefined();
+	});
+
+	it('tracks mistakes by content: adds, moves to the end, clears on a first-try answer', () => {
+		const state = defaultProgress();
+		const q = (id: string, math: string): Question => ({
+			id, type: 'exercise', math, answer: { kind: 'number', rule: { op: 'eq', value: 1 }, solution: 1 },
+		});
+		applyMistake(state, q('a', '1 + 1 = ☐'), 'failed', undefined, 't1');
+		applyMistake(state, q('b', '2 + 2 = ☐'), 'second', undefined, 't2');
+		// Same content under another id (generated ids restart): one entry, moved to the end.
+		applyMistake(state, q('c', '1 + 1 = ☐'), 'failed', undefined, 't3');
+		expect(state.mistakes.map((m) => m.question.math)).toEqual(['2 + 2 = ☐', '1 + 1 = ☐']);
+
+		applyMistake(state, q('d', '2 + 2 = ☐'), 'first', undefined, 't4');
+		expect(state.mistakes).toHaveLength(1);
+		expect(state.mistakesFixed).toBe(1);
+
+		// A first-try answer to a question that was never missed changes nothing.
+		applyMistake(state, q('e', '3 + 3 = ☐'), 'first', undefined, 't5');
+		expect(state.mistakesFixed).toBe(1);
+	});
+
+	it('tells apart identical reading questions on different passages', () => {
+		const state = defaultProgress();
+		const q: Question = { id: 'x', type: 'inference', body: 'לָמָּה?', answer: { kind: 'choice', options: ['א', 'ב'], correctIndex: 0 } };
+		applyMistake(state, q, 'failed', 'story-1', 't1');
+		applyMistake(state, q, 'failed', 'story-2', 't2');
+		expect(state.mistakes).toHaveLength(2);
 	});
 
 	it('awards each sticker once', () => {

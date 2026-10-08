@@ -53,7 +53,9 @@ function begin() {
 function finish() {
 	if (unanswered.value && !confirm(`נִשְׁאֲרוּ ${unanswered.value} שְׁאֵלוֹת בְּלִי תְּשׁוּבָה. לְסַיֵּם בְּכָל זֹאת?`)) return;
 	for (const item of items) {
-		progress.recordAnswer(item.question.type, isCorrect(item.question, answers.get(item.question.id)) ? 'first' : 'failed');
+		const outcome = isCorrect(item.question, answers.get(item.question.id)) ? 'first' : 'failed';
+		progress.recordAnswer(item.question.type, outcome);
+		progress.recordMistake(item.question, outcome, item.section.passage?.id);
 	}
 	earnedStickers.value = progress.finishSession({
 		at: new Date().toISOString(),

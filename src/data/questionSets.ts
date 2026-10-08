@@ -1,4 +1,6 @@
+import { toRaw } from 'vue';
 import { useLevels } from '@/composables/useLevels';
+import { useProgress } from '@/composables/useProgress';
 import { isMathType, MATH_GENERATORS, MATH_TYPES } from '@/generators';
 import { pick, shuffle, type Rng } from '@/generators/random';
 import type { MathQuestionType, Passage, Question, QuestionSource } from '@/types';
@@ -14,7 +16,28 @@ const READING_PREFIX = 'reading-';
 
 export interface PracticeSet {
 	source: QuestionSource;
+	// A whole session on one passage.
 	passage?: Passage;
+	// Mixed sessions (review): the passage of each reading question.
+	passageOf?: (question: Question) => Passage | undefined;
+}
+
+const REVIEW = 'review';
+
+// Up to a session of the oldest mistakes. Copies get session-unique ids, because
+// generated questions saved on different days can share an id.
+function reviewSet(): PracticeSet | undefined {
+	// Read untracked: the router's props function must not re-run (and rebuild the
+	// session) every time an answer updates the mistakes list.
+	const entries = toRaw(useProgress().state).mistakes.slice(0, SESSION_LENGTH);
+	if (!entries.length) return undefined;
+	const passages = new Map<string, Passage | undefined>();
+	const questions = entries.map((entry, i) => {
+		const question = { ...entry.question, id: `review-${i}-${entry.question.id}` };
+		passages.set(question.id, entry.passageId ? findPassage(entry.passageId) : undefined);
+		return question;
+	});
+	return { source: listSource(questions), passageOf: (q) => passages.get(q.id) };
 }
 
 function mathSource(types: MathQuestionType[], rng: Rng = Math.random): QuestionSource {
@@ -44,8 +67,9 @@ function listSource(questions: Question[]): QuestionSource {
 	};
 }
 
-// Set names: "math-mix", "math-real", "math-<type>" (e.g. "math-word-problem"), "reading-<passage id>".
+// Set names: "review", "math-mix", "math-real", "math-<type>" (e.g. "math-word-problem"), "reading-<passage id>".
 export function resolveSet(set: string): PracticeSet | undefined {
+	if (set === REVIEW) return reviewSet();
 	if (set === MIX) return { source: mathSource(MATH_TYPES) };
 	if (set === REAL_MATH) {
 		return { source: listSource(shuffle(Math.random, REAL_MATH_QUESTIONS).slice(0, SESSION_LENGTH)) };
@@ -63,6 +87,7 @@ export function resolveSet(set: string): PracticeSet | undefined {
 
 // Human-readable name of a set, for the parents' history.
 export function describeSet(set: string): string {
+	if (set === REVIEW) return 'חזרה על טעויות';
 	if (set === MIX) return 'חשבון – ערבוב';
 	if (set === REAL_MATH) return 'חשבון – שאלות אמיתיות';
 	if (set.startsWith('test-')) return `מבחן – ${findMockTest(set.slice('test-'.length))?.title ?? set}`;

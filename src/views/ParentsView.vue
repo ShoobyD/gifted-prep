@@ -123,6 +123,7 @@ function onReset() {
 			<div class="tile"><span class="tile-value">{{ weekMinutes }}</span><span class="tile-label">דקות ב-7 הימים האחרונים</span></div>
 			<div class="tile"><span class="tile-value">{{ streak }}</span><span class="tile-label">ימים ברצף</span></div>
 			<div class="tile"><span class="tile-value">{{ Object.keys(state.passages).length }}/{{ ALL_PASSAGES.length }}</span><span class="tile-label">קטעי קריאה שנקראו</span></div>
+			<div class="tile"><span class="tile-value">{{ state.mistakes.length }}</span><span class="tile-label">שאלות שמחכות לחזרה ({{ state.mistakesFixed }} תוקנו)</span></div>
 		</section>
 
 		<section v-if="weak.length" class="card">

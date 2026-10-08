@@ -2,6 +2,7 @@ import { computed, reactive, watch } from 'vue';
 import { newStickers, type Sticker } from '@/progress/stickers';
 import {
 	applyAnswer,
+	applyMistake,
 	applySession,
 	dayStreak,
 	defaultProgress,
@@ -10,7 +11,7 @@ import {
 	type ProgressState,
 	type SessionRecord,
 } from '@/progress/state';
-import type { Outcome, QuestionType } from '@/types';
+import type { Outcome, Question, QuestionType } from '@/types';
 
 function load(): ProgressState {
 	try {
@@ -51,6 +52,10 @@ export function useProgress() {
 		applyAnswer(state, type, outcome);
 	}
 
+	function recordMistake(question: Question, outcome: Outcome, passageId?: string) {
+		applyMistake(state, question, outcome, passageId, new Date().toISOString());
+	}
+
 	// Saves the session and returns any stickers it unlocked.
 	function finishSession(record: SessionRecord, passageId?: string): Sticker[] {
 		applySession(state, record, passageId);
@@ -75,5 +80,5 @@ export function useProgress() {
 		replace(defaultProgress());
 	}
 
-	return { state, streak, recordAnswer, finishSession, exportJson, importJson, reset };
+	return { state, streak, recordAnswer, recordMistake, finishSession, exportJson, importJson, reset };
 }

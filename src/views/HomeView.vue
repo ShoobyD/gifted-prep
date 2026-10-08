@@ -26,6 +26,15 @@ const items: MenuItem[] = [
 		<span class="stat">🎖️ {{ state.stickers.length }} מַדְבֵּקוֹת</span>
 	</RouterLink>
 	<p class="greeting">שָׁלוֹם! בְּמָה נִתְאַמֵּן הַיּוֹם?</p>
+	<RouterLink
+		v-if="state.mistakes.length"
+		class="review"
+		:to="{ name: 'practice', params: { set: 'review' } }"
+	>
+		<span class="review-icon" aria-hidden="true">🔁</span>
+		<span>חֲזָרָה עַל טָעֻיּוֹת</span>
+		<span class="review-count">{{ state.mistakes.length }}</span>
+	</RouterLink>
 	<nav class="menu">
 		<RouterLink
 			v-for="item in items"
@@ -61,6 +70,39 @@ const items: MenuItem[] = [
 .greeting {
 	margin: 0 0 24px;
 	font-size: 28px;
+	text-align: center;
+}
+
+.review {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 14px;
+	min-height: 80px;
+	margin-bottom: 20px;
+	border-radius: var(--radius);
+	background: var(--warn);
+	color: var(--text);
+	font-size: 26px;
+	font-weight: 700;
+	text-decoration: none;
+	box-shadow: var(--shadow);
+}
+
+.review:active {
+	transform: translateY(3px);
+}
+
+.review-icon {
+	font-size: 36px;
+}
+
+.review-count {
+	min-width: 40px;
+	padding: 0 10px;
+	border-radius: 999px;
+	background: var(--surface);
+	font-size: 22px;
 	text-align: center;
 }
 

@@ -93,6 +93,13 @@ export const STICKERS: Sticker[] = [
 		earned: (s) => Object.keys(s.passages).length >= 15,
 	},
 	{
+		id: 'review-10',
+		emoji: '🔁',
+		name: 'לוֹמְדִים מִטָּעֻיּוֹת',
+		hint: 'מְתַקְּנִים 10 טָעֻיּוֹת בַּחֲזָרָה',
+		earned: (s) => s.mistakesFixed >= 10,
+	},
+	{
 		id: 'mock-test',
 		emoji: '📝',
 		name: 'מִבְחָן רִאשׁוֹן',
