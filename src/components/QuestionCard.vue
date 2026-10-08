@@ -3,6 +3,8 @@ import { computed, ref } from 'vue';
 import ChoiceList from './ChoiceList.vue';
 import NumPad from './NumPad.vue';
 import QuestionStem from './QuestionStem.vue';
+import SpeakButton from './SpeakButton.vue';
+import { questionToSpeech } from '@/speech/speechText';
 import { checkChoice, checkNumber } from '@/engine/checkAnswer';
 import type { QuestionStatus } from '@/composables/useQuizSession';
 import type { Question } from '@/types';
@@ -11,7 +13,11 @@ import type { Question } from '@/types';
 const props = defineProps<{
 	question: Question;
 	status: QuestionStatus;
+	// Read-aloud button; off where reading is what's being practiced.
+	speakable?: boolean;
 }>();
+
+const speech = computed(() => questionToSpeech(props.question));
 
 const emit = defineEmits<{ submit: [correct: boolean] }>();
 
@@ -63,7 +69,8 @@ function submitNumber() {
 </script>
 
 <template>
-	<article class="card">
+	<article class="card" :class="{ 'card--speakable': speakable }">
+		<SpeakButton v-if="speakable" class="speak-slot" :text="speech" />
 		<QuestionStem :question="question" :fill="blankFill" :state="blankState" />
 
 		<ChoiceList
@@ -85,8 +92,20 @@ function submitNumber() {
 
 <style scoped>
 .card {
+	position: relative;
 	display: grid;
 	gap: 20px;
+}
+
+/* Room for the speaker button at the end of the first line. */
+.card--speakable {
+	padding-inline-end: 68px;
+}
+
+.speak-slot {
+	position: absolute;
+	top: 0;
+	inset-inline-end: 0;
 }
 
 .typed {

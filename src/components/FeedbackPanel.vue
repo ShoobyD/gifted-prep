@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import RichText from './RichText.vue';
+import SpeakButton from './SpeakButton.vue';
 import type { QuestionStatus } from '@/composables/useQuizSession';
+import { textToSpeech } from '@/speech/speechText';
 
 const props = defineProps<{
 	status: QuestionStatus;
 	explanation?: string;
 	isLast: boolean;
+	speakable?: boolean;
 }>();
 
 const emit = defineEmits<{ next: [] }>();
@@ -33,7 +36,10 @@ const showNext = computed(() => props.status === 'correct' || props.status === '
 	<Transition name="slide">
 		<section v-if="status !== 'answering'" class="feedback" :class="`feedback--${status}`" aria-live="polite">
 			<p class="message">{{ message }}</p>
-			<p v-if="showNext && explanation" class="explanation"><RichText :text="explanation" /></p>
+			<div v-if="showNext && explanation" class="explanation-row">
+				<p class="explanation"><RichText :text="explanation" /></p>
+				<SpeakButton v-if="speakable" :text="textToSpeech(explanation)" />
+			</div>
 			<button v-if="showNext" type="button" class="next" @click="emit('next')">
 				{{ isLast ? 'סִיּוּם' : 'הַשְּׁאֵלָה הַבָּאָה' }} ←
 			</button>
@@ -70,7 +76,14 @@ const showNext = computed(() => props.status === 'correct' || props.status === '
 	font-weight: 700;
 }
 
+.explanation-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+}
+
 .explanation {
+	flex: 1;
 	margin: 0;
 	color: var(--muted);
 }

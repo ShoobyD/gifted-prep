@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import ParentGate from '@/components/ParentGate.vue';
 import { useProgress } from '@/composables/useProgress';
+import { useSpeech } from '@/composables/useSpeech';
 import { ALL_PASSAGES } from '@/data/content';
 import { TYPE_LABELS } from '@/data/labels';
 import { describeSet } from '@/data/questionSets';
@@ -14,6 +15,7 @@ const WEAK_BELOW = 0.7;
 
 const unlocked = ref(false);
 const { state, streak, exportJson, importJson, reset } = useProgress();
+const speech = useSpeech();
 
 const READING_TYPES: QuestionType[] = ['reading-fact', 'word-meaning', 'author-purpose', 'inference', 'not-answered', 'pronoun', 'word-relation'];
 
@@ -166,6 +168,15 @@ function onReset() {
 
 		<section class="card">
 			<h2>הגדרות</h2>
+			<label class="setting">
+				<input v-model="state.settings.speech" type="checkbox" :disabled="!speech.hasVoice.value">
+				<span>כפתור הקראה 🔊 בשאלות חשבון ובהסברים (לא בקטעי קריאה ולא במבחן)</span>
+			</label>
+			<p v-if="speech.hasVoice.value" class="note">קול בעברית: {{ speech.voiceName.value }}</p>
+			<p v-else class="note">
+				לא נמצא במכשיר קול בעברית, ולכן ההקראה לא זמינה. באנדרואיד: הגדרות ← מערכת ← שפות וקלט ← פלט של המרת טקסט לדיבור ←
+				מנוע Google ← התקנת נתונים קוליים ← עברית. אחר כך יש לסגור ולפתוח את האפליקציה.
+			</p>
 			<p class="note">ההתקדמות נשמרת רק בדפדפן של המכשיר הזה. כדי להעביר אותה למכשיר אחר או לגבות אותה – ייצאו לקובץ.</p>
 			<div class="actions">
 				<button type="button" class="btn" @click="downloadExport">ייצוא לקובץ</button>
@@ -286,6 +297,19 @@ h2 {
 .history th {
 	color: var(--muted);
 	font-weight: 400;
+}
+
+.setting {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	cursor: pointer;
+}
+
+.setting input {
+	flex: none;
+	width: 24px;
+	height: 24px;
 }
 
 .actions {

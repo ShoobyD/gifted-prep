@@ -66,11 +66,12 @@ function again() {
 				/>
 			</div>
 
-			<QuestionCard :key="current.id" :question="current" :status="status" @submit="submit" />
+			<QuestionCard :key="current.id" :question="current" :status="status" :speakable="!passage" @submit="submit" />
 			<FeedbackPanel
 				:status="status"
 				:explanation="current.explanation"
 				:is-last="index === total - 1"
+				:speakable="!passage"
 				@next="next"
 			/>
 		</div>

@@ -32,6 +32,12 @@ export interface ProgressState {
 	// Best correct count per reading passage id.
 	passages: Record<string, number>;
 	sessions: SessionRecord[];
+	settings: Settings;
+}
+
+export interface Settings {
+	// Speaker buttons for math questions and explanations.
+	speech: boolean;
 }
 
 export function defaultProgress(): ProgressState {
@@ -51,6 +57,7 @@ export function defaultProgress(): ProgressState {
 		},
 		passages: {},
 		sessions: [],
+		settings: { speech: true },
 	};
 }
 
@@ -61,7 +68,12 @@ export function parseProgress(json: string): ProgressState | undefined {
 		if (!data || typeof data !== 'object' || (data as ProgressState).version !== PROGRESS_VERSION) return undefined;
 		const defaults = defaultProgress();
 		const parsed = data as Partial<ProgressState>;
-		return { ...defaults, ...parsed, levels: { ...defaults.levels, ...parsed.levels } };
+		return {
+			...defaults,
+			...parsed,
+			levels: { ...defaults.levels, ...parsed.levels },
+			settings: { ...defaults.settings, ...parsed.settings },
+		};
 	} catch {
 		return undefined;
 	}
