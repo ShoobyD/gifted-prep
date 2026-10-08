@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import HomeView from './views/HomeView.vue';
+import { questionSets } from './data/sampleQuestions';
 
 declare module 'vue-router' {
 	interface RouteMeta {
@@ -16,6 +17,14 @@ export const router = createRouter({
 		{ path: '/math', name: 'math', component: () => import('./views/MathView.vue'), meta: { title: 'חֶשְׁבּוֹן' } },
 		{ path: '/test', name: 'test', component: () => import('./views/TestView.vue'), meta: { title: 'מִבְחַן דֻּגְמָה' } },
 		{ path: '/parents', name: 'parents', component: () => import('./views/ParentsView.vue'), meta: { title: 'הוֹרִים' } },
+		{
+			path: '/practice/:set',
+			name: 'practice',
+			component: () => import('./views/PracticeView.vue'),
+			meta: { title: 'תִּרְגּוּל' },
+			beforeEnter: (to) => (String(to.params.set) in questionSets ? true : { name: 'home' }),
+			props: (route) => ({ questions: questionSets[String(route.params.set)]?.() ?? [] }),
+		},
 		{ path: '/:pathMatch(.*)*', redirect: '/' },
 	],
 	scrollBehavior: () => ({ top: 0 }),

@@ -32,7 +32,8 @@ function goBack() {
 	</header>
 
 	<main class="page">
-		<RouterView />
+		<!-- Keyed so a new practice set always starts a fresh session. -->
+		<RouterView :key="route.fullPath" />
 	</main>
 </template>
 

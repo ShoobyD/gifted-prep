@@ -8,6 +8,9 @@
 	--math: #3bb4a1;
 	--test: #5b8def;
 	--parents: #a97ad8;
+	--good: #23a26d;
+	--bad: #e5484d;
+	--warn: #f5a524;
 	--radius: 24px;
 	--shadow: 0 4px 0 rgba(42, 37, 80, .15);
 	--font: "Rubik", "Noto Sans Hebrew", "Segoe UI", Arial, sans-serif;
@@ -46,6 +49,18 @@ button {
 	color: inherit;
 	cursor: pointer;
 	touch-action: manipulation;
+}
+
+@keyframes shake {
+	0%, 100% { transform: translateX(0); }
+	25% { transform: translateX(-8px); }
+	75% { transform: translateX(8px); }
+}
+
+@keyframes pop {
+	0% { transform: scale(1); }
+	50% { transform: scale(1.04); }
+	100% { transform: scale(1); }
 }
 
 .placeholder {
