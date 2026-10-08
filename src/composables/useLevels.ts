@@ -1,25 +1,18 @@
-import { reactive, readonly } from 'vue';
+import { readonly } from 'vue';
 import type { Level, MathQuestionType, Outcome } from '@/types';
+import { useProgress } from './useProgress';
 
 const LEVEL_UP_STREAK = 3;
 const LEVEL_DOWN_STREAK = 2;
 const MAX_LEVEL: Level = 3;
 
-// In memory for now; persisted with the rest of the progress in a later step.
-const levels = reactive<Record<MathQuestionType, Level>>({
-	'exercise': 1,
-	'missing-number': 1,
-	'inequality': 1,
-	'word-problem': 1,
-	'picture-riddle': 1,
-	'symbol-digit': 1,
-});
-
+// Levels are persisted with the progress; streaks only matter within a visit.
 const streaks = new Map<MathQuestionType, { right: number; wrong: number }>();
 
 // 3 first-try answers in a row → level up; 2 failures in a row → level down.
 // A correct second try keeps the level and resets both streaks.
 export function recordOutcome(type: MathQuestionType, outcome: Outcome) {
+	const { levels } = useProgress().state;
 	const streak = streaks.get(type) ?? { right: 0, wrong: 0 };
 	if (outcome === 'first') {
 		streak.right++;
@@ -43,5 +36,5 @@ export function recordOutcome(type: MathQuestionType, outcome: Outcome) {
 }
 
 export function useLevels() {
-	return { levels: readonly(levels), recordOutcome };
+	return { levels: readonly(useProgress().state.levels), recordOutcome };
 }

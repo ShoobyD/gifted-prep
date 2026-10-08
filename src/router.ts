@@ -16,6 +16,7 @@ export const router = createRouter({
 		{ path: '/reading', name: 'reading', component: () => import('./views/ReadingView.vue'), meta: { title: 'הֲבָנַת הַנִּקְרָא' } },
 		{ path: '/math', name: 'math', component: () => import('./views/MathView.vue'), meta: { title: 'חֶשְׁבּוֹן' } },
 		{ path: '/test', name: 'test', component: () => import('./views/TestView.vue'), meta: { title: 'מִבְחַן דֻּגְמָה' } },
+		{ path: '/stickers', name: 'stickers', component: () => import('./views/StickersView.vue'), meta: { title: 'הַמַּדְבֵּקוֹת שֶׁלִּי' } },
 		{ path: '/parents', name: 'parents', component: () => import('./views/ParentsView.vue'), meta: { title: 'הוֹרִים' } },
 		{
 			path: '/practice/:set',
@@ -28,7 +29,7 @@ export const router = createRouter({
 				to.meta.title = set.startsWith('reading-') ? 'הֲבָנַת הַנִּקְרָא' : 'חֶשְׁבּוֹן';
 				return true;
 			},
-			props: (route) => resolveSet(String(route.params.set)),
+			props: (route) => ({ set: String(route.params.set), ...resolveSet(String(route.params.set)) }),
 		},
 		{ path: '/:pathMatch(.*)*', redirect: '/' },
 	],

@@ -3,6 +3,7 @@ import { isMathType, MATH_GENERATORS, MATH_TYPES } from '@/generators';
 import { pick, shuffle, type Rng } from '@/generators/random';
 import type { MathQuestionType, Passage, Question, QuestionSource } from '@/types';
 import { findPassage, REAL_MATH_QUESTIONS } from './content';
+import { TYPE_LABELS } from './labels';
 
 export const SESSION_LENGTH = 10;
 
@@ -57,6 +58,18 @@ export function resolveSet(set: string): PracticeSet | undefined {
 		return passage && { source: listSource(passage.questions), passage };
 	}
 	return undefined;
+}
+
+// Human-readable name of a set, for the parents' history.
+export function describeSet(set: string): string {
+	if (set === MIX) return 'חשבון – ערבוב';
+	if (set === REAL_MATH) return 'חשבון – שאלות אמיתיות';
+	if (set.startsWith(READING_PREFIX)) {
+		const passage = findPassage(set.slice(READING_PREFIX.length));
+		return `קריאה – ${passage?.title ?? set}`;
+	}
+	const type = set.slice('math-'.length);
+	return isMathType(type) ? `חשבון – ${TYPE_LABELS[type]}` : set;
 }
 
 export function mathSetName(type: MathQuestionType | 'mix' | 'real'): string {

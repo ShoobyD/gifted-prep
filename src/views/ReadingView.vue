@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ALL_PASSAGES, SOURCE_LABELS } from '@/data/content';
 import { readingSetName } from '@/data/questionSets';
+import { useProgress } from '@/composables/useProgress';
 import type { Passage } from '@/types';
+
+const { state } = useProgress();
 
 interface Group {
 	title: string;
@@ -27,6 +30,9 @@ const GROUPS: Group[] = [
 			>
 				<span class="icon" aria-hidden="true">{{ passage.kind === 'story' ? '📗' : '📘' }}</span>
 				<span class="title">{{ passage.title }}</span>
+				<span v-if="passage.id in state.passages" class="done">
+					✅ {{ state.passages[passage.id] }}/{{ passage.questions.length }}
+				</span>
 				<span class="meta">
 					{{ passage.questions.length }} שְׁאֵלוֹת
 					<template v-if="passage.source !== 'original'"> · {{ SOURCE_LABELS[passage.source] }}</template>
@@ -82,6 +88,12 @@ const GROUPS: Group[] = [
 	font-size: 22px;
 	font-weight: 700;
 	line-height: 1.3;
+}
+
+.done {
+	color: var(--good);
+	font-size: 18px;
+	font-weight: 700;
 }
 
 .meta {

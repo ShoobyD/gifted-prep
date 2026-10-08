@@ -1,18 +1,52 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import FeedbackPanel from '@/components/FeedbackPanel.vue';
 import PassageText from '@/components/PassageText.vue';
 import QuestionCard from '@/components/QuestionCard.vue';
+import SessionSummary from '@/components/SessionSummary.vue';
+import { useProgress } from '@/composables/useProgress';
 import { useQuizSession } from '@/composables/useQuizSession';
+import type { Sticker } from '@/progress/stickers';
+import { starsFor } from '@/progress/state';
 import type { Passage, QuestionSource } from '@/types';
 
 const props = defineProps<{
+	set: string;
 	source: QuestionSource;
 	// Reading practice: the text stays visible while answering.
 	passage?: Passage;
 }>();
 
-const session = useQuizSession(props.source);
-const { index, current, status, finished, correctCount, total, submit, next } = session;
+const router = useRouter();
+const progress = useProgress();
+const startedAt = Date.now();
+const earnedStickers = ref<Sticker[]>([]);
+
+const session = useQuizSession(props.source, {
+	onClose: (question, outcome) => progress.recordAnswer(question.type, outcome),
+	onFinish: () => {
+		earnedStickers.value = progress.finishSession(
+			{
+				at: new Date().toISOString(),
+				set: props.set,
+				correct: correctCount.value,
+				total,
+				stars: stars.value,
+				seconds: Math.round((Date.now() - startedAt) / 1000),
+			},
+			props.passage?.id,
+		);
+	},
+});
+const { index, current, status, finished, correctCount, outcomes, total, submit, next } = session;
+
+const stars = computed(() => outcomes.value.reduce((sum, o) => sum + starsFor(o), 0));
+
+// Same set again; the changed query remounts the view (App keys RouterView by full path).
+function again() {
+	router.replace({ query: { run: Date.now() } });
+}
 </script>
 
 <template>
@@ -47,11 +81,14 @@ const { index, current, status, finished, correctCount, total, submit, next } = 
 		</div>
 	</div>
 
-	<div v-else class="done">
-		<p class="done-title">סִיַּמְתֶּם! 🎉</p>
-		<p class="done-score">{{ correctCount }} מִתּוֹךְ {{ total }} נְכוֹנוֹת</p>
-		<RouterLink class="done-home" :to="{ name: 'home' }" replace>לְמָסַךְ הַבַּיִת</RouterLink>
-	</div>
+	<SessionSummary
+		v-else
+		:correct="correctCount"
+		:total="total"
+		:stars="stars"
+		:stickers="earnedStickers"
+		@again="again"
+	/>
 </template>
 
 <style scoped>
@@ -107,35 +144,5 @@ const { index, current, status, finished, correctCount, total, submit, next } = 
 .dot--current {
 	outline: 3px solid var(--primary);
 	outline-offset: 2px;
-}
-
-.done {
-	display: grid;
-	justify-items: center;
-	gap: 12px;
-	margin-top: 48px;
-	text-align: center;
-}
-
-.done-title {
-	margin: 0;
-	font-size: 40px;
-	font-weight: 700;
-}
-
-.done-score {
-	margin: 0;
-	font-size: 28px;
-}
-
-.done-home {
-	margin-top: 16px;
-	padding: 16px 32px;
-	border-radius: 18px;
-	background: var(--primary);
-	color: #fff;
-	font-weight: 700;
-	text-decoration: none;
-	box-shadow: var(--shadow);
 }
 </style>

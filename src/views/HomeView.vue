@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router';
+import { useProgress } from '@/composables/useProgress';
+
+const { state, streak } = useProgress();
 
 interface MenuItem {
 	to: RouteLocationRaw;
@@ -17,6 +20,11 @@ const items: MenuItem[] = [
 </script>
 
 <template>
+	<RouterLink class="status" :to="{ name: 'stickers' }">
+		<span class="stat">⭐ {{ state.stars }}</span>
+		<span v-if="streak" class="stat">🔥 {{ streak }} {{ streak === 1 ? 'יוֹם' : 'יָמִים' }}</span>
+		<span class="stat">🎖️ {{ state.stickers.length }} מַדְבֵּקוֹת</span>
+	</RouterLink>
 	<p class="greeting">שָׁלוֹם! בְּמָה נִתְאַמֵּן הַיּוֹם?</p>
 	<nav class="menu">
 		<RouterLink
@@ -33,6 +41,23 @@ const items: MenuItem[] = [
 </template>
 
 <style scoped>
+.status {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 12px 28px;
+	margin: 0 auto 20px;
+	padding: 10px 24px;
+	width: fit-content;
+	border-radius: 999px;
+	background: var(--surface);
+	box-shadow: var(--shadow);
+	color: inherit;
+	font-size: 24px;
+	font-weight: 700;
+	text-decoration: none;
+}
+
 .greeting {
 	margin: 0 0 24px;
 	font-size: 28px;

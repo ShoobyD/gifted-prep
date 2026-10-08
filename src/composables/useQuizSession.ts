@@ -7,7 +7,12 @@ export const MAX_ATTEMPTS = 2;
 // correct / revealed: the question is closed and the child moves on.
 export type QuestionStatus = 'answering' | 'wrong' | 'correct' | 'revealed';
 
-export function useQuizSession(source: QuestionSource) {
+export interface QuizHooks {
+	onClose?(question: Question, outcome: Outcome): void;
+	onFinish?(): void;
+}
+
+export function useQuizSession(source: QuestionSource, hooks: QuizHooks = {}) {
 	// Questions are pulled lazily so the source can adapt to earlier outcomes.
 	const questions = ref<Question[]>([source.next()]);
 	const index = ref(0);
@@ -22,7 +27,9 @@ export function useQuizSession(source: QuestionSource) {
 
 	function close(outcome: Outcome) {
 		outcomes.value.push(outcome);
-		if (current.value) source.report?.(current.value, outcome);
+		if (!current.value) return;
+		source.report?.(current.value, outcome);
+		hooks.onClose?.(current.value, outcome);
 	}
 
 	function submit(correct: boolean) {
@@ -45,6 +52,7 @@ export function useQuizSession(source: QuestionSource) {
 		attempts.value = 0;
 		status.value = 'answering';
 		if (index.value < source.total) questions.value.push(source.next());
+		else hooks.onFinish?.();
 	}
 
 	return {
