@@ -9,6 +9,8 @@ defineProps<{
 	wrong: number[];
 	// Index to highlight as correct (after answering correctly or revealing).
 	correct?: number;
+	// Neutral "chosen" mark, used in mock tests where there is no feedback.
+	selected?: number;
 	disabled: boolean;
 }>();
 
@@ -24,6 +26,7 @@ const emit = defineEmits<{ pick: [index: number] }>();
 				:class="{
 					'choice--wrong': wrong.includes(i),
 					'choice--correct': correct === i,
+					'choice--selected': selected === i,
 				}"
 				:disabled="disabled || wrong.includes(i)"
 				@click="emit('pick', i)"
@@ -90,6 +93,16 @@ const emit = defineEmits<{ pick: [index: number] }>();
 	border-color: var(--good);
 	background: #e3f8ef;
 	animation: pop .35s;
+}
+
+.choice--selected {
+	border-color: var(--primary);
+	background: #ece8ff;
+}
+
+.choice--selected .choice-label {
+	background: var(--primary);
+	color: #fff;
 }
 
 .choice--correct .choice-label {

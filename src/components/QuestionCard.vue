@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import ChoiceList from './ChoiceList.vue';
-import MathExpression from './MathExpression.vue';
 import NumPad from './NumPad.vue';
-import RichText from './RichText.vue';
+import QuestionStem from './QuestionStem.vue';
 import { checkChoice, checkNumber } from '@/engine/checkAnswer';
 import type { QuestionStatus } from '@/composables/useQuizSession';
 import type { Question } from '@/types';
@@ -65,15 +64,7 @@ function submitNumber() {
 
 <template>
 	<article class="card">
-		<p v-if="question.prompt" class="prompt">{{ question.prompt }}</p>
-		<p v-if="question.body" class="body"><RichText :text="question.body" /></p>
-		<img v-if="question.image" class="image" :src="question.image" alt="">
-		<div v-if="question.lines?.length" class="given">
-			<MathExpression v-for="line in question.lines" :key="line" :expression="line" />
-		</div>
-		<div v-if="question.math" class="math-row">
-			<MathExpression :expression="question.math" :fill="blankFill" :state="blankState" />
-		</div>
+		<QuestionStem :question="question" :fill="blankFill" :state="blankState" />
 
 		<ChoiceList
 			v-if="question.answer.kind === 'choice'"
@@ -96,38 +87,6 @@ function submitNumber() {
 .card {
 	display: grid;
 	gap: 20px;
-}
-
-.prompt {
-	margin: 0;
-	color: var(--muted);
-	font-size: 22px;
-}
-
-.body {
-	margin: 0;
-	font-size: 26px;
-	line-height: 1.7;
-}
-
-.image {
-	max-width: 100%;
-	justify-self: center;
-}
-
-.given {
-	display: grid;
-	justify-items: center;
-	gap: 4px;
-	padding: 12px;
-	border-radius: 18px;
-	background: var(--surface);
-	box-shadow: var(--shadow);
-}
-
-.math-row {
-	text-align: center;
-	padding: 8px 0;
 }
 
 .typed {

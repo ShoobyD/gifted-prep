@@ -3,7 +3,11 @@ const MAX_DIGITS = 3;
 
 const model = defineModel<string>({ required: true });
 
-defineProps<{ disabled: boolean }>();
+defineProps<{
+	disabled: boolean;
+	// Mock tests save as you type, with no check button.
+	noSubmit?: boolean;
+}>();
 
 const emit = defineEmits<{ submit: [] }>();
 
@@ -35,7 +39,7 @@ function erase() {
 		</button>
 		<button type="button" class="key key--erase" :disabled="disabled || !model" aria-label="מחיקה" @click="erase">⌫</button>
 		<button type="button" class="key" :disabled="disabled" @click="press('0')">0</button>
-		<button type="button" class="key key--ok" :disabled="disabled || !model" @click="emit('submit')">בְּדִיקָה</button>
+		<button v-if="!noSubmit" type="button" class="key key--ok" :disabled="disabled || !model" @click="emit('submit')">בְּדִיקָה</button>
 	</div>
 </template>
 

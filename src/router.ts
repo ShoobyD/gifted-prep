@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import HomeView from './views/HomeView.vue';
+import { findMockTest } from './data/mockTests';
 import { resolveSet } from './data/questionSets';
 
 declare module 'vue-router' {
@@ -16,6 +17,14 @@ export const router = createRouter({
 		{ path: '/reading', name: 'reading', component: () => import('./views/ReadingView.vue'), meta: { title: 'הֲבָנַת הַנִּקְרָא' } },
 		{ path: '/math', name: 'math', component: () => import('./views/MathView.vue'), meta: { title: 'חֶשְׁבּוֹן' } },
 		{ path: '/test', name: 'test', component: () => import('./views/TestView.vue'), meta: { title: 'מִבְחַן דֻּגְמָה' } },
+		{
+			path: '/test/:id',
+			name: 'test-run',
+			component: () => import('./views/TestRunView.vue'),
+			meta: { title: 'מִבְחַן דֻּגְמָה' },
+			beforeEnter: (to) => (findMockTest(String(to.params.id)) ? true : { name: 'test' }),
+			props: (route) => ({ entry: findMockTest(String(route.params.id)) }),
+		},
 		{ path: '/stickers', name: 'stickers', component: () => import('./views/StickersView.vue'), meta: { title: 'הַמַּדְבֵּקוֹת שֶׁלִּי' } },
 		{ path: '/parents', name: 'parents', component: () => import('./views/ParentsView.vue'), meta: { title: 'הוֹרִים' } },
 		{

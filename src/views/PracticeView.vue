@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import FeedbackPanel from '@/components/FeedbackPanel.vue';
-import PassageText from '@/components/PassageText.vue';
+import PassagePanel from '@/components/PassagePanel.vue';
 import QuestionCard from '@/components/QuestionCard.vue';
 import SessionSummary from '@/components/SessionSummary.vue';
 import { useProgress } from '@/composables/useProgress';
@@ -51,12 +51,7 @@ function again() {
 
 <template>
 	<div v-if="!finished && current" class="practice" :class="{ 'practice--reading': passage }">
-		<details v-if="passage" class="passage-panel" open>
-			<summary>📖 הַטֶּקְסְט</summary>
-			<div class="passage-scroll">
-				<PassageText :passage="passage" />
-			</div>
-		</details>
+		<PassagePanel v-if="passage" :passage="passage" />
 
 		<div class="question-col">
 			<div class="progress" role="progressbar" :aria-valuenow="index" :aria-valuemax="total">
@@ -99,27 +94,10 @@ function again() {
 	align-content: start;
 }
 
-.passage-panel summary {
-	padding: 8px 4px;
-	font-weight: 700;
-	cursor: pointer;
-}
-
-/* Portrait: the text is a scrollable panel above the question. */
-.passage-scroll {
-	max-height: 42vh;
-	overflow-y: auto;
-	border-radius: var(--radius);
-}
-
 /* Landscape tablet: text and question side by side. */
 @media (min-width: 1000px) {
 	.practice--reading {
 		grid-template-columns: 1fr 1fr;
-	}
-
-	.practice--reading .passage-scroll {
-		max-height: calc(100vh - 160px);
 	}
 }
 

@@ -4,6 +4,7 @@ import { pick, shuffle, type Rng } from '@/generators/random';
 import type { MathQuestionType, Passage, Question, QuestionSource } from '@/types';
 import { findPassage, REAL_MATH_QUESTIONS } from './content';
 import { TYPE_LABELS } from './labels';
+import { findMockTest } from './mockTests';
 
 export const SESSION_LENGTH = 10;
 
@@ -64,6 +65,7 @@ export function resolveSet(set: string): PracticeSet | undefined {
 export function describeSet(set: string): string {
 	if (set === MIX) return 'חשבון – ערבוב';
 	if (set === REAL_MATH) return 'חשבון – שאלות אמיתיות';
+	if (set.startsWith('test-')) return `מבחן – ${findMockTest(set.slice('test-'.length))?.title ?? set}`;
 	if (set.startsWith(READING_PREFIX)) {
 		const passage = findPassage(set.slice(READING_PREFIX.length));
 		return `קריאה – ${passage?.title ?? set}`;

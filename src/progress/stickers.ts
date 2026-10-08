@@ -9,7 +9,9 @@ export interface Sticker {
 	earned(state: ProgressState, last: SessionRecord | undefined, today: Date): boolean;
 }
 
-const levelCount = (state: ProgressState, level: number) =>
+const isMockTest = (record: SessionRecord) => record.set.startsWith('test-');
+
+const levelCount =(state: ProgressState, level: number) =>
 	Object.values(state.levels).filter((l) => l >= level).length;
 
 export const STICKERS: Sticker[] = [
@@ -89,6 +91,20 @@ export const STICKERS: Sticker[] = [
 		name: 'יַנְשׁוּף חָכָם',
 		hint: 'קוֹרְאִים 15 קְטָעִים שׁוֹנִים',
 		earned: (s) => Object.keys(s.passages).length >= 15,
+	},
+	{
+		id: 'mock-test',
+		emoji: '📝',
+		name: 'מִבְחָן רִאשׁוֹן',
+		hint: 'מְסַיְּמִים מִבְחַן דֻּגְמָה',
+		earned: (s) => s.sessions.some(isMockTest),
+	},
+	{
+		id: 'mock-90',
+		emoji: '🎓',
+		name: 'כִּמְעַט מֻשְׁלָם',
+		hint: 'מְקַבְּלִים 90% וּמַעְלָה בְּמִבְחַן דֻּגְמָה',
+		earned: (s) => s.sessions.some((r) => isMockTest(r) && r.total > 0 && r.correct / r.total >= 0.9),
 	},
 	{
 		id: 'level-3',
