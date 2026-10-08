@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import HomeView from './views/HomeView.vue';
-import { questionSets } from './data/sampleQuestions';
+import { createSource, isValidSet } from './data/questionSets';
 
 declare module 'vue-router' {
 	interface RouteMeta {
@@ -22,8 +22,8 @@ export const router = createRouter({
 			name: 'practice',
 			component: () => import('./views/PracticeView.vue'),
 			meta: { title: 'תִּרְגּוּל' },
-			beforeEnter: (to) => (String(to.params.set) in questionSets ? true : { name: 'home' }),
-			props: (route) => ({ questions: questionSets[String(route.params.set)]?.() ?? [] }),
+			beforeEnter: (to) => (isValidSet(String(to.params.set)) ? true : { name: 'home' }),
+			props: (route) => ({ source: createSource(String(route.params.set)) }),
 		},
 		{ path: '/:pathMatch(.*)*', redirect: '/' },
 	],

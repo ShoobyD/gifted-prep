@@ -28,7 +28,7 @@ const parts = computed(() => props.expression.split(BLANK));
 <style scoped>
 .math {
 	display: inline-block;
-	font-size: 44px;
+	font-size: clamp(28px, 7vw, 44px);
 	font-weight: 700;
 	white-space: pre;
 	letter-spacing: 1px;

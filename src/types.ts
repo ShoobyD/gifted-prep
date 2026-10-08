@@ -39,6 +39,8 @@ export interface NumberAnswer {
 
 export type Answer = ChoiceAnswer | NumberAnswer;
 
+export type Level = 1 | 2 | 3;
+
 // Free-text fields (body, options, explanation) may contain inline math between $...$,
 // rendered left-to-right by RichText.
 export interface Question {
@@ -48,12 +50,24 @@ export interface Question {
 	prompt: string;
 	// Main question text (word problem, reading question).
 	body?: string;
+	// Given facts shown above the main expression (picture riddles, symbol digits).
+	lines?: string[];
 	// Left-to-right expression; BLANK marks the box the child fills in.
 	math?: string;
 	image?: string;
 	answer: Answer;
 	explanation?: string;
-	difficulty?: 1 | 2 | 3;
+	difficulty?: Level;
 }
 
 export const BLANK = '☐';
+
+// first: right on the first try; second: right after one mistake; failed: answer revealed.
+export type Outcome = 'first' | 'second' | 'failed';
+
+// Feeds a practice session one question at a time, so generators can adapt as it goes.
+export interface QuestionSource {
+	total: number;
+	next(): Question;
+	report?(question: Question, outcome: Outcome): void;
+}

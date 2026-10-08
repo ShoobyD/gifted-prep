@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue';
-import type { Question } from '@/types';
+import type { Outcome, Question, QuestionSource } from '@/types';
 
 export const MAX_ATTEMPTS = 2;
 
@@ -7,28 +7,33 @@ export const MAX_ATTEMPTS = 2;
 // correct / revealed: the question is closed and the child moves on.
 export type QuestionStatus = 'answering' | 'wrong' | 'correct' | 'revealed';
 
-export type Outcome = 'first' | 'second' | 'failed';
-
-export function useQuizSession(questions: Question[]) {
+export function useQuizSession(source: QuestionSource) {
+	// Questions are pulled lazily so the source can adapt to earlier outcomes.
+	const questions = ref<Question[]>([source.next()]);
 	const index = ref(0);
 	const attempts = ref(0);
 	const status = ref<QuestionStatus>('answering');
 	const outcomes = ref<Outcome[]>([]);
 
-	const current = computed(() => questions[index.value]);
-	const finished = computed(() => index.value >= questions.length);
+	const current = computed(() => questions.value[index.value]);
+	const finished = computed(() => index.value >= source.total);
 	const isClosed = computed(() => status.value === 'correct' || status.value === 'revealed');
 	const correctCount = computed(() => outcomes.value.filter((o) => o !== 'failed').length);
+
+	function close(outcome: Outcome) {
+		outcomes.value.push(outcome);
+		if (current.value) source.report?.(current.value, outcome);
+	}
 
 	function submit(correct: boolean) {
 		if (isClosed.value) return;
 		attempts.value++;
 		if (correct) {
 			status.value = 'correct';
-			outcomes.value.push(attempts.value === 1 ? 'first' : 'second');
+			close(attempts.value === 1 ? 'first' : 'second');
 		} else if (attempts.value >= MAX_ATTEMPTS) {
 			status.value = 'revealed';
-			outcomes.value.push('failed');
+			close('failed');
 		} else {
 			status.value = 'wrong';
 		}
@@ -39,10 +44,11 @@ export function useQuizSession(questions: Question[]) {
 		index.value++;
 		attempts.value = 0;
 		status.value = 'answering';
+		if (index.value < source.total) questions.value.push(source.next());
 	}
 
 	return {
-		total: questions.length,
+		total: source.total,
 		index,
 		current,
 		status,

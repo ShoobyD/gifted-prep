@@ -67,6 +67,9 @@ function submitNumber() {
 		<p class="prompt">{{ question.prompt }}</p>
 		<p v-if="question.body" class="body"><RichText :text="question.body" /></p>
 		<img v-if="question.image" class="image" :src="question.image" alt="">
+		<div v-if="question.lines?.length" class="given">
+			<MathExpression v-for="line in question.lines" :key="line" :expression="line" />
+		</div>
 		<div v-if="question.math" class="math-row">
 			<MathExpression :expression="question.math" :fill="blankFill" :state="blankState" />
 		</div>
@@ -109,6 +112,16 @@ function submitNumber() {
 .image {
 	max-width: 100%;
 	justify-self: center;
+}
+
+.given {
+	display: grid;
+	justify-items: center;
+	gap: 4px;
+	padding: 12px;
+	border-radius: 18px;
+	background: var(--surface);
+	box-shadow: var(--shadow);
 }
 
 .math-row {

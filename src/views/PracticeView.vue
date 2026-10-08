@@ -2,11 +2,11 @@
 import FeedbackPanel from '@/components/FeedbackPanel.vue';
 import QuestionCard from '@/components/QuestionCard.vue';
 import { useQuizSession } from '@/composables/useQuizSession';
-import type { Question } from '@/types';
+import type { QuestionSource } from '@/types';
 
-const props = defineProps<{ questions: Question[] }>();
+const props = defineProps<{ source: QuestionSource }>();
 
-const session = useQuizSession(props.questions);
+const session = useQuizSession(props.source);
 const { index, current, status, finished, correctCount, total, submit, next } = session;
 </script>
 
