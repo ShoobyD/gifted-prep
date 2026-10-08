@@ -75,7 +75,7 @@ function goBack() {
 .page {
 	flex: 1;
 	width: 100%;
-	max-width: 900px;
+	max-width: 1200px;
 	margin: 0 auto;
 	padding: 24px 16px;
 }

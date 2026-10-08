@@ -1,3 +1,91 @@
+<script setup lang="ts">
+import { ALL_PASSAGES, SOURCE_LABELS } from '@/data/content';
+import { readingSetName } from '@/data/questionSets';
+import type { Passage } from '@/types';
+
+interface Group {
+	title: string;
+	passages: Passage[];
+}
+
+const GROUPS: Group[] = [
+	{ title: 'מִתּוֹךְ מִבְחָנִים', passages: ALL_PASSAGES.filter((p) => p.source !== 'original') },
+	{ title: 'סִפּוּרִים', passages: ALL_PASSAGES.filter((p) => p.source === 'original' && p.kind === 'story') },
+	{ title: 'קְטָעִים מֵידָעִיִּים', passages: ALL_PASSAGES.filter((p) => p.source === 'original' && p.kind === 'informational') },
+];
+</script>
+
 <template>
-	<p class="placeholder">כָּאן יִהְיוּ סִפּוּרִים וּשְׁאֵלוֹת 📖</p>
+	<section v-for="group in GROUPS" :key="group.title" class="group">
+		<h2 class="group-title">{{ group.title }}</h2>
+		<nav class="passages">
+			<RouterLink
+				v-for="passage in group.passages"
+				:key="passage.id"
+				class="passage"
+				:to="{ name: 'practice', params: { set: readingSetName(passage) } }"
+			>
+				<span class="icon" aria-hidden="true">{{ passage.kind === 'story' ? '📗' : '📘' }}</span>
+				<span class="title">{{ passage.title }}</span>
+				<span class="meta">
+					{{ passage.questions.length }} שְׁאֵלוֹת
+					<template v-if="passage.source !== 'original'"> · {{ SOURCE_LABELS[passage.source] }}</template>
+				</span>
+			</RouterLink>
+		</nav>
+	</section>
 </template>
+
+<style scoped>
+.group + .group {
+	margin-top: 28px;
+}
+
+.group-title {
+	margin: 0 0 12px;
+	font-size: 24px;
+	color: var(--muted);
+}
+
+.passages {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	gap: 16px;
+}
+
+.passage {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	min-height: 150px;
+	padding: 16px 12px;
+	border-radius: var(--radius);
+	border-bottom: 6px solid var(--reading);
+	background: var(--surface);
+	color: inherit;
+	text-align: center;
+	text-decoration: none;
+	box-shadow: var(--shadow);
+}
+
+.passage:active {
+	transform: translateY(3px);
+}
+
+.icon {
+	font-size: 44px;
+	line-height: 1;
+}
+
+.title {
+	font-size: 22px;
+	font-weight: 700;
+	line-height: 1.3;
+}
+
+.meta {
+	color: var(--muted);
+	font-size: 16px;
+}
+</style>

@@ -1,11 +1,19 @@
 import { useLevels } from '@/composables/useLevels';
 import { isMathType, MATH_GENERATORS, MATH_TYPES } from '@/generators';
-import { pick, type Rng } from '@/generators/random';
-import type { MathQuestionType, QuestionSource } from '@/types';
+import { pick, shuffle, type Rng } from '@/generators/random';
+import type { MathQuestionType, Passage, Question, QuestionSource } from '@/types';
+import { findPassage, REAL_MATH_QUESTIONS } from './content';
 
 export const SESSION_LENGTH = 10;
 
 const MIX = 'math-mix';
+const REAL_MATH = 'math-real';
+const READING_PREFIX = 'reading-';
+
+export interface PracticeSet {
+	source: QuestionSource;
+	passage?: Passage;
+}
 
 function mathSource(types: MathQuestionType[], rng: Rng = Math.random): QuestionSource {
 	const { levels, recordOutcome } = useLevels();
@@ -25,18 +33,36 @@ function mathSource(types: MathQuestionType[], rng: Rng = Math.random): Question
 	};
 }
 
-// Set names: "math-mix" or "math-<type>", e.g. "math-word-problem".
-export function isValidSet(set: string): boolean {
-	return set === MIX || (set.startsWith('math-') && isMathType(set.slice('math-'.length)));
+// A fixed list, in order. Fixed questions don't change the adaptive levels.
+function listSource(questions: Question[]): QuestionSource {
+	let i = 0;
+	return {
+		total: questions.length,
+		next: () => questions[i++] as Question,
+	};
 }
 
-export function createSource(set: string): QuestionSource | undefined {
-	if (set === MIX) return mathSource(MATH_TYPES);
-	const type = set.slice('math-'.length);
-	if (set.startsWith('math-') && isMathType(type)) return mathSource([type]);
+// Set names: "math-mix", "math-real", "math-<type>" (e.g. "math-word-problem"), "reading-<passage id>".
+export function resolveSet(set: string): PracticeSet | undefined {
+	if (set === MIX) return { source: mathSource(MATH_TYPES) };
+	if (set === REAL_MATH) {
+		return { source: listSource(shuffle(Math.random, REAL_MATH_QUESTIONS).slice(0, SESSION_LENGTH)) };
+	}
+	if (set.startsWith('math-')) {
+		const type = set.slice('math-'.length);
+		return isMathType(type) ? { source: mathSource([type]) } : undefined;
+	}
+	if (set.startsWith(READING_PREFIX)) {
+		const passage = findPassage(set.slice(READING_PREFIX.length));
+		return passage && { source: listSource(passage.questions), passage };
+	}
 	return undefined;
 }
 
-export function mathSetName(type: MathQuestionType | 'mix'): string {
+export function mathSetName(type: MathQuestionType | 'mix' | 'real'): string {
 	return `math-${type}`;
+}
+
+export function readingSetName(passage: Passage): string {
+	return `${READING_PREFIX}${passage.id}`;
 }

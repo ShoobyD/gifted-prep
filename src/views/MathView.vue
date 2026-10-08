@@ -26,6 +26,10 @@ const { levels } = useLevels();
 		<span class="mix-icon" aria-hidden="true">🎲</span>
 		<span>עִרְבּוּב – קְצָת מִכָּל דָּבָר</span>
 	</RouterLink>
+	<RouterLink class="mix mix--real" :to="{ name: 'practice', params: { set: mathSetName('real') } }">
+		<span class="mix-icon" aria-hidden="true">🏅</span>
+		<span>שְׁאֵלוֹת מִמִּבְחָנִים אֲמִתִּיִּים</span>
+	</RouterLink>
 
 	<nav class="topics">
 		<RouterLink
@@ -58,6 +62,10 @@ const { levels } = useLevels();
 	font-weight: 700;
 	text-decoration: none;
 	box-shadow: var(--shadow);
+}
+
+.mix--real {
+	background: var(--test);
 }
 
 .mix-icon {

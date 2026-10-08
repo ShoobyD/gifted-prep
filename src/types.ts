@@ -47,7 +47,7 @@ export interface Question {
 	id: string;
 	type: QuestionType;
 	// Short instruction line, e.g. "הַשְׁלִימוּ אֶת הַמִּסְפָּר הֶחָסֵר:".
-	prompt: string;
+	prompt?: string;
 	// Main question text (word problem, reading question).
 	body?: string;
 	// Given facts shown above the main expression (picture riddles, symbol digits).
@@ -61,6 +61,38 @@ export interface Question {
 }
 
 export const BLANK = '☐';
+
+// Where content comes from: written for this app, the ministry's papers, or prep-site samples.
+export type ContentSource = 'original' | 'official-2025' | 'official-sample' | 'noam' | 'gaonchik';
+
+export type PassageKind = 'informational' | 'story';
+
+// A reading passage with its questions. Lines are kept as in the source because
+// questions refer to line numbers ("בְּשׁוּרָה 2 כָּתוּב...").
+export interface Passage {
+	id: string;
+	title: string;
+	kind: PassageKind;
+	source: ContentSource;
+	// Paragraphs of lines; lines are numbered continuously across paragraphs.
+	paragraphs: string[][];
+	questions: Question[];
+}
+
+// One part of a mock test, e.g. a reading passage or a math task.
+export interface TestSection {
+	title: string;
+	instructions?: string;
+	passage?: Passage;
+	questions: Question[];
+}
+
+export interface MockTest {
+	id: string;
+	title: string;
+	source: ContentSource;
+	sections: TestSection[];
+}
 
 // first: right on the first try; second: right after one mistake; failed: answer revealed.
 export type Outcome = 'first' | 'second' | 'failed';

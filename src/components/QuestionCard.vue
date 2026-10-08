@@ -30,7 +30,8 @@ const correctChoice = computed(() => {
 
 const blankFill = computed(() => {
 	const { answer } = props.question;
-	if (answer.kind !== 'number') return undefined;
+	// Choice with a box in the expression (e.g. a missing operation sign): show the answer once closed.
+	if (answer.kind === 'choice') return closed.value ? answer.options[answer.correctIndex] : undefined;
 	if (props.status === 'revealed') return String(answer.solution);
 	return typed.value || lastWrong.value;
 });
@@ -64,7 +65,7 @@ function submitNumber() {
 
 <template>
 	<article class="card">
-		<p class="prompt">{{ question.prompt }}</p>
+		<p v-if="question.prompt" class="prompt">{{ question.prompt }}</p>
 		<p v-if="question.body" class="body"><RichText :text="question.body" /></p>
 		<img v-if="question.image" class="image" :src="question.image" alt="">
 		<div v-if="question.lines?.length" class="given">
