@@ -1,0 +1,16 @@
+# Cloudflare Pages settings. Once this file exists it is the source of truth;
+# build settings in the dashboard are ignored.
+
+name = "gifted-prep"
+compatibility_date = "2026-10-01"
+pages_build_output_dir = "dist"
+
+# Progress storage. Local dev (wrangler pages dev) uses a local copy under .wrangler/;
+# the real database_id is filled in when the remote database is created (deploy step).
+[[d1_databases]]
+binding = "DB"
+database_name = "gifted-prep"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+# No [env.preview] on purpose: a named environment doesn't inherit top-level bindings,
+# and .dev.vars doesn't apply to it. We deploy only from main.

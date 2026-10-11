@@ -26,6 +26,19 @@ npm run build      # בדיקת טיפוסים ו-build לתיקייה dist/
 npm run serve      # הגשת ה-build על פורט 4173, גם ברשת המקומית
 ```
 
+### שרת (Cloudflare Pages Functions + D1)
+
+ההתקדמות נשמרת בשרת דרך `functions/api/progress.ts`, במסד נתונים D1. המבנה מוגדר ב-`schema.sql`.
+
+```bash
+npm run db:schema:local   # פעם אחת: יוצר את המסד המקומי (בתיקייה .wrangler/)
+npm run dev:api           # build ואז שרת מלא על http://localhost:8788, כולל ה-API
+npm run test:api          # בחלון נוסף: בדיקת ה-API מקצה לקצה מול השרת המקומי
+```
+
+`dev:api` מגיש את ה-build. כדי לראות שינויים בקוד צריך להריץ אותו מחדש.
+בלי השרת, `npm run dev` עדיין עובד כרגיל.
+
 > אם `npm install` נכשל עם `Cannot read properties of null (reading 'edgesOut')`, זה באג של npm 10.9.2.
 > אפשר לעקוף אותו עם `npx npm@11 install`.
 

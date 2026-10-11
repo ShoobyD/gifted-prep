@@ -9,13 +9,18 @@
 		"preview": "vite preview --host",
 		"typecheck": "vue-tsc -b",
 		"test": "vitest run",
-		"serve": "vite preview --host"
+		"serve": "vite preview --host",
+		"dev:api": "npm run build && wrangler pages dev",
+		"db:schema": "wrangler d1 execute gifted-prep --remote --file=./schema.sql",
+		"db:schema:local": "wrangler d1 execute gifted-prep --local --file=./schema.sql",
+		"test:api": "node scripts/api-test.mjs"
 	},
 	"dependencies": {
 		"vue": "^3.5.43",
 		"vue-router": "^5.4.0"
 	},
 	"devDependencies": {
+		"@cloudflare/workers-types": "^5.20261011.1",
 		"@types/node": "^24.19.1",
 		"@vitejs/plugin-vue": "^6.0.9",
 		"@vue/tsconfig": "^0.9.1",
@@ -23,6 +28,7 @@
 		"vite": "^8.3.3",
 		"vite-plugin-pwa": "^2.0.0",
 		"vitest": "^5.0.3",
-		"vue-tsc": "^3.3.12"
+		"vue-tsc": "^3.3.12",
+		"wrangler": "^4.149.0"
 	}
 }

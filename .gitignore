@@ -5,3 +5,9 @@ dev-dist/
 .DS_Store
 Thumbs.db
 *.log
+
+# Local wrangler state (local database)
+.wrangler/
+
+# Local secrets, never committed
+.dev.vars
