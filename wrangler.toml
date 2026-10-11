@@ -5,12 +5,12 @@ name = "gifted-prep"
 compatibility_date = "2026-10-01"
 pages_build_output_dir = "dist"
 
-# Progress storage. Local dev (wrangler pages dev) uses a local copy under .wrangler/;
-# the real database_id is filled in when the remote database is created (deploy step).
+# Progress storage (created with `wrangler d1 create gifted-prep`).
+# Local dev (wrangler pages dev) uses a local copy under .wrangler/.
 [[d1_databases]]
 binding = "DB"
 database_name = "gifted-prep"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "c3abb076-8a8a-4ae6-81a9-127f209329b4"
 
 # No [env.preview] on purpose: a named environment doesn't inherit top-level bindings,
 # and .dev.vars doesn't apply to it. We deploy only from main.
