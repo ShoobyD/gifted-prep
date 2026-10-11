@@ -30,6 +30,13 @@ npm run serve      # הגשת ה-build על פורט 4173, גם ברשת המק�
 
 ההתקדמות נשמרת בשרת דרך `functions/api/progress.ts`, במסד נתונים D1. המבנה מוגדר ב-`schema.sql`.
 
+כל האתר מוגן בסיסמה משפחתית (`functions/_middleware.ts`). מי שלא מחובר מקבל רק דף כניסה קטן, בלי קוד האפליקציה ובלי התוכן.
+פתוחים רק ה-manifest, האייקונים ו-`robots.txt`, כי כרום טוען אותם בלי עוגייה בזמן התקנה.
+ההתחברות נשמרת שנה. הסיסמה ומפתח החתימה נשמרים כסודות:
+
+- **מקומית:** בקובץ `.dev.vars`, שלא נכנס ל-git. מעתיקים אותו מ-`.dev.vars.example` וממלאים.
+- **בענן:** כמשתנים מוצפנים בהגדרות הפרויקט ב-Cloudflare Pages. השמות הם `FAMILY_PASSWORD` ו-`SESSION_SECRET`.
+
 ```bash
 npm run db:schema:local   # פעם אחת: יוצר את המסד המקומי (בתיקייה .wrangler/)
 npm run dev:api           # build ואז שרת מלא על http://localhost:8788, כולל ה-API
@@ -37,6 +44,8 @@ npm run test:api          # בחלון נוסף: בדיקת ה-API מקצה לק
 ```
 
 `dev:api` מגיש את ה-build. כדי לראות שינויים בקוד צריך להריץ אותו מחדש.
+ב-Windows, עצירה של wrangler משאירה לפעמים תהליכי `workerd.exe` ברקע, שממשיכים לתפוס את פורט 8788 ולענות עם קוד ישן.
+אם הבדיקות נכשלות בלי סיבה, סוגרים אותם במנהל המשימות.
 בלי השרת, `npm run dev` עדיין עובד כרגיל.
 
 > אם `npm install` נכשל עם `Cannot read properties of null (reading 'edgesOut')`, זה באג של npm 10.9.2.

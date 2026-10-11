@@ -3,6 +3,10 @@
 // Bindings Cloudflare injects into functions, per wrangler.toml.
 export interface Env {
 	DB: D1Database;
+	// The family password. An encrypted variable in the dashboard; .dev.vars locally.
+	FAMILY_PASSWORD?: string;
+	// Key for signing the session cookie. Also an encrypted variable.
+	SESSION_SECRET?: string;
 }
 
 export function jsonResponse(data: unknown, status = 200): Response {

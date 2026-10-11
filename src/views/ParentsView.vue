@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import ParentGate from '@/components/ParentGate.vue';
 import { useProgress } from '@/composables/useProgress';
+import { useSession } from '@/composables/useSession';
 import { useSpeech } from '@/composables/useSpeech';
 import { ALL_PASSAGES } from '@/data/content';
 import { TYPE_LABELS } from '@/data/labels';
@@ -16,6 +17,7 @@ const WEAK_BELOW = 0.7;
 const unlocked = ref(false);
 const { state, streak, exportJson, importJson, reset } = useProgress();
 const speech = useSpeech();
+const session = useSession();
 
 const READING_TYPES: QuestionType[] = ['reading-fact', 'word-meaning', 'author-purpose', 'inference', 'not-answered', 'pronoun', 'word-relation'];
 
@@ -107,6 +109,11 @@ async function onImport(event: Event) {
 	if (fileInput.value) fileInput.value.value = '';
 }
 
+function onLogout() {
+	if (!confirm('להתנתק? כדי להיכנס שוב תצטרכו את הסיסמה.')) return;
+	void session.logout();
+}
+
 function onReset() {
 	if (!confirm('למחוק את כל ההתקדמות, הכוכבים והמדבקות? אי אפשר לבטל.')) return;
 	reset();
@@ -184,6 +191,7 @@ function onReset() {
 				<button type="button" class="btn" @click="fileInput?.click()">ייבוא מקובץ</button>
 				<button type="button" class="btn btn--danger" @click="onReset">איפוס התקדמות</button>
 				<input ref="fileInput" type="file" accept="application/json,.json" hidden @change="onImport">
+				<button v-if="session.authenticated.value" type="button" class="btn" @click="onLogout">התנתקות מהמכשיר הזה</button>
 			</div>
 			<p v-if="message" class="message" role="status">{{ message }}</p>
 		</section>
