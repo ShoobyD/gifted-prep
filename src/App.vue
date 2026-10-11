@@ -1,16 +1,29 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import DeviceChoice from './components/DeviceChoice.vue';
 import UpdateBanner from './components/UpdateBanner.vue';
+import { useDevice } from './composables/useDevice';
 import { useSync } from './composables/useSync';
+import ParentDeviceView from './views/ParentDeviceView.vue';
 
 const route = useRoute();
 const router = useRouter();
+const device = useDevice();
 
 // Keeps the progress backed up on the server whenever the app runs behind its login.
 useSync();
 
-const isHome = computed(() => route.name === 'home');
+// Behind the login, a device first says what it is; a parent device shows only the dashboard.
+const mode = computed(() => (device.needsChoice.value ? 'choice' : device.isParent.value ? 'parent' : 'app'));
+
+const title = computed(() => {
+	if (mode.value === 'choice') return 'בְּרוּכִים הַבָּאִים';
+	if (mode.value === 'parent') return 'מעקב הורים';
+	return route.meta.title;
+});
+
+const isHome = computed(() => mode.value !== 'app' || route.name === 'home');
 
 function goBack() {
 	// Pop when we came from inside the app; otherwise (deep link) replace with home.
@@ -33,12 +46,14 @@ function goBack() {
 		>
 			→
 		</button>
-		<h1 class="topbar-title">{{ route.meta.title }}</h1>
+		<h1 class="topbar-title">{{ title }}</h1>
 	</header>
 
 	<main class="page">
+		<DeviceChoice v-if="mode === 'choice'" />
+		<ParentDeviceView v-else-if="mode === 'parent'" />
 		<!-- Keyed so a new practice set always starts a fresh session. -->
-		<RouterView :key="route.fullPath" />
+		<RouterView v-else :key="route.fullPath" />
 	</main>
 
 	<UpdateBanner />

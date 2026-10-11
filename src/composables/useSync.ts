@@ -2,6 +2,7 @@ import { reactive, ref, toRaw, watch } from 'vue';
 import { parseProgress, type ProgressState } from '@/progress/state';
 import { progressApi } from '@/sync/progressApi';
 import { createSyncEngine, type SyncMeta, type SyncStatus } from '@/sync/syncEngine';
+import { useDevice } from './useDevice';
 import { useProgress } from './useProgress';
 import { useSession } from './useSession';
 
@@ -52,9 +53,11 @@ function init() {
 	if (initialized) return;
 	initialized = true;
 	const session = useSession();
-	// Talks to the server only behind its login: not in plain dev, offline, or logged out.
+	const device = useDevice();
+	// Talks to the server only behind its login (not in plain dev, offline, or logged out),
+	// and only from the child's device: a parent device never writes.
 	const sync = () => {
-		if (session.authenticated.value) void engine.sync();
+		if (session.authenticated.value && device.isChild.value) void engine.sync();
 	};
 
 	// Changes are tracked even without a server (e.g. the app opened offline), so they
@@ -66,8 +69,9 @@ function init() {
 		pushTimer = setTimeout(sync, PUSH_DELAY_MS);
 	}, { deep: true });
 
-	// First confirmation of the login (on start, or after coming back online).
-	watch(session.authenticated, sync, { immediate: true });
+	// First confirmation of the login (on start, or after coming back online),
+	// or the device was just chosen as the child's.
+	watch([session.authenticated, device.role], sync, { immediate: true });
 
 	window.addEventListener('online', () => {
 		if (session.authenticated.value) sync();
