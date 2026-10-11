@@ -26,5 +26,5 @@ async function logout() {
 
 export function useSession() {
 	if (authenticated.value === undefined) void check();
-	return { authenticated, logout };
+	return { authenticated, check, logout };
 }

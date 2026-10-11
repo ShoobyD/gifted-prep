@@ -2,9 +2,13 @@
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import UpdateBanner from './components/UpdateBanner.vue';
+import { useSync } from './composables/useSync';
 
 const route = useRoute();
 const router = useRouter();
+
+// Keeps the progress backed up on the server whenever the app runs behind its login.
+useSync();
 
 const isHome = computed(() => route.name === 'home');
 

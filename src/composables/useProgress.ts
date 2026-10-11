@@ -80,5 +80,5 @@ export function useProgress() {
 		replace(defaultProgress());
 	}
 
-	return { state, streak, recordAnswer, recordMistake, finishSession, exportJson, importJson, reset };
+	return { state, streak, recordAnswer, recordMistake, finishSession, exportJson, importJson, reset, replace };
 }

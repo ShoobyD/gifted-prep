@@ -4,6 +4,7 @@ import ParentGate from '@/components/ParentGate.vue';
 import { useProgress } from '@/composables/useProgress';
 import { useSession } from '@/composables/useSession';
 import { useSpeech } from '@/composables/useSpeech';
+import { useSync } from '@/composables/useSync';
 import { ALL_PASSAGES } from '@/data/content';
 import { TYPE_LABELS } from '@/data/labels';
 import { describeSet } from '@/data/questionSets';
@@ -18,6 +19,20 @@ const unlocked = ref(false);
 const { state, streak, exportJson, importJson, reset } = useProgress();
 const speech = useSpeech();
 const session = useSession();
+const sync = useSync();
+
+const syncState = computed(() => {
+	const { status, meta } = sync;
+	if (status.value === 'syncing') return { tone: 'busy', text: 'מסנכרן…' };
+	if (status.value === 'failed') {
+		return meta.dirty
+			? { tone: 'warn', text: 'אין חיבור לשרת. השינויים שמורים במכשיר ויישלחו כשהחיבור יחזור.' }
+			: { tone: 'warn', text: 'אין חיבור לשרת.' };
+	}
+	if (meta.dirty) return { tone: 'busy', text: 'יש שינויים שממתינים לשליחה.' };
+	if (!meta.lastSyncedAt) return { tone: 'busy', text: 'עוד לא סונכרן.' };
+	return { tone: 'ok', text: `מסונכרן ✓ · ${formatDate(new Date(meta.lastSyncedAt).toISOString())}` };
+});
 
 const READING_TYPES: QuestionType[] = ['reading-fact', 'word-meaning', 'author-purpose', 'inference', 'not-answered', 'pronoun', 'word-relation'];
 
@@ -174,6 +189,14 @@ function onReset() {
 			</table>
 		</section>
 
+		<section v-if="session.authenticated.value" class="card">
+			<h2>גיבוי בשרת</h2>
+			<p class="sync-status" :class="`sync--${syncState.tone}`" role="status">{{ syncState.text }}</p>
+			<div class="actions">
+				<button type="button" class="btn" :disabled="sync.status.value === 'syncing'" @click="sync.syncNow()">סנכרון עכשיו</button>
+			</div>
+		</section>
+
 		<section class="card">
 			<h2>הגדרות</h2>
 			<label class="setting">
@@ -307,6 +330,15 @@ h2 {
 	color: var(--muted);
 	font-weight: 400;
 }
+
+.sync-status {
+	margin: 0;
+	font-weight: 700;
+}
+
+.sync--ok { color: var(--good); }
+.sync--warn { color: var(--bad); }
+.sync--busy { color: var(--muted); }
 
 .setting {
 	display: flex;
