@@ -78,6 +78,19 @@ export function visibleMathQuestions(base: BaseContent, overrides: ContentOverri
 	return allMathQuestions(base, overrides).filter((q) => !hidden.has(q.id));
 }
 
+// --- Changes, as intents ----------------------------------------------------------------
+// Each returns new overrides. Saving applies the intent again on the server's latest copy
+// when another device saved in between, so concurrent changes add up instead of clobbering.
+
+export type OverridesChange = (overrides: ContentOverrides) => ContentOverrides;
+
+export function setHidden(id: string, hidden: boolean): OverridesChange {
+	return (o) => ({
+		...o,
+		hidden: hidden ? [...new Set([...o.hidden, id])] : o.hidden.filter((h) => h !== id),
+	});
+}
+
 // A real test with the parent's corrections applied. Hidden items stay in: a mock test
 // keeps the structure of the booklet it reproduces.
 export function applyToTest(test: MockTest, overrides: ContentOverrides): MockTest {

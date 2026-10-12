@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import QuestionBank from '@/components/bank/QuestionBank.vue';
 import ProgressDashboard from '@/components/ProgressDashboard.vue';
 import { useDevice } from '@/composables/useDevice';
 import { useRemoteProgress } from '@/composables/useRemoteProgress';
@@ -11,6 +12,7 @@ import { formatDateTime } from '@/utils/format';
 const REFRESH_MS = 60_000;
 
 const remote = useRemoteProgress();
+const tab = ref<'tracking' | 'bank'>('tracking');
 const session = useSession();
 const device = useDevice();
 
@@ -49,12 +51,21 @@ function onChangeDevice() {
 
 <template>
 	<div class="parents">
-		<section class="card refresh">
-			<p class="status-line" :class="`tone--${statusLine.tone}`" role="status">{{ statusLine.text }}</p>
-			<button type="button" class="btn" :disabled="remote.status.value === 'loading'" @click="remote.refresh()">רענון 🔄</button>
-		</section>
+		<nav class="tabs" role="tablist">
+			<button type="button" role="tab" :aria-selected="tab === 'tracking'" :class="{ on: tab === 'tracking' }" @click="tab = 'tracking'">📊 מעקב</button>
+			<button type="button" role="tab" :aria-selected="tab === 'bank'" :class="{ on: tab === 'bank' }" @click="tab = 'bank'">📚 מאגר שאלות</button>
+		</nav>
 
-		<ProgressDashboard v-if="remote.progress.value" :progress="remote.progress.value" />
+		<QuestionBank v-if="tab === 'bank'" />
+
+		<template v-else>
+			<section class="card refresh">
+				<p class="status-line" :class="`tone--${statusLine.tone}`" role="status">{{ statusLine.text }}</p>
+				<button type="button" class="btn" :disabled="remote.status.value === 'loading'" @click="remote.refresh()">רענון 🔄</button>
+			</section>
+
+			<ProgressDashboard v-if="remote.progress.value" :progress="remote.progress.value" />
+		</template>
 
 		<section class="card">
 			<h2>המכשיר הזה</h2>
@@ -68,6 +79,26 @@ function onChangeDevice() {
 </template>
 
 <style scoped>
+.tabs {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+}
+
+.tabs button {
+	min-height: 52px;
+	border: 0;
+	border-radius: var(--radius);
+	background: var(--surface);
+	box-shadow: var(--shadow);
+	font-weight: 700;
+}
+
+.tabs button.on {
+	background: var(--primary);
+	color: #fff;
+}
+
 .refresh {
 	display: flex;
 	flex-wrap: wrap;

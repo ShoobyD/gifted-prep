@@ -8,12 +8,13 @@ import RichText from '@/components/RichText.vue';
 import { isAnswered, isCorrect, PART_MINUTES, useMockTest, type Item, type MockAnswer } from '@/composables/useMockTest';
 import { useProgress } from '@/composables/useProgress';
 import type { MockTestEntry } from '@/data/mockTests';
+import { CHOICE_LABELS, correctAnswerText } from '@/engine/answerText';
 import type { Sticker } from '@/progress/stickers';
 import type { Question } from '@/types';
 
 const props = defineProps<{ entry: MockTestEntry }>();
 
-const LABELS = ['א', 'ב', 'ג', 'ד', 'ה'];
+const LABELS = CHOICE_LABELS;
 
 // Built once per visit, so a generated test stays the same while it's taken.
 const test = props.entry.build();
@@ -89,13 +90,6 @@ function answerText(q: Question, value: MockAnswer | undefined): string {
 	return String(value);
 }
 
-function correctText(q: Question): string {
-	const { answer: a } = q;
-	if (a.kind === 'choice') return `${LABELS[a.correctIndex]}. ${a.options[a.correctIndex]}`;
-	if (a.rule.op === 'gt') return `כָּל מִסְפָּר גָּדוֹל מִ-${a.rule.value}, לְמָשָׁל ${a.solution}`;
-	if (a.rule.op === 'lt') return `כָּל מִסְפָּר קָטָן מִ-${a.rule.value}, לְמָשָׁל ${a.solution}`;
-	return String(a.solution);
-}
 </script>
 
 <template>
@@ -191,7 +185,7 @@ function correctText(q: Question): string {
 			<p class="mistake-section">{{ m.section.title }}</p>
 			<QuestionStem :question="m.question" :fill="m.question.answer.kind === 'number' ? String(m.question.answer.solution) : undefined" state="revealed" />
 			<p class="yours">הַתְּשׁוּבָה שֶׁלְּךָ: <RichText :text="answerText(m.question, answers.get(m.question.id))" /></p>
-			<p class="right">הַתְּשׁוּבָה הַנְּכוֹנָה: <RichText :text="correctText(m.question)" /></p>
+			<p class="right">הַתְּשׁוּבָה הַנְּכוֹנָה: <RichText :text="correctAnswerText(m.question)" /></p>
 			<p v-if="m.question.explanation" class="explanation"><RichText :text="m.question.explanation" /></p>
 		</article>
 
