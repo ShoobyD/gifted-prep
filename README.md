@@ -70,7 +70,7 @@ npm run test:api          # בחלון נוסף: בדיקת ה-API מקצה לק
    npm run db:schema
    ```
 3. **יצירת פרויקט Pages:** בלוח הבקרה של Cloudflare ← Workers & Pages ← Create ← Pages ← Connect to Git ← בוחרים את `ShoobyD/gifted-prep`.
-   - Project name: `gifted-prep` (כך הכתובת תהיה `gifted-prep.pages.dev`)
+   - Project name: `gifted-prep-il` (הכתובת: `gifted-prep-il.pages.dev`. השם `gifted-prep` תפוס ב-pages.dev). בוחרים בלשונית **Pages** ולא Workers
    - Production branch: `main`
    - Build command: `npm run build`
    - Build output directory: `dist`
@@ -84,7 +84,7 @@ npm run test:api          # בחלון נוסף: בדיקת ה-API מקצה לק
 
 ## התקנה על הטאבלט
 
-1. בכרום בטאבלט פותחים את `https://gifted-prep.pages.dev` ומתחברים עם הסיסמה המשפחתית.
+1. בכרום בטאבלט פותחים את `https://gifted-prep-il.pages.dev` ומתחברים עם הסיסמה המשפחתית.
 2. בוחרים **"הטאבלט של הילד"**.
 3. בתפריט ⋮ בוחרים **הוספה למסך הבית** (או **התקנת האפליקציה**).
 
@@ -92,7 +92,7 @@ npm run test:api          # בחלון נוסף: בדיקת ה-API מקצה לק
 
 ## מעקב מהטלפון ומהמחשב
 
-פותחים את `https://gifted-prep.pages.dev`, מתחברים ובוחרים **"מכשיר של הורה"**.
+פותחים את `https://gifted-prep-il.pages.dev`, מתחברים ובוחרים **"מכשיר של הורה"**.
 מוצגת ההתקדמות האחרונה שהטאבלט גיבה. אפשר גם להוסיף למסך הבית.
 
 ## עדכון גרסה
