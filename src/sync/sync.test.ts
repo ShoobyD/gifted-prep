@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultProgress, type ProgressState, type SessionRecord } from '@/progress/state';
+import { defaultProgress, importedProgress, resetProgress, type ProgressState, type SessionRecord } from '@/progress/state';
 import { mergeProgress } from './merge';
 import { createSyncEngine, type ProgressApi, type ServerCopy, type SyncMeta, type SyncStatus } from './syncEngine';
 
@@ -58,6 +58,11 @@ function device(server: ReturnType<typeof fakeServer>, local = defaultProgress()
 		// A local change, as the app makes it (mutate, then notify).
 		change(edit: (p: ProgressState) => void) {
 			edit(state);
+			engine.markChanged();
+		},
+		// A whole new progress, as reset and import do.
+		replaceWith(next: ProgressState) {
+			state = next;
 			engine.markChanged();
 		},
 	};
@@ -218,5 +223,83 @@ describe('sync engine', () => {
 		await Promise.all([tablet.engine.sync(), tablet.engine.sync(), tablet.engine.sync()]);
 		// One run, plus one rerun for the calls that arrived meanwhile.
 		expect(gets).toBe(2);
+	});
+});
+
+describe('reset and import (generations)', () => {
+	const withRound = (at: string) => progressWith((p) => { p.sessions = [session(at)]; p.stars = 20; });
+
+	it('a reset gives a fresh progress one generation later', () => {
+		const reset = resetProgress(withRound('2026-10-01T10:00:00Z'));
+		expect(reset.sessions).toEqual([]);
+		expect(reset.stars).toBe(0);
+		expect(reset.generation).toBe(1);
+		const imported = importedProgress(reset, progressWith((p) => { p.stars = 5; p.generation = 7; }));
+		expect(imported.stars).toBe(5);
+		expect(imported.generation).toBe(8);
+	});
+
+	it('a reset on another device replaces the tablet, pending changes included', async () => {
+		const server = fakeServer();
+		const tablet = device(server, withRound('2026-10-01T10:00:00Z'));
+		await tablet.engine.sync();
+
+		// Offline round on the tablet while the parent resets on the server.
+		tablet.change((p) => { p.sessions.push(session('2026-10-02T10:00:00Z')); });
+		server.writeFromElsewhere(resetProgress(server.copy.progress as ProgressState));
+
+		await tablet.engine.sync();
+		expect(tablet.state.sessions).toEqual([]);
+		expect(tablet.state.generation).toBe(1);
+		expect(tablet.meta.dirty).toBe(false);
+		expect(server.copy.progress?.sessions).toEqual([]);
+	});
+
+	it('a reset on the tablet replaces the server without merging the old rounds back', async () => {
+		const server = fakeServer();
+		const tablet = device(server, withRound('2026-10-01T10:00:00Z'));
+		await tablet.engine.sync();
+
+		tablet.replaceWith(resetProgress(tablet.state));
+		await tablet.engine.sync();
+		expect(server.copy.progress?.sessions).toEqual([]);
+		expect(server.copy.progress?.stars).toBe(0);
+		expect(server.copy.progress?.generation).toBe(1);
+	});
+
+	it('takes a newer generation that arrives as a conflict while pushing', async () => {
+		const server = fakeServer();
+		const tablet = device(server, withRound('2026-10-01T10:00:00Z'));
+		await tablet.engine.sync();
+		tablet.change((p) => { p.stars = 99; });
+
+		// The parent resets right after the tablet reads.
+		const realGet = server.api.get.bind(server.api);
+		server.api.get = async () => {
+			const copy = await realGet();
+			server.writeFromElsewhere(resetProgress(copy.progress as ProgressState));
+			return copy;
+		};
+		await tablet.engine.sync();
+		expect(tablet.state.stars).toBe(0);
+		expect(server.copy.progress?.stars).toBe(0);
+		expect(tablet.meta.dirty).toBe(false);
+	});
+
+	it('still merges within the same generation, including data saved before generations', async () => {
+		const server = fakeServer();
+		const tablet = device(server, withRound('2026-10-01T10:00:00Z'));
+		await tablet.engine.sync();
+		tablet.change((p) => { p.sessions.push(session('2026-10-02T10:00:00Z')); });
+
+		// An older copy without the field at all (as saved before this change).
+		const legacy = JSON.parse(JSON.stringify(withRound('2026-10-03T10:00:00Z'))) as Partial<ProgressState>;
+		delete legacy.generation;
+		server.writeFromElsewhere(legacy as ProgressState);
+
+		await tablet.engine.sync();
+		expect(server.copy.progress?.sessions.map((x) => x.at)).toEqual([
+			'2026-10-01T10:00:00Z', '2026-10-02T10:00:00Z', '2026-10-03T10:00:00Z',
+		]);
 	});
 });

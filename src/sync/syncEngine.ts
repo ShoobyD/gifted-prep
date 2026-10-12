@@ -41,6 +41,14 @@ export interface SyncEngineOptions {
 // Conflicts are merged and retried; a few rounds cover two devices racing.
 const MAX_PUT_ATTEMPTS = 3;
 
+// Progress saved before generations existed counts as generation 0.
+const generationOf = (progress: ProgressState) => progress.generation ?? 0;
+
+// > 0: a is a newer generation (a later reset or import); < 0: older; 0: the same one.
+function compareGenerations(a: ProgressState, b: ProgressState): number {
+	return generationOf(a) - generationOf(b);
+}
+
 // Anything worth backing up: a brand-new device must not overwrite the server with nothing.
 function hasContent(progress: ProgressState): boolean {
 	return progress.sessions.length > 0 || progress.stars > 0 || progress.stickers.length > 0;
@@ -88,9 +96,18 @@ export function createSyncEngine(options: SyncEngineOptions) {
 			return;
 		}
 
-		// Someone wrote in between: merge both, then try again on top of their version.
+		// Someone wrote in between.
 		const { conflict } = result;
-		if (conflict.progress) write(mergeProgress(read(), conflict.progress));
+		if (conflict.progress) {
+			const order = compareGenerations(conflict.progress, read());
+			// A reset or import on another device wins outright: take it and stop.
+			if (order > 0) {
+				applyRemote({ ...conflict, progress: conflict.progress });
+				return;
+			}
+			// Same generation: merge both. An older one (ours was reset): just write over it.
+			if (order === 0) write(mergeProgress(read(), conflict.progress));
+		}
 		if (attempt >= MAX_PUT_ATTEMPTS) throw new Error('sync conflict did not settle');
 		await push(conflict.version, attempt + 1);
 	}
@@ -101,9 +118,17 @@ export function createSyncEngine(options: SyncEngineOptions) {
 			const server = await api.get();
 			const local = read();
 
+			const order = server.progress ? compareGenerations(server.progress, local) : 0;
+
 			if (!server.progress) {
 				// Empty server: back up whatever this device has.
 				if (meta.dirty || hasContent(local)) await push(0);
+			} else if (order > 0) {
+				// Reset or imported on another device: replaces this one, pending changes included.
+				applyRemote({ ...server, progress: server.progress });
+			} else if (order < 0) {
+				// Reset or imported here: replaces the server copy, without merging the old one back.
+				await push(server.version);
 			} else if (server.version === meta.serverVersion) {
 				if (meta.dirty) await push(server.version);
 				else syncedJson ??= JSON.stringify(local);

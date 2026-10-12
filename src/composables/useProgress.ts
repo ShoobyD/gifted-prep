@@ -6,7 +6,9 @@ import {
 	applySession,
 	dayStreak,
 	defaultProgress,
+	importedProgress,
 	parseProgress,
+	resetProgress,
 	STORAGE_KEY,
 	type ProgressState,
 	type SessionRecord,
@@ -72,12 +74,12 @@ export function useProgress() {
 	function importJson(json: string): boolean {
 		const parsed = parseProgress(json);
 		if (!parsed) return false;
-		replace(parsed);
+		replace(importedProgress(state, parsed));
 		return true;
 	}
 
 	function reset() {
-		replace(defaultProgress());
+		replace(resetProgress(state));
 	}
 
 	return { state, streak, recordAnswer, recordMistake, finishSession, exportJson, importJson, reset, replace };

@@ -38,6 +38,9 @@ export interface ProgressState {
 	mistakes: MistakeEntry[];
 	// How many mistakes were later answered right on the first try.
 	mistakesFixed: number;
+	// Bumped by every reset or import. A newer generation replaces the progress on every
+	// device instead of being merged with it, so a reset can't be undone by old data.
+	generation: number;
 }
 
 // A full copy of the question, since generated questions can't be recreated from an id.
@@ -74,6 +77,7 @@ export function defaultProgress(): ProgressState {
 		settings: { speech: true },
 		mistakes: [],
 		mistakesFixed: 0,
+		generation: 0,
 	};
 }
 
@@ -93,6 +97,16 @@ export function parseProgress(json: string): ProgressState | undefined {
 	} catch {
 		return undefined;
 	}
+}
+
+// A fresh start (reset), one generation after the current progress.
+export function resetProgress(current: ProgressState): ProgressState {
+	return { ...defaultProgress(), generation: current.generation + 1 };
+}
+
+// Imported progress replaces the current one, as a new generation.
+export function importedProgress(current: ProgressState, imported: ProgressState): ProgressState {
+	return { ...imported, generation: Math.max(current.generation, imported.generation) + 1 };
 }
 
 export function starsFor(outcome: Outcome): number {
