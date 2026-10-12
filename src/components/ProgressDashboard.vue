@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { ALL_PASSAGES } from '@/data/content';
+import { useContent } from '@/composables/useContent';
 import { TYPE_LABELS } from '@/data/labels';
 import { describeSet } from '@/data/questionSets';
 import { MATH_TYPES, isMathType } from '@/generators';
@@ -11,6 +11,8 @@ import { formatDateTime, formatDuration } from '@/utils/format';
 // The child's progress at a glance. Read-only: the same view serves the tablet's parents
 // area (local progress) and parent devices (the copy on the server).
 const props = defineProps<{ progress: ProgressState }>();
+
+const { passages } = useContent();
 
 const MIN_ATTEMPTS = 5;
 const WEAK_BELOW = 0.7;
@@ -79,7 +81,7 @@ const percent = (rate: number | undefined) => (rate === undefined ? '' : `${Math
 		<div class="tile"><span class="tile-value">{{ progress.sessions.length }}</span><span class="tile-label">סבבי תרגול</span></div>
 		<div class="tile"><span class="tile-value">{{ weekMinutes }}</span><span class="tile-label">דקות ב-7 הימים האחרונים</span></div>
 		<div class="tile"><span class="tile-value">{{ streak }}</span><span class="tile-label">ימים ברצף</span></div>
-		<div class="tile"><span class="tile-value">{{ Object.keys(progress.passages).length }}/{{ ALL_PASSAGES.length }}</span><span class="tile-label">קטעי קריאה שנקראו</span></div>
+		<div class="tile"><span class="tile-value">{{ Object.keys(progress.passages).length }}/{{ passages.length }}</span><span class="tile-label">קטעי קריאה שנקראו</span></div>
 		<div class="tile"><span class="tile-value">{{ progress.mistakes.length }}</span><span class="tile-label">שאלות שמחכות לחזרה ({{ progress.mistakesFixed }} תוקנו)</span></div>
 	</section>
 

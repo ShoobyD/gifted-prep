@@ -1,25 +1,32 @@
 <script setup lang="ts">
-import { ALL_PASSAGES, SOURCE_LABELS } from '@/data/content';
-import { readingSetName } from '@/data/questionSets';
+import { computed } from 'vue';
+import { useContent } from '@/composables/useContent';
 import { useProgress } from '@/composables/useProgress';
+import { isTestMaterial, SOURCE_LABELS } from '@/data/content';
+import { readingSetName } from '@/data/questionSets';
 import type { Passage } from '@/types';
 
 const { state } = useProgress();
+const { passages } = useContent();
 
 interface Group {
 	title: string;
 	passages: Passage[];
 }
 
-const GROUPS: Group[] = [
-	{ title: 'מִתּוֹךְ מִבְחָנִים', passages: ALL_PASSAGES.filter((p) => p.source !== 'original') },
-	{ title: 'סִפּוּרִים', passages: ALL_PASSAGES.filter((p) => p.source === 'original' && p.kind === 'story') },
-	{ title: 'קְטָעִים מֵידָעִיִּים', passages: ALL_PASSAGES.filter((p) => p.source === 'original' && p.kind === 'informational') },
-];
+// Hidden passages are left out; passages the parent added join the practice groups.
+const groups = computed<Group[]>(() => {
+	const practice = passages.value.filter((p) => !isTestMaterial(p.source));
+	return [
+		{ title: 'מִתּוֹךְ מִבְחָנִים', passages: passages.value.filter((p) => isTestMaterial(p.source)) },
+		{ title: 'סִפּוּרִים', passages: practice.filter((p) => p.kind === 'story') },
+		{ title: 'קְטָעִים מֵידָעִיִּים', passages: practice.filter((p) => p.kind === 'informational') },
+	].filter((group) => group.passages.length);
+});
 </script>
 
 <template>
-	<section v-for="group in GROUPS" :key="group.title" class="group">
+	<section v-for="group in groups" :key="group.title" class="group">
 		<h2 class="group-title">{{ group.title }}</h2>
 		<nav class="passages">
 			<RouterLink
@@ -35,7 +42,7 @@ const GROUPS: Group[] = [
 				</span>
 				<span class="meta">
 					{{ passage.questions.length }} שְׁאֵלוֹת
-					<template v-if="passage.source !== 'original'"> · {{ SOURCE_LABELS[passage.source] }}</template>
+					<template v-if="isTestMaterial(passage.source)"> · {{ SOURCE_LABELS[passage.source] }}</template>
 				</span>
 			</RouterLink>
 		</nav>

@@ -3,7 +3,7 @@ import { useProgress } from '@/composables/useProgress';
 import { isMathType, MATH_GENERATORS, MATH_TYPES } from '@/generators';
 import { pick, shuffle, type Rng } from '@/generators/random';
 import type { MathQuestionType, Passage, Question, QuestionSource } from '@/types';
-import { findPassage, REAL_MATH_QUESTIONS } from './content';
+import { useContent } from '@/composables/useContent';
 import { TYPE_LABELS } from './labels';
 import { findMockTest } from './mockTests';
 
@@ -31,7 +31,7 @@ function reviewSet(): PracticeSet | undefined {
 	const passages = new Map<string, Passage | undefined>();
 	const questions = entries.map((entry, i) => {
 		const question = { ...entry.question, id: `review-${i}-${entry.question.id}` };
-		passages.set(question.id, entry.passageId ? findPassage(entry.passageId) : undefined);
+		passages.set(question.id, entry.passageId ? useContent().findPassage(entry.passageId) : undefined);
 		return question;
 	});
 	return { source: listSource(questions), passageOf: (q) => passages.get(q.id) };
@@ -69,14 +69,16 @@ export function resolveSet(set: string): PracticeSet | undefined {
 	if (set === REVIEW) return reviewSet();
 	if (set === MIX) return { source: mathSource(MATH_TYPES) };
 	if (set === REAL_MATH) {
-		return { source: listSource(shuffle(Math.random, REAL_MATH_QUESTIONS).slice(0, SESSION_LENGTH)) };
+		return { source: listSource(shuffle(Math.random, useContent().mathPool.value).slice(0, SESSION_LENGTH)) };
 	}
 	if (set.startsWith('math-')) {
 		const type = set.slice('math-'.length);
 		return isMathType(type) ? { source: mathSource([type]) } : undefined;
 	}
 	if (set.startsWith(READING_PREFIX)) {
-		const passage = findPassage(set.slice(READING_PREFIX.length));
+		// The practiced version: hidden questions left out, and a hidden passage not offered.
+		const id = set.slice(READING_PREFIX.length);
+		const passage = useContent().passages.value.find((p) => p.id === id);
 		return passage && { source: listSource(passage.questions), passage };
 	}
 	return undefined;
@@ -89,7 +91,7 @@ export function describeSet(set: string): string {
 	if (set === REAL_MATH) return 'חשבון – שאלות אמיתיות';
 	if (set.startsWith('test-')) return `מבחן – ${findMockTest(set.slice('test-'.length))?.title ?? set}`;
 	if (set.startsWith(READING_PREFIX)) {
-		const passage = findPassage(set.slice(READING_PREFIX.length));
+		const passage = useContent().findPassage(set.slice(READING_PREFIX.length));
 		return `קריאה – ${passage?.title ?? set}`;
 	}
 	const type = set.slice('math-'.length);

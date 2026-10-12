@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { useContent } from '@/composables/useContent';
 import { isCorrect } from '@/composables/useMockTest';
 import { lineCount, validatePassage, validateQuestion } from '@/content/validate';
 import type { MockTest, Question, TestSection } from '@/types';
-import { ALL_PASSAGES, REAL_MATH_QUESTIONS } from './content';
+import { BASE_MATH_QUESTIONS, BASE_PASSAGES } from './content';
 import { findMockTest } from './mockTests';
 import { noamTest } from './noam';
 import { official2025 } from './official2025';
@@ -18,11 +19,11 @@ function sectionIssues(section: TestSection): string[] {
 
 describe('reading passages', () => {
 	it('have unique ids', () => {
-		const ids = ALL_PASSAGES.flatMap((p) => [p.id, ...p.questions.map((q) => q.id)]);
+		const ids = BASE_PASSAGES.flatMap((p) => [p.id, ...p.questions.map((q) => q.id)]);
 		expect(new Set(ids).size).toBe(ids.length);
 	});
 
-	it.each(ALL_PASSAGES.map((p) => [p.id, p] as const))('%s is valid', (_, passage) => {
+	it.each(BASE_PASSAGES.map((p) => [p.id, p] as const))('%s is valid', (_, passage) => {
 		expect(validatePassage(passage)).toEqual([]);
 	});
 });
@@ -57,22 +58,32 @@ describe('generated mock test', () => {
 		expect(isCorrect(choice, (choice.answer.correctIndex + 1) % choice.answer.options.length)).toBe(false);
 		expect(isCorrect(choice, undefined)).toBe(false);
 
-		const number = REAL_MATH_QUESTIONS.find((q) => q.answer.kind === 'number') as Question;
+		const number = BASE_MATH_QUESTIONS.find((q) => q.answer.kind === 'number') as Question;
 		if (number.answer.kind !== 'number') throw new Error('expected a number question');
 		expect(isCorrect(number, String(number.answer.solution))).toBe(true);
 		expect(isCorrect(number, '')).toBe(false);
 	});
 });
 
+describe('content store', () => {
+	it('serves exactly the built-in content while there are no changes', () => {
+		const content = useContent();
+		expect(content.passages.value).toEqual(BASE_PASSAGES);
+		expect(content.mathPool.value).toEqual(BASE_MATH_QUESTIONS);
+		expect(content.applyToTest(official2025)).toEqual(official2025);
+		expect(content.findPassage('inf-1')).toBe(BASE_PASSAGES.find((p) => p.id === 'inf-1'));
+	});
+});
+
 describe('real math pool', () => {
 	it('is valid', () => {
-		expect(REAL_MATH_QUESTIONS.length).toBeGreaterThan(0);
-		const ids = REAL_MATH_QUESTIONS.map((q) => q.id);
+		expect(BASE_MATH_QUESTIONS.length).toBeGreaterThan(0);
+		const ids = BASE_MATH_QUESTIONS.map((q) => q.id);
 		expect(new Set(ids).size).toBe(ids.length);
-		expect(REAL_MATH_QUESTIONS.flatMap((q) => validateQuestion(q, 'math').map((i) => `${q.id}: ${i.message}`))).toEqual([]);
+		expect(BASE_MATH_QUESTIONS.flatMap((q) => validateQuestion(q, 'math').map((i) => `${q.id}: ${i.message}`))).toEqual([]);
 	});
 
 	it('knows where every question came from', () => {
-		expect(REAL_MATH_QUESTIONS.filter((q) => !q.source).map((q) => q.id)).toEqual([]);
+		expect(BASE_MATH_QUESTIONS.filter((q) => !q.source).map((q) => q.id)).toEqual([]);
 	});
 });
