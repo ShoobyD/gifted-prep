@@ -35,6 +35,20 @@ export function passageText(passage: Passage): string {
 		.join(' ');
 }
 
+// Passage text as the parent types it: a line per row, a blank row between paragraphs.
+// Rows are kept as printed, since questions cite line numbers.
+export function paragraphsToText(paragraphs: string[][]): string {
+	return paragraphs.map((lines) => lines.join('\n')).join('\n\n');
+}
+
+export function textToParagraphs(text: string): string[][] {
+	return text
+		.replace(/\r/g, '')
+		.split(/\n\s*\n/)
+		.map((block) => block.split('\n').map((line) => line.trim()).filter(Boolean))
+		.filter((lines) => lines.length > 0);
+}
+
 // Every word of the query must appear (in any order).
 export function matches(text: string, query: string): boolean {
 	const haystack = normalize(text);

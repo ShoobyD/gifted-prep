@@ -91,6 +91,27 @@ export function setHidden(id: string, hidden: boolean): OverridesChange {
 	});
 }
 
+// The edited (or new) version of a passage, its questions included.
+export function savePassage(passage: Passage): OverridesChange {
+	return (o) => ({ ...o, passages: { ...o.passages, [passage.id]: passage } });
+}
+
+// The edited (or new) version of a standalone math question.
+export function saveQuestion(question: Question): OverridesChange {
+	return (o) => ({ ...o, questions: { ...o.questions, [question.id]: question } });
+}
+
+// Drops the change to an item: a built-in item returns to the original.
+export function revertItem(id: string): OverridesChange {
+	return (o) => {
+		const passages = { ...o.passages };
+		const questions = { ...o.questions };
+		delete passages[id];
+		delete questions[id];
+		return { ...o, passages, questions };
+	};
+}
+
 // A real test with the parent's corrections applied. Hidden items stay in: a mock test
 // keeps the structure of the booklet it reproduces.
 export function applyToTest(test: MockTest, overrides: ContentOverrides): MockTest {
@@ -99,7 +120,9 @@ export function applyToTest(test: MockTest, overrides: ContentOverrides): MockTe
 		sections: test.sections.map((section) => {
 			if (section.passage) {
 				const passage = overrides.passages[section.passage.id] ?? section.passage;
-				return { ...section, passage, questions: passage.questions };
+				// A section named after its passage follows a renamed passage.
+				const title = section.title === section.passage.title ? passage.title : section.title;
+				return { ...section, title, passage, questions: passage.questions };
 			}
 			return { ...section, questions: section.questions.map((q) => overrides.questions[q.id] ?? q) };
 		}),

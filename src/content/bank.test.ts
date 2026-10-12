@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Question } from '@/types';
-import { itemOrigin, matches, normalize, questionText } from './bank';
-import { emptyOverrides, setHidden } from './overrides';
+import { itemOrigin, matches, normalize, paragraphsToText, questionText, textToParagraphs } from './bank';
+import { emptyOverrides, revertItem, saveQuestion, setHidden } from './overrides';
 
 describe('question bank search', () => {
 	it('ignores nikud, quotes and spacing', () => {
@@ -31,6 +31,36 @@ describe('item origin', () => {
 		expect(itemOrigin('p1', builtIn, {})).toBe('built-in');
 		expect(itemOrigin('p1', builtIn, { p1: {} })).toBe('edited');
 		expect(itemOrigin('custom-1', builtIn, { 'custom-1': {} })).toBe('added');
+	});
+});
+
+describe('passage text', () => {
+	it('round-trips lines and paragraphs', () => {
+		const paragraphs = [['שורה 1', 'שורה 2'], ['שורה 3']];
+		expect(textToParagraphs(paragraphsToText(paragraphs))).toEqual(paragraphs);
+	});
+
+	it('tolerates Windows line ends, extra blank rows and stray spaces', () => {
+		expect(textToParagraphs('  שורה 1 \r\nשורה 2\r\n\r\n\r\n  \r\nשורה 3\r\n')).toEqual([['שורה 1', 'שורה 2'], ['שורה 3']]);
+		expect(textToParagraphs('   ')).toEqual([]);
+	});
+});
+
+describe('edit intents', () => {
+	const q = (id: string, body: string): Question => ({
+		id, type: 'exercise', body, explanation: 'כי.', answer: { kind: 'number', rule: { op: 'eq', value: 1 }, solution: 1 },
+	});
+
+	it('saves an edited question and reverts it', () => {
+		const edited = saveQuestion(q('m1', 'ערוך'))(emptyOverrides());
+		expect(edited.questions.m1?.body).toBe('ערוך');
+		expect(revertItem('m1')(edited).questions).toEqual({});
+	});
+
+	it('keeps changes someone else saved meanwhile', () => {
+		const theirs = saveQuestion(q('m2', 'שלהם'))(emptyOverrides());
+		const both = saveQuestion(q('m1', 'שלי'))(theirs);
+		expect(Object.keys(both.questions).sort()).toEqual(['m1', 'm2']);
 	});
 });
 

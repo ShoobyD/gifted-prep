@@ -9,6 +9,7 @@ import { MATH_TYPES, READING_TYPES } from '@/content/validate';
 import { BASE_MATH_QUESTIONS, BASE_PASSAGES, SOURCE_LABELS } from '@/data/content';
 import { TYPE_LABELS } from '@/data/labels';
 import type { ContentSource, Passage, Question, QuestionType } from '@/types';
+import BankEditor from './BankEditor.vue';
 import BankPreview from './BankPreview.vue';
 
 // The question bank on a parent device: everything (hidden included), with the parent's
@@ -113,6 +114,21 @@ const previewQuestion = computed(() =>
 	previewId.value?.kind === 'question' ? content.everyMathQuestion.value.find((q) => q.id === previewId.value?.id) : undefined,
 );
 
+// The item being edited, looked up fresh so it reflects the latest saved version.
+const editTarget = shallowRef<{ kind: 'passage' | 'question'; id: string }>();
+const editing = computed(() => {
+	const target = editTarget.value;
+	if (!target) return undefined;
+	if (target.kind === 'passage') {
+		const passage = content.everyPassage.value.find((p) => p.id === target.id);
+		const edited = itemOrigin(target.id, BUILT_IN_PASSAGES, content.overrides.value.passages) === 'edited';
+		return passage && { passage, question: undefined, edited };
+	}
+	const question = content.everyMathQuestion.value.find((q) => q.id === target.id);
+	const edited = itemOrigin(target.id, BUILT_IN_QUESTIONS, content.overrides.value.questions) === 'edited';
+	return question && { passage: undefined, question, edited };
+});
+
 // Math questions show their expression when there's no text, e.g. "38 + 27 = ☐".
 const snippet = (q: Question) => q.body ?? (q.math ? `$${q.math}$` : q.id);
 </script>
@@ -157,6 +173,7 @@ const snippet = (q: Question) => q.body ?? (q.math ? `$${q.math}$` : q.id);
 			</div>
 			<div class="row-actions">
 				<button type="button" class="btn" @click="previewId = { kind: 'passage', id: row.passage.id }">תצוגה</button>
+				<button type="button" class="btn" @click="editTarget = { kind: 'passage', id: row.passage.id }">עריכה</button>
 				<button type="button" class="btn" :disabled="editor.saving.value" @click="toggle(row.passage.id)">{{ row.hidden ? 'הצגה' : 'הסתרה' }}</button>
 			</div>
 		</article>
@@ -178,12 +195,23 @@ const snippet = (q: Question) => q.body ?? (q.math ? `$${q.math}$` : q.id);
 			</div>
 			<div class="row-actions">
 				<button type="button" class="btn" @click="previewId = { kind: 'question', id: row.question.id }">תצוגה</button>
+				<button type="button" class="btn" @click="editTarget = { kind: 'question', id: row.question.id }">עריכה</button>
 				<button type="button" class="btn" :disabled="editor.saving.value" @click="toggle(row.question.id)">{{ row.hidden ? 'הצגה' : 'הסתרה' }}</button>
 			</div>
 		</article>
 	</template>
 
 	<p v-if="!shown" class="note">אין תוצאות.</p>
+
+	<!-- Keyed: each item gets a fresh working copy. -->
+	<BankEditor
+		v-if="editing && editTarget"
+		:key="editTarget.id"
+		:passage="editing.passage"
+		:question="editing.question"
+		:edited="editing.edited"
+		@close="editTarget = undefined"
+	/>
 
 	<BankPreview
 		v-if="previewPassage || previewQuestion"
@@ -289,6 +317,7 @@ select {
 
 .row-actions {
 	display: flex;
+	flex-wrap: wrap;
 	gap: 8px;
 }
 </style>

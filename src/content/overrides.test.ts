@@ -98,6 +98,10 @@ describe('content overrides', () => {
 		});
 		const applied = applyToTest(test, o);
 		expect(applied.sections[0]?.passage?.title).toBe('ערוך');
+		// The section was titled after the passage, so it follows the rename.
+		const named = applyToTest({ ...test, sections: [{ ...test.sections[0]!, title: 'p1' }] }, o);
+		expect(named.sections[0]?.title).toBe('ערוך');
+		expect(applied.sections[0]?.title).toBe('קריאה');
 		expect(applied.sections[0]?.questions.map((q) => q.id)).toEqual(['p1-q1', 'p1-q2']);
 		expect(applied.sections[1]?.questions.map((q) => q.body)).toEqual(['ערוך', 'כמה?']);
 		// The original test object is not modified.
