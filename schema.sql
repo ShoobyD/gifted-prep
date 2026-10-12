@@ -9,3 +9,12 @@ CREATE TABLE IF NOT EXISTS progress (
 	version INTEGER NOT NULL,
 	updated_at INTEGER NOT NULL
 );
+
+-- The parent's changes to the question bank (the app's ContentOverrides), same shape and
+-- versioning as progress. Single row, id 'family'.
+CREATE TABLE IF NOT EXISTS content (
+	id TEXT PRIMARY KEY,
+	data TEXT NOT NULL,
+	version INTEGER NOT NULL,
+	updated_at INTEGER NOT NULL
+);

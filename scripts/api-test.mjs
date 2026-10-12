@@ -61,6 +61,8 @@ check('a deep link also gets the login page', (await request('/reading')).status
 check('app assets are closed', (await request('/sw.js')).status === 401);
 check('the API is closed', (await request('/api/progress')).status === 401);
 check('writes are closed', (await request('/api/progress', { method: 'PUT', body: {} })).status === 401);
+check('content is closed', (await request('/api/content')).status === 401);
+check('content writes are closed', (await request('/api/content', { method: 'PUT', body: {} })).status === 401);
 for (const open of ['/manifest.webmanifest', '/pwa-192.png', '/robots.txt']) {
 	check(`${open} stays open (install / crawlers)`, (await request(open)).status === 200);
 }
@@ -84,37 +86,62 @@ const cookie = setCookie.split(';')[0];
 check('the app is served after login', (await request('/', { cookie })).status === 200);
 check('session reports logged in', (await request('/api/session', { cookie })).data.authenticated === true);
 
-// --- Progress ------------------------------------------------------------------
+// --- Versioned documents (progress, content) ---------------------------------
 
-console.log('— progress (logged in)');
-const progress = (stars) => ({ version: 1, stars, stickers: [], sessions: [] });
-const call = (method, body) => request('/api/progress', { method, body, cookie });
+// The same save / conflict / validation rules for every versioned document.
+async function testDocument({ path, field, make, foreign, read }) {
+	console.log(`— ${path} (logged in)`);
+	const call = (method, body) => request(path, { method, body, cookie });
 
-const initial = await call('GET');
-check('GET answers 200', initial.status === 200, initial);
-check('GET is never cached', initial.headers.get('cache-control') === 'no-store');
-const base = initial.data.version;
-check('version is a non-negative integer', Number.isInteger(base) && base >= 0, initial.data);
-if (base === 0) check('empty database returns progress: null', initial.data.progress === null);
+	const initial = await call('GET');
+	check('GET answers 200', initial.status === 200, initial);
+	check('GET is never cached', initial.headers.get('cache-control') === 'no-store');
+	const base = initial.data.version;
+	check('version is a non-negative integer', Number.isInteger(base) && base >= 0, initial.data);
+	if (base === 0) check(`empty database returns ${field}: null`, initial.data[field] === null);
 
-const stars = Math.floor(Math.random() * 1000);
-const saved = await call('PUT', { progress: progress(stars), baseVersion: base });
-check('PUT on the current version answers 200', saved.status === 200, saved.data);
-check('PUT bumps the version', saved.data.version === base + 1, saved.data);
+	const marker = Math.floor(Math.random() * 1000);
+	const saved = await call('PUT', { [field]: make(marker), baseVersion: base });
+	check('PUT on the current version answers 200', saved.status === 200, saved.data);
+	check('PUT bumps the version', saved.data.version === base + 1, saved.data);
 
-const read = await call('GET');
-check('GET returns what was saved', read.data.progress?.stars === stars, read.data);
-check('updatedAt is a timestamp', typeof read.data.updatedAt === 'number', read.data);
+	const back = await call('GET');
+	check('GET returns what was saved', read(back.data[field]) === marker, back.data);
+	check('updatedAt is a timestamp', typeof back.data.updatedAt === 'number', back.data);
 
-const stale = await call('PUT', { progress: progress(1), baseVersion: base });
-check('PUT on a stale version answers 409', stale.status === 409, stale.data);
-check('409 carries the server copy', stale.data.progress?.stars === stars && stale.data.version === base + 1, stale.data);
+	const stale = await call('PUT', { [field]: make(1), baseVersion: base });
+	check('PUT on a stale version answers 409', stale.status === 409, stale.data);
+	check('409 carries the server copy', read(stale.data[field]) === marker && stale.data.version === base + 1, stale.data);
 
-check('invalid JSON → 400', (await call('PUT', '{oops')).status === 400);
-check('foreign document → 400', (await call('PUT', { progress: { hello: 1 }, baseVersion: base + 1 })).status === 400);
-check('missing baseVersion → 400', (await call('PUT', { progress: progress(1) })).status === 400);
-const huge = { ...progress(1), padding: 'x'.repeat(600 * 1024) };
-check('oversized document → 413', (await call('PUT', { progress: huge, baseVersion: base + 1 })).status === 413);
+	check('invalid JSON → 400', (await call('PUT', '{oops')).status === 400);
+	check('wrong format version → 400', (await call('PUT', { [field]: { ...make(1), version: 99 }, baseVersion: base + 1 })).status === 400);
+	for (const [name, doc] of Object.entries(foreign)) {
+		check(`${name} → 400`, (await call('PUT', { [field]: doc, baseVersion: base + 1 })).status === 400);
+	}
+	check('missing baseVersion → 400', (await call('PUT', { [field]: make(1) })).status === 400);
+	const huge = { ...make(1), padding: 'x'.repeat(1100 * 1024) };
+	check('oversized document → 413', (await call('PUT', { [field]: huge, baseVersion: base + 1 })).status === 413);
+}
+
+await testDocument({
+	path: '/api/progress',
+	field: 'progress',
+	make: (stars) => ({ version: 1, stars, stickers: [], sessions: [] }),
+	read: (doc) => doc?.stars,
+	foreign: { 'foreign document': { hello: 1 } },
+});
+
+await testDocument({
+	path: '/api/content',
+	field: 'overrides',
+	make: (n) => ({ version: 1, passages: {}, questions: {}, hidden: [`q-${n}`] }),
+	read: (doc) => Number(doc?.hidden?.[0]?.slice(2)),
+	foreign: {
+		'foreign document': { hello: 1 },
+		'passages not an object': { version: 1, passages: [], questions: {}, hidden: [] },
+		'hidden not a list of ids': { version: 1, passages: {}, questions: {}, hidden: [1] },
+	},
+});
 
 // --- Logout --------------------------------------------------------------------
 
