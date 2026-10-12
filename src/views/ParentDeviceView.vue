@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import QuestionBank from '@/components/bank/QuestionBank.vue';
+import ChildSettings from '@/components/ChildSettings.vue';
 import ProgressDashboard from '@/components/ProgressDashboard.vue';
 import { useDevice } from '@/composables/useDevice';
 import { useRemoteProgress } from '@/composables/useRemoteProgress';
@@ -12,7 +13,7 @@ import { formatDateTime } from '@/utils/format';
 const REFRESH_MS = 60_000;
 
 const remote = useRemoteProgress();
-const tab = ref<'tracking' | 'bank'>('tracking');
+const tab = ref<'tracking' | 'bank' | 'settings'>('tracking');
 const session = useSession();
 const device = useDevice();
 
@@ -54,9 +55,23 @@ function onChangeDevice() {
 		<nav class="tabs" role="tablist">
 			<button type="button" role="tab" :aria-selected="tab === 'tracking'" :class="{ on: tab === 'tracking' }" @click="tab = 'tracking'">📊 מעקב</button>
 			<button type="button" role="tab" :aria-selected="tab === 'bank'" :class="{ on: tab === 'bank' }" @click="tab = 'bank'">📚 מאגר שאלות</button>
+			<button type="button" role="tab" :aria-selected="tab === 'settings'" :class="{ on: tab === 'settings' }" @click="tab = 'settings'">⚙️ הגדרות</button>
 		</nav>
 
 		<QuestionBank v-if="tab === 'bank'" />
+
+		<template v-else-if="tab === 'settings'">
+			<ChildSettings />
+
+			<section class="card">
+				<h2>המכשיר הזה</h2>
+				<p class="note">זהו מכשיר הורה: מעקב, ניהול המאגר והגדרות. לא ניתן לתרגל בו.</p>
+				<div class="actions">
+					<button type="button" class="btn" @click="onChangeDevice">שינוי סוג המכשיר</button>
+					<button type="button" class="btn" @click="onLogout">התנתקות</button>
+				</div>
+			</section>
+		</template>
 
 		<template v-else>
 			<section class="card refresh">
@@ -67,21 +82,13 @@ function onChangeDevice() {
 			<ProgressDashboard v-if="remote.progress.value" :progress="remote.progress.value" />
 		</template>
 
-		<section class="card">
-			<h2>המכשיר הזה</h2>
-			<p class="note">זהו מכשיר מעקב: הוא מציג את מה שהטאבלט גיבה בשרת, ולא ניתן לתרגל בו. הגדרות, ייבוא ואיפוס נעשים בטאבלט, באזור ההורים.</p>
-			<div class="actions">
-				<button type="button" class="btn" @click="onChangeDevice">שינוי סוג המכשיר</button>
-				<button type="button" class="btn" @click="onLogout">התנתקות</button>
-			</div>
-		</section>
 	</div>
 </template>
 
 <style scoped>
 .tabs {
 	display: grid;
-	grid-template-columns: 1fr 1fr;
+	grid-template-columns: repeat(3, 1fr);
 	gap: 8px;
 }
 

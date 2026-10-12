@@ -87,7 +87,7 @@ function onReset() {
 		<section class="card">
 			<h2>הגדרות</h2>
 			<label class="setting">
-				<input v-model="state.settings.speech" type="checkbox" :disabled="!speech.hasVoice.value">
+				<input :checked="state.settings.speech" type="checkbox" :disabled="!speech.hasVoice.value" @change="state.settings = { speech: ($event.target as HTMLInputElement).checked, updatedAt: Date.now() }">
 				<span>כפתור הקראה 🔊 בשאלות חשבון ובהסברים (לא בקטעי קריאה ולא במבחן)</span>
 			</label>
 			<p v-if="speech.hasVoice.value" class="note">קול בעברית: {{ speech.voiceName.value }}</p>

@@ -104,6 +104,33 @@ describe('mergeProgress', () => {
 	});
 });
 
+describe('merging settings and the tablet report', () => {
+	it('keeps the newer settings, whichever side they come from', () => {
+		const local = progressWith((p) => { p.settings = { speech: true, updatedAt: 100 }; });
+		const remote = progressWith((p) => { p.settings = { speech: false, updatedAt: 200 }; });
+		expect(mergeProgress(local, remote).settings.speech).toBe(false);
+		expect(mergeProgress(remote, local).settings.speech).toBe(false);
+	});
+
+	it('keeps the newer device report', () => {
+		const local = progressWith((p) => { p.device = { hebrewVoice: null, reportedAt: 1 }; });
+		const remote = progressWith((p) => { p.device = { hebrewVoice: 'Google עברית', reportedAt: 2 }; });
+		expect(mergeProgress(local, remote).device?.hebrewVoice).toBe('Google עברית');
+	});
+
+	it('a reset keeps the settings and the report', () => {
+		const before = progressWith((p) => {
+			p.stars = 50;
+			p.settings = { speech: false, updatedAt: 5 };
+			p.device = { hebrewVoice: 'Google עברית', reportedAt: 3 };
+		});
+		const reset = resetProgress(before);
+		expect(reset.stars).toBe(0);
+		expect(reset.settings).toEqual({ speech: false, updatedAt: 5 });
+		expect(reset.device?.hebrewVoice).toBe('Google עברית');
+	});
+});
+
 describe('sync engine', () => {
 	it('backs up a device with progress to an empty server', async () => {
 		const server = fakeServer();

@@ -41,6 +41,14 @@ export interface ProgressState {
 	// Bumped by every reset or import. A newer generation replaces the progress on every
 	// device instead of being merged with it, so a reset can't be undone by old data.
 	generation: number;
+	// What the child's tablet reported about itself, for the parent's settings screen.
+	device?: DeviceReport;
+}
+
+export interface DeviceReport {
+	// The Hebrew text-to-speech voice found on the tablet, or null if there is none.
+	hebrewVoice: string | null;
+	reportedAt: number;
 }
 
 // A full copy of the question, since generated questions can't be recreated from an id.
@@ -55,6 +63,8 @@ export interface MistakeEntry {
 export interface Settings {
 	// Speaker buttons for math questions and explanations.
 	speech: boolean;
+	// When the settings last changed (any device), so merging keeps the newer ones.
+	updatedAt?: number;
 }
 
 export function defaultProgress(): ProgressState {
@@ -99,9 +109,10 @@ export function parseProgress(json: string): ProgressState | undefined {
 	}
 }
 
-// A fresh start (reset), one generation after the current progress.
+// A fresh start (reset), one generation after the current progress. Settings and the
+// tablet's report aren't progress, so they stay.
 export function resetProgress(current: ProgressState): ProgressState {
-	return { ...defaultProgress(), generation: current.generation + 1 };
+	return { ...defaultProgress(), generation: current.generation + 1, settings: current.settings, device: current.device };
 }
 
 // Imported progress replaces the current one, as a new generation.

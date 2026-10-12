@@ -3,7 +3,7 @@ import type { QuestionType } from '@/types';
 
 // Combines two copies that both changed since they last agreed (e.g. the tablet worked
 // offline while another device wrote). Nothing the child earned may be lost, so every
-// field takes the union or the maximum; local wins only for settings.
+// field takes the union or the maximum; settings and the tablet's report take the newer.
 
 const MAX_SESSIONS = 300;
 const MAX_MISTAKES = 60;
@@ -55,6 +55,7 @@ export function mergeProgress(local: ProgressState, remote: ProgressState): Prog
 		sessions: unionSessions(local.sessions, remote.sessions),
 		mistakes: unionMistakes(local.mistakes, remote.mistakes),
 		mistakesFixed: Math.max(local.mistakesFixed, remote.mistakesFixed),
-		settings: local.settings,
+		settings: (remote.settings.updatedAt ?? 0) > (local.settings.updatedAt ?? 0) ? remote.settings : local.settings,
+		device: (remote.device?.reportedAt ?? 0) > (local.device?.reportedAt ?? 0) ? remote.device : local.device,
 	};
 }
