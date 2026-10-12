@@ -12,6 +12,7 @@ export const SOURCE_LABELS: Record<ContentSource, string> = {
 	'noam': 'מָכוֹן נֹעַם',
 	'gaonchik': 'אֲתָרֵי הֲכָנָה',
 	'original': 'מְקוֹרִי',
+	'other': 'אַחֵר',
 };
 
 // Real test material first, then prep-site samples, then originals.
@@ -31,10 +32,14 @@ export function findPassage(id: string): Passage | undefined {
 const mathOf = (test: { sections: { passage?: Passage; questions: Question[] }[] }) =>
 	test.sections.filter((s) => !s.passage).flatMap((s) => s.questions);
 
+// Copies tagged with where they came from (an explicit source on a question wins).
+const fromSource = (source: ContentSource, questions: Question[]): Question[] =>
+	questions.map((q) => ({ ...q, source: q.source ?? source }));
+
 // Math items from real and sample tests, practiced as a pool.
 export const REAL_MATH_QUESTIONS: Question[] = [
-	...mathOf(official2025),
-	...mathOf(officialSample),
-	...mathOf(noamTest),
-	...gaonchikMath,
+	...fromSource('official-2025', mathOf(official2025)),
+	...fromSource('official-sample', mathOf(officialSample)),
+	...fromSource('noam', mathOf(noamTest)),
+	...fromSource('gaonchik', gaonchikMath),
 ];

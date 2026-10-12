@@ -1,46 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { checkNumber } from '@/engine/checkAnswer';
-import { fill, holds, solutions } from '@/test/expressions';
-import { BLANK, type MockTest, type Passage, type Question } from '@/types';
 import { isCorrect } from '@/composables/useMockTest';
+import { lineCount, validatePassage, validateQuestion } from '@/content/validate';
+import type { MockTest, Question, TestSection } from '@/types';
 import { ALL_PASSAGES, REAL_MATH_QUESTIONS } from './content';
 import { findMockTest } from './mockTests';
 import { noamTest } from './noam';
 import { official2025 } from './official2025';
 import { officialSample } from './officialSample';
 
-const NIKUD = /[֑-ׇ]/g;
-const READING_TYPES = ['reading-fact', 'word-meaning', 'author-purpose', 'inference', 'not-answered', 'pronoun', 'word-relation'];
-
-const lineCount = (p: Passage) => p.paragraphs.reduce((n, lines) => n + lines.length, 0);
-
-function checkQuestion(q: Question) {
-	expect(q.explanation, `${q.id} explanation`).toBeTruthy();
-	for (const text of [q.body, q.explanation, ...(q.answer.kind === 'choice' ? q.answer.options : [])]) {
-		if (text) expect(text.split('$').length % 2, `${q.id}: unbalanced $ in "${text}"`).toBe(1);
-	}
-
-	if (q.answer.kind === 'choice') {
-		const { options, correctIndex } = q.answer;
-		expect(options.length, q.id).toBeGreaterThanOrEqual(2);
-		expect(new Set(options).size, `${q.id} distinct options`).toBe(options.length);
-		expect(correctIndex, q.id).toBeGreaterThanOrEqual(0);
-		expect(correctIndex, q.id).toBeLessThan(options.length);
-		return;
-	}
-
-	const { answer } = q;
-	expect(checkNumber(answer, answer.solution), `${q.id} solution passes its rule`).toBe(true);
-	// Where the expression is machine-checkable, verify the stored answer independently.
-	// The facts may leave some pictures open (e.g. only ⚽ + ⭐ is known) as long as the asked
-	// expression comes out the same under every solution.
-	if (q.math?.includes(BLANK)) {
-		const found = solutions(q.lines ?? []);
-		expect(found.length, `${q.id}: facts are solvable`).toBeGreaterThan(0);
-		for (const values of found) {
-			expect(holds(fill(q.math, answer.solution), values), `${q.id}: ${q.math} with ${answer.solution}`).toBe(true);
-		}
-	}
+// The same checks the question editor runs before saving.
+function sectionIssues(section: TestSection): string[] {
+	const { passage } = section;
+	return section.questions.flatMap((q) =>
+		validateQuestion(q, passage ? 'reading' : 'math', passage && lineCount(passage)).map((i) => `${q.id}: ${i.message}`),
+	);
 }
 
 describe('reading passages', () => {
@@ -50,18 +23,7 @@ describe('reading passages', () => {
 	});
 
 	it.each(ALL_PASSAGES.map((p) => [p.id, p] as const))('%s is valid', (_, passage) => {
-		expect(passage.questions.length).toBeGreaterThan(0);
-		const lines = lineCount(passage);
-		for (const q of passage.questions) {
-			expect(READING_TYPES, `${q.id} type`).toContain(q.type);
-			checkQuestion(q);
-			// Every cited line number exists.
-			const plain = `${q.body ?? ''} ${q.explanation ?? ''}`.replace(NIKUD, '');
-			for (const match of plain.matchAll(/שור(?:ה|ות)\s*(\d+)(?:\s*[-–]\s*(\d+))?/g)) {
-				const cited = Number(match[2] ?? match[1]);
-				expect(cited, `${q.id} cites line ${cited} of ${lines}`).toBeLessThanOrEqual(lines);
-			}
-		}
+		expect(validatePassage(passage)).toEqual([]);
 	});
 });
 
@@ -70,7 +32,7 @@ describe.each([official2025, officialSample, noamTest].map((t) => [t.id, t] as c
 		expect(test.sections.length).toBeGreaterThan(0);
 		for (const section of test.sections) {
 			expect(section.questions.length, section.title).toBeGreaterThan(0);
-			section.questions.forEach(checkQuestion);
+			expect(sectionIssues(section)).toEqual([]);
 		}
 	});
 });
@@ -84,7 +46,7 @@ describe('generated mock test', () => {
 			expect(counts).toEqual([6, 6, 3, 5, 3, 3]);
 			expect(test.sections[0]?.passage?.kind).toBe('informational');
 			expect(test.sections[1]?.passage?.kind).toBe('story');
-			test.sections.flatMap((s) => s.questions).forEach(checkQuestion);
+			expect(test.sections.flatMap(sectionIssues)).toEqual([]);
 		}
 	});
 
@@ -107,6 +69,10 @@ describe('real math pool', () => {
 		expect(REAL_MATH_QUESTIONS.length).toBeGreaterThan(0);
 		const ids = REAL_MATH_QUESTIONS.map((q) => q.id);
 		expect(new Set(ids).size).toBe(ids.length);
-		REAL_MATH_QUESTIONS.forEach(checkQuestion);
+		expect(REAL_MATH_QUESTIONS.flatMap((q) => validateQuestion(q, 'math').map((i) => `${q.id}: ${i.message}`))).toEqual([]);
+	});
+
+	it('knows where every question came from', () => {
+		expect(REAL_MATH_QUESTIONS.filter((q) => !q.source).map((q) => q.id)).toEqual([]);
 	});
 });

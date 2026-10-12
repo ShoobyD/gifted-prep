@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { checkNumber } from '@/engine/checkAnswer';
-import { fill, holds, numbersIn, solutions, type Values } from '@/test/expressions';
+import { fill, holds, numbersIn, solutions, type Values } from '@/engine/expressions';
 import type { Level, NumberAnswer, Question } from '@/types';
 import { MATH_GENERATORS, MATH_TYPES } from '.';
 import { seeded } from './random';

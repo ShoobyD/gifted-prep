@@ -1,4 +1,5 @@
-// A tiny independent evaluator for question expressions, used by tests to verify answers.
+// A tiny independent evaluator for question expressions. Verifies stored answers in tests
+// and in the question editor, so it must not trust its input: see isWellFormed.
 import { PICTURES } from '@/generators/pictureRiddles';
 import { SYMBOLS } from '@/generators/symbolDigits';
 import { BLANK } from '@/types';
@@ -38,6 +39,32 @@ function side(tokens: string[], values: Values): number {
 	}
 	terms.push(product);
 	return terms.reduce((sum, term, i) => (signs[i] === '−' ? sum - term : sum + term), 0);
+}
+
+const OPERATORS = new Set(['+', '−', '×', '÷', ':']);
+const COMPARATORS = new Set(['=', '>', '<']);
+
+function isOperand(token: string, allowBlank: boolean): boolean {
+	if (token === BLANK) return allowBlank;
+	const chars = Array.from(token);
+	if (chars.length === 1 && PICTURES.includes(token)) return true;
+	// Digits and symbols ("12", "5△", "△△"); pictures only stand alone.
+	return chars.length > 0 && chars.every((ch) => /\d/.test(ch) || SYMBOLS.includes(ch));
+}
+
+function isWellFormedSide(tokens: string[], allowBlank: boolean): boolean {
+	if (tokens.length % 2 === 0) return false;
+	return tokens.every((t, i) => (i % 2 === 0 ? isOperand(t, allowBlank) : OPERATORS.has(t)));
+}
+
+// "a + b = c" with single spaces between tokens and exactly one = > or <.
+// The answer box (☐) may appear only where allowBlank.
+export function isWellFormed(statement: string, allowBlank = false): boolean {
+	const tokens = statement.split(' ');
+	const comparators = tokens.filter((t) => COMPARATORS.has(t));
+	if (comparators.length !== 1) return false;
+	const at = tokens.findIndex((t) => COMPARATORS.has(t));
+	return isWellFormedSide(tokens.slice(0, at), allowBlank) && isWellFormedSide(tokens.slice(at + 1), allowBlank);
 }
 
 export function holds(statement: string, values: Values = new Map()): boolean {

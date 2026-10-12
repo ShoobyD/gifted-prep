@@ -58,12 +58,17 @@ export interface Question {
 	answer: Answer;
 	explanation?: string;
 	difficulty?: Level;
+	// Where the question was taken from. Reading questions inherit their passage's source.
+	source?: ContentSource;
+	// Free-text detail on the source, e.g. a booklet page or a link.
+	sourceNote?: string;
 }
 
 export const BLANK = '☐';
 
 // Where content comes from: written for this app, the ministry's papers, or prep-site samples.
-export type ContentSource = 'original' | 'official-2025' | 'official-sample' | 'noam' | 'gaonchik';
+// 'other' covers content added later from anywhere else; sourceNote says where.
+export type ContentSource = 'original' | 'official-2025' | 'official-sample' | 'noam' | 'gaonchik' | 'other';
 
 export type PassageKind = 'informational' | 'story';
 
@@ -74,6 +79,7 @@ export interface Passage {
 	title: string;
 	kind: PassageKind;
 	source: ContentSource;
+	sourceNote?: string;
 	// Paragraphs of lines; lines are numbered continuously across paragraphs.
 	paragraphs: string[][];
 	questions: Question[];
