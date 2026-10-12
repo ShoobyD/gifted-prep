@@ -112,6 +112,15 @@ export function revertItem(id: string): OverridesChange {
 	};
 }
 
+// Removes an item the parent added (and any hiding of it). Built-in items can't be
+// deleted, only hidden or reverted, so the original material is never lost.
+export function deleteItem(id: string): OverridesChange {
+	return (o) => {
+		const reverted = revertItem(id)(o);
+		return { ...reverted, hidden: reverted.hidden.filter((h) => h !== id) };
+	};
+}
+
 // A real test with the parent's corrections applied. Hidden items stay in: a mock test
 // keeps the structure of the booklet it reproduces.
 export function applyToTest(test: MockTest, overrides: ContentOverrides): MockTest {

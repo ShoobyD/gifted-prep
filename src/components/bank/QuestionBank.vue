@@ -9,6 +9,7 @@ import { MATH_TYPES, READING_TYPES } from '@/content/validate';
 import { BASE_MATH_QUESTIONS, BASE_PASSAGES, SOURCE_LABELS } from '@/data/content';
 import { TYPE_LABELS } from '@/data/labels';
 import type { ContentSource, Passage, Question, QuestionType } from '@/types';
+import { newMathQuestion, newPassage } from '@/content/templates';
 import BankEditor from './BankEditor.vue';
 import BankPreview from './BankPreview.vue';
 
@@ -114,20 +115,31 @@ const previewQuestion = computed(() =>
 	previewId.value?.kind === 'question' ? content.everyMathQuestion.value.find((q) => q.id === previewId.value?.id) : undefined,
 );
 
-// The item being edited, looked up fresh so it reflects the latest saved version.
-const editTarget = shallowRef<{ kind: 'passage' | 'question'; id: string }>();
+// The item being edited, looked up fresh so it reflects the latest saved version; a new
+// item brings its own empty draft.
+const editTarget = shallowRef<{ kind: 'passage' | 'question'; id: string; draft?: Passage | Question }>();
 const editing = computed(() => {
 	const target = editTarget.value;
 	if (!target) return undefined;
+	if (target.draft) {
+		return target.kind === 'passage'
+			? { passage: target.draft as Passage, question: undefined, origin: 'new' as const }
+			: { passage: undefined, question: target.draft as Question, origin: 'new' as const };
+	}
 	if (target.kind === 'passage') {
 		const passage = content.everyPassage.value.find((p) => p.id === target.id);
-		const edited = itemOrigin(target.id, BUILT_IN_PASSAGES, content.overrides.value.passages) === 'edited';
-		return passage && { passage, question: undefined, edited };
+		const origin = itemOrigin(target.id, BUILT_IN_PASSAGES, content.overrides.value.passages);
+		return passage && { passage, question: undefined, origin };
 	}
 	const question = content.everyMathQuestion.value.find((q) => q.id === target.id);
-	const edited = itemOrigin(target.id, BUILT_IN_QUESTIONS, content.overrides.value.questions) === 'edited';
-	return question && { passage: undefined, question, edited };
+	const origin = itemOrigin(target.id, BUILT_IN_QUESTIONS, content.overrides.value.questions);
+	return question && { passage: undefined, question, origin };
 });
+
+function addNew() {
+	const draft = area.value === 'reading' ? newPassage() : newMathQuestion();
+	editTarget.value = { kind: area.value === 'reading' ? 'passage' : 'question', id: draft.id, draft };
+}
 
 // Math questions show their expression when there's no text, e.g. "38 + 27 = ☐".
 const snippet = (q: Question) => q.body ?? (q.math ? `$${q.math}$` : q.id);
@@ -153,6 +165,7 @@ const snippet = (q: Question) => q.body ?? (q.math ? `$${q.math}$` : q.id);
 				<option v-for="(label, key) in STATUS_LABELS" :key="key" :value="key">{{ label }}</option>
 			</select>
 		</div>
+		<button type="button" class="btn add" @click="addNew">{{ area === 'reading' ? '+ קטע חדש' : '+ שאלת חשבון חדשה' }}</button>
 		<p class="note">מוצגים {{ shown }} מתוך {{ total }}. שאלות חשבון שנוצרות אוטומטית לא נשמרות במאגר.</p>
 	</section>
 
@@ -209,7 +222,9 @@ const snippet = (q: Question) => q.body ?? (q.math ? `$${q.math}$` : q.id);
 		:key="editTarget.id"
 		:passage="editing.passage"
 		:question="editing.question"
-		:edited="editing.edited"
+		:edited="editing.origin === 'edited'"
+		:added="editing.origin === 'added'"
+		:is-new="editing.origin === 'new'"
 		@close="editTarget = undefined"
 	/>
 
@@ -246,6 +261,13 @@ const snippet = (q: Question) => q.body ?? (q.math ? `$${q.math}$` : q.id);
 .segmented button.on {
 	background: var(--surface);
 	box-shadow: var(--shadow);
+}
+
+.add {
+	justify-self: start;
+	border-color: var(--primary);
+	color: var(--primary);
+	font-weight: 700;
 }
 
 .search,

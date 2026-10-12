@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
 import PassageText from '@/components/PassageText.vue';
 import { useContentEditor } from '@/composables/useContentEditor';
 import { lineCount, validatePassage, validateQuestion } from '@/content/validate';
-import { revertItem, savePassage, saveQuestion } from '@/content/overrides';
+import { deleteItem, revertItem, savePassage, saveQuestion } from '@/content/overrides';
 import type { Passage, Question } from '@/types';
 import PassageForm from './PassageForm.vue';
 import QuestionForm from './QuestionForm.vue';
@@ -16,6 +16,10 @@ const props = defineProps<{
 	question?: Question;
 	// A built-in item the parent already changed: it can go back to the original.
 	edited?: boolean;
+	// An item the parent added earlier: it can be deleted.
+	added?: boolean;
+	// A new item, not saved yet.
+	isNew?: boolean;
 }>();
 const emit = defineEmits<{ close: [] }>();
 
@@ -45,6 +49,12 @@ async function revert() {
 	if (id && (await editor.update(revertItem(id)))) emit('close');
 }
 
+async function remove() {
+	if (!confirm('למחוק את הפריט? הוא ייעלם מהתרגול בכל המכשירים, ואי אפשר לשחזר אותו.')) return;
+	const id = (props.passage ?? props.question)?.id;
+	if (id && (await editor.update(deleteItem(id)))) emit('close');
+}
+
 function close() {
 	if (dirty.value && !confirm('יש שינויים שלא נשמרו. לסגור בלי לשמור?')) return;
 	emit('close');
@@ -61,7 +71,8 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
 	<div class="overlay" role="dialog" aria-modal="true">
 		<div class="sheet parents">
 			<header class="sheet-head">
-				<h2>עריכה: {{ draftPassage ? draftPassage.title || 'קטע' : 'שאלה' }}</h2>
+				<h2 v-if="isNew">{{ draftPassage ? 'קטע חדש' : 'שאלה חדשה' }}</h2>
+				<h2 v-else>עריכה: {{ draftPassage ? draftPassage.title || 'קטע' : 'שאלה' }}</h2>
 				<div class="segmented">
 					<button type="button" :class="{ on: view === 'edit' }" @click="view = 'edit'">עריכה</button>
 					<button type="button" :class="{ on: view === 'preview' }" @click="view = 'preview'">תצוגה מקדימה</button>
@@ -100,6 +111,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
 				</button>
 				<button type="button" class="btn" @click="close">סגירה</button>
 				<button v-if="edited" type="button" class="btn btn--danger" :disabled="editor.saving.value" @click="revert">חזרה למקור</button>
+				<button v-if="added" type="button" class="btn btn--danger" :disabled="editor.saving.value" @click="remove">מחיקה</button>
 			</footer>
 			<p v-if="editor.error.value" class="message tone--warn" role="alert">{{ editor.error.value }}</p>
 		</div>

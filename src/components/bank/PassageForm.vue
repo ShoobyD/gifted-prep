@@ -3,6 +3,7 @@ import { ref, watch } from 'vue';
 import { paragraphsToText, textToParagraphs } from '@/content/bank';
 import { lineCount, type Issue } from '@/content/validate';
 import { SOURCE_LABELS } from '@/data/content';
+import { newReadingQuestion } from '@/content/templates';
 import type { Passage } from '@/types';
 import QuestionForm from './QuestionForm.vue';
 
@@ -25,6 +26,21 @@ function questionIssues(index: number): Issue[] {
 	return props.issues
 		.filter((i) => i.field.startsWith(prefix))
 		.map((i) => ({ ...i, field: i.field.slice(prefix.length) }));
+}
+
+// The question just added opens by itself.
+const justAdded = ref<string>();
+
+function addQuestion() {
+	const question = newReadingQuestion(passage.value.id);
+	passage.value.questions.push(question);
+	justAdded.value = question.id;
+}
+
+function removeQuestion(index: number) {
+	if (passage.value.questions.length <= 1) return;
+	if (!confirm(`למחוק את שאלה ${index + 1}?`)) return;
+	passage.value.questions.splice(index, 1);
 }
 
 function setSourceNote(value: string) {
@@ -68,10 +84,12 @@ function setSourceNote(value: string) {
 		<p class="hint">השאלות מפנות למספרי שורות, ולכן כדאי לשמור על חלוקת השורות כמו במקור.</p>
 
 		<h3 class="questions-title">השאלות</h3>
-		<details v-for="(_, i) in passage.questions" :key="passage.questions[i]?.id" class="question" :class="{ bad: questionIssues(i).length }">
+		<details v-for="(_, i) in passage.questions" :key="passage.questions[i]?.id" class="question" :class="{ bad: questionIssues(i).length }" :open="passage.questions[i]?.id === justAdded || undefined">
 			<summary>שאלה {{ i + 1 }}<template v-if="questionIssues(i).length"> · ⚠ {{ questionIssues(i).length }}</template></summary>
 			<QuestionForm v-model="passage.questions[i]!" context="reading" :issues="questionIssues(i)" />
+			<button type="button" class="btn small remove" :disabled="passage.questions.length <= 1" @click="removeQuestion(i)">מחיקת השאלה</button>
 		</details>
+		<button type="button" class="btn add" @click="addQuestion">+ הוספת שאלה</button>
 	</div>
 </template>
 
@@ -141,6 +159,16 @@ textarea {
 .question summary {
 	font-weight: 700;
 	cursor: pointer;
+}
+
+.remove {
+	margin-top: 10px;
+	border-color: var(--bad);
+	color: var(--bad);
+}
+
+.add {
+	justify-self: start;
 }
 
 .question[open] summary {

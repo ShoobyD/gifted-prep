@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { Question } from '@/types';
 import { itemOrigin, matches, normalize, paragraphsToText, questionText, textToParagraphs } from './bank';
-import { emptyOverrides, revertItem, saveQuestion, setHidden } from './overrides';
+import { deleteItem, emptyOverrides, revertItem, saveQuestion, setHidden } from './overrides';
+import { CUSTOM_PREFIX, newMathQuestion, newPassage } from './templates';
+import { validatePassage, validateQuestion } from './validate';
 
 describe('question bank search', () => {
 	it('ignores nikud, quotes and spacing', () => {
@@ -61,6 +63,29 @@ describe('edit intents', () => {
 		const theirs = saveQuestion(q('m2', 'שלהם'))(emptyOverrides());
 		const both = saveQuestion(q('m1', 'שלי'))(theirs);
 		expect(Object.keys(both.questions).sort()).toEqual(['m1', 'm2']);
+	});
+});
+
+describe('added content', () => {
+	it('gets unique ids that never look built-in', () => {
+		const ids = new Set(Array.from({ length: 200 }, () => newMathQuestion().id));
+		expect(ids.size).toBe(200);
+		const passage = newPassage();
+		expect(passage.id.startsWith(CUSTOM_PREFIX)).toBe(true);
+		expect(passage.questions[0]?.id.startsWith(`${passage.id}-q-`)).toBe(true);
+	});
+
+	it('starts invalid, so an empty item can never be saved', () => {
+		expect(validateQuestion(newMathQuestion(), 'math').length).toBeGreaterThan(0);
+		expect(validatePassage(newPassage()).length).toBeGreaterThan(0);
+	});
+
+	it('can be deleted, hiding included', () => {
+		const q = newMathQuestion();
+		const added = setHidden(q.id, true)(saveQuestion(q)(emptyOverrides()));
+		const deleted = deleteItem(q.id)(added);
+		expect(deleted.questions).toEqual({});
+		expect(deleted.hidden).toEqual([]);
 	});
 });
 
