@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import DeviceChoice from './components/DeviceChoice.vue';
 import UpdateBanner from './components/UpdateBanner.vue';
 import { useDevice } from './composables/useDevice';
+import { useContentSync } from './composables/useContentSync';
 import { useSync } from './composables/useSync';
 import ParentDeviceView from './views/ParentDeviceView.vue';
 
@@ -13,6 +14,8 @@ const device = useDevice();
 
 // Keeps the progress backed up on the server whenever the app runs behind its login.
 useSync();
+// Applies the parent's question-bank changes, from the local copy and then the server.
+useContentSync();
 
 // Behind the login, a device first says what it is; a parent device shows only the dashboard.
 const mode = computed(() => (device.needsChoice.value ? 'choice' : device.isParent.value ? 'parent' : 'app'));

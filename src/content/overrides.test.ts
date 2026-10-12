@@ -5,6 +5,7 @@ import {
 	allPassages,
 	applyToTest,
 	emptyOverrides,
+	parseOverrides,
 	visibleMathQuestions,
 	visiblePassages,
 	type BaseContent,
@@ -27,6 +28,32 @@ const base: BaseContent = {
 };
 
 const overrides = (edit: Partial<ContentOverrides>): ContentOverrides => ({ ...emptyOverrides(), ...edit });
+
+describe('parseOverrides', () => {
+	const good = () => overrides({
+		passages: { p1: passage('p1', ['p1-q1']) },
+		questions: { m1: math('m1') },
+		hidden: ['p2'],
+	});
+
+	it('accepts well-formed changes, through JSON and back', () => {
+		expect(parseOverrides(JSON.parse(JSON.stringify(good())))).toEqual(good());
+		expect(parseOverrides(emptyOverrides())).toEqual(emptyOverrides());
+	});
+
+	it('rejects anything else', () => {
+		expect(parseOverrides(null)).toBeUndefined();
+		expect(parseOverrides({ ...good(), version: 2 })).toBeUndefined();
+		expect(parseOverrides({ ...good(), passages: [] })).toBeUndefined();
+		expect(parseOverrides({ ...good(), hidden: [1] })).toBeUndefined();
+		// An item filed under someone else's id.
+		expect(parseOverrides({ ...good(), questions: { m2: math('m1') } })).toBeUndefined();
+		// A passage whose question is missing its answer.
+		const broken = passage('p1', ['p1-q1']);
+		delete (broken.questions[0] as Partial<Question>).answer;
+		expect(parseOverrides({ ...good(), passages: { p1: broken } })).toBeUndefined();
+	});
+});
 
 describe('content overrides', () => {
 	it('leave the built-in content untouched when empty', () => {

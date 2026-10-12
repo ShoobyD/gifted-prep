@@ -18,6 +18,30 @@ export function emptyOverrides(): ContentOverrides {
 	return { version: OVERRIDES_VERSION, passages: {}, questions: {}, hidden: [] };
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+	!!value && typeof value === 'object' && !Array.isArray(value);
+
+const looksLikeQuestion = (value: unknown) =>
+	isRecord(value) && typeof value.id === 'string' && typeof value.type === 'string' && isRecord(value.answer);
+
+const looksLikePassage = (value: unknown) =>
+	isRecord(value) && typeof value.id === 'string' && typeof value.title === 'string'
+	&& Array.isArray(value.paragraphs) && Array.isArray(value.questions) && value.questions.every(looksLikeQuestion);
+
+// Accepts changes from the server or the local cache only if they have the expected shape;
+// a broken document must never take the question bank down with it. Each item must sit
+// under its own id.
+export function parseOverrides(value: unknown): ContentOverrides | undefined {
+	if (!isRecord(value) || value.version !== OVERRIDES_VERSION) return undefined;
+	const { passages, questions, hidden } = value;
+	if (!isRecord(passages) || !isRecord(questions)) return undefined;
+	if (!Array.isArray(hidden) || !hidden.every((id) => typeof id === 'string')) return undefined;
+	const keyedById = (items: Record<string, unknown>, check: (v: unknown) => boolean) =>
+		Object.entries(items).every(([id, item]) => check(item) && (item as { id: string }).id === id);
+	if (!keyedById(passages, looksLikePassage) || !keyedById(questions, looksLikeQuestion)) return undefined;
+	return value as unknown as ContentOverrides;
+}
+
 export interface BaseContent {
 	passages: Passage[];
 	mathQuestions: Question[];
