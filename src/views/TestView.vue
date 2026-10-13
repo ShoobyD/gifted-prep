@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { MOCK_TESTS } from '@/data/mockTests';
+import { computed } from 'vue';
+import { mockTests } from '@/data/mockTests';
+
+const tests = computed(mockTests);
 </script>
 
 <template>
 	<p class="intro">מִבְחָן שָׁלֵם, כְּמוֹ בְּבֵית הַסֵּפֶר: קֹדֶם קְרִיאָה וְאַחַר כָּךְ חֶשְׁבּוֹן. אֶת הַתְּשׁוּבוֹת רוֹאִים רַק בַּסּוֹף.</p>
 	<nav class="tests">
 		<RouterLink
-			v-for="test in MOCK_TESTS"
+			v-for="test in tests"
 			:key="test.id"
 			class="test"
 			:class="{ 'test--new': test.id === 'generated' }"

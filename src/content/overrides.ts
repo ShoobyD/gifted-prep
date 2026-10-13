@@ -1,6 +1,7 @@
 // The parent's changes to the question bank, kept apart from the built-in content so the
 // original is never lost ("revert" just drops the change) and the app still works offline.
-import type { MockTest, Passage, Question } from '@/types';
+import type { Passage, Question } from '@/types';
+import { isRecord, looksLikePassage, looksLikeQuestion } from './shapes';
 
 export const OVERRIDES_VERSION = 1;
 
@@ -17,16 +18,6 @@ export interface ContentOverrides {
 export function emptyOverrides(): ContentOverrides {
 	return { version: OVERRIDES_VERSION, passages: {}, questions: {}, hidden: [] };
 }
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-	!!value && typeof value === 'object' && !Array.isArray(value);
-
-const looksLikeQuestion = (value: unknown) =>
-	isRecord(value) && typeof value.id === 'string' && typeof value.type === 'string' && isRecord(value.answer);
-
-const looksLikePassage = (value: unknown) =>
-	isRecord(value) && typeof value.id === 'string' && typeof value.title === 'string'
-	&& Array.isArray(value.paragraphs) && Array.isArray(value.questions) && value.questions.every(looksLikeQuestion);
 
 // Accepts changes from the server or the local cache only if they have the expected shape;
 // a broken document must never take the question bank down with it. Each item must sit
@@ -118,22 +109,5 @@ export function deleteItem(id: string): OverridesChange {
 	return (o) => {
 		const reverted = revertItem(id)(o);
 		return { ...reverted, hidden: reverted.hidden.filter((h) => h !== id) };
-	};
-}
-
-// A real test with the parent's corrections applied. Hidden items stay in: a mock test
-// keeps the structure of the booklet it reproduces.
-export function applyToTest(test: MockTest, overrides: ContentOverrides): MockTest {
-	return {
-		...test,
-		sections: test.sections.map((section) => {
-			if (section.passage) {
-				const passage = overrides.passages[section.passage.id] ?? section.passage;
-				// A section named after its passage follows a renamed passage.
-				const title = section.title === section.passage.title ? passage.title : section.title;
-				return { ...section, title, passage, questions: passage.questions };
-			}
-			return { ...section, questions: section.questions.map((q) => overrides.questions[q.id] ?? q) };
-		}),
 	};
 }

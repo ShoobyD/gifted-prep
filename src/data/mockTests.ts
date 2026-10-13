@@ -1,11 +1,8 @@
 import { useContent } from '@/composables/useContent';
 import { MATH_GENERATORS } from '@/generators';
 import { pick } from '@/generators/random';
-import type { Level, MathQuestionType, MockTest, Passage, PassageKind, Question, TestSection } from '@/types';
+import type { BankTest, Level, MathQuestionType, MockTest, Passage, PassageKind, Question, TestSection } from '@/types';
 import { isTestMaterial } from './content';
-import { noamTest } from './noam';
-import { official2025 } from './official2025';
-import { officialSample } from './officialSample';
 
 export interface MockTestEntry {
 	id: string;
@@ -56,33 +53,30 @@ function buildGenerated(): MockTest {
 	};
 }
 
-export const MOCK_TESTS: MockTestEntry[] = [
-	{
-		id: 'generated',
-		title: 'מִבְחָן חָדָשׁ',
-		description: 'בְּכָל פַּעַם מִבְחָן אַחֵר, בַּמִּבְנֶה שֶׁל מִבְחַן 2025',
-		build: buildGenerated,
-	},
-	{
-		id: official2025.id,
-		title: official2025.title,
-		description: 'הַמִּבְחָן הָאֲמִתִּי מִשְּׁנַת 2025',
-		build: () => useContent().applyToTest(official2025),
-	},
-	{
-		id: officialSample.id,
-		title: officialSample.title,
-		description: 'מִבְחָן קָצָר מֵחוֹבֶרֶת הַדֻּגְמָאוֹת שֶׁל מִשְׂרַד הַחִנּוּךְ',
-		build: () => useContent().applyToTest(officialSample),
-	},
-	{
-		id: noamTest.id,
-		title: noamTest.title,
-		description: 'מִבְחָן לְדֻגְמָה שֶׁל מָכוֹן לְהָכָנָה',
-		build: () => useContent().applyToTest(noamTest),
-	},
-];
+const GENERATED: MockTestEntry = {
+	id: 'generated',
+	title: 'מִבְחָן חָדָשׁ',
+	description: 'בְּכָל פַּעַם מִבְחָן אַחֵר, בַּמִּבְנֶה שֶׁל מִבְחַן 2025',
+	build: buildGenerated,
+};
 
+function bankEntry(test: BankTest): MockTestEntry {
+	return {
+		id: test.id,
+		title: test.title,
+		description: test.description ?? '',
+		build: () => useContent().resolveTest(test),
+	};
+}
+
+// The tests offered: a generated one, then the bank's tests (hidden ones left out).
+export function mockTests(): MockTestEntry[] {
+	return [GENERATED, ...useContent().tests.value.map(bankEntry)];
+}
+
+// Hidden tests too: a saved session may point at one.
 export function findMockTest(id: string): MockTestEntry | undefined {
-	return MOCK_TESTS.find((t) => t.id === id);
+	if (id === GENERATED.id) return GENERATED;
+	const test = useContent().everyTest.value.find((t) => t.id === id);
+	return test && bankEntry(test);
 }

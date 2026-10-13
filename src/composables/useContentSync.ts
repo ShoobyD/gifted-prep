@@ -1,13 +1,17 @@
 import { ref, watch } from 'vue';
+import { bankApi } from '@/content/bankApi';
+import { parseSnapshot, toBankContent, type BankSnapshot } from '@/content/bankContent';
 import { contentApi, type ContentCopy } from '@/content/contentApi';
 import { emptyOverrides, parseOverrides } from '@/content/overrides';
 import { useContent } from './useContent';
 import { useSession } from './useSession';
 
-// Brings the parent's question-bank changes to every device. The last copy is kept
-// locally, so the changes apply offline and from the first moment the app opens.
+// Brings the question bank, and the parent's changes to it, to every device. The last copy
+// of each is kept locally, so they apply offline and from the first moment the app opens.
+// Until the bank has loaded once, the content built into the app is used.
 
 const CACHE_KEY = 'gifted-prep:content';
+const BANK_CACHE_KEY = 'gifted-prep:bank';
 
 interface CachedContent {
 	overrides: unknown;
@@ -19,6 +23,8 @@ interface CachedContent {
 // are based on it.
 const version = ref(0);
 const updatedAt = ref<number | null>(null);
+// The bank revision this device has (0: still the built-in content).
+const bankRevision = ref(0);
 const status = ref<'idle' | 'loading' | 'failed'>('idle');
 let initialized = false;
 
@@ -32,18 +38,33 @@ function apply(copy: CachedContent): boolean {
 	return true;
 }
 
-function loadCache() {
+// Revision 0 is a bank nobody has loaded content into yet: the built-in content stays.
+function applyBank(snapshot: BankSnapshot): boolean {
+	if (snapshot.revision < 1) return false;
+	useContent().bank.value = toBankContent(snapshot.items);
+	bankRevision.value = snapshot.revision;
+	return true;
+}
+
+function readCache(key: string): unknown {
 	try {
-		const cached = JSON.parse(localStorage.getItem(CACHE_KEY) ?? 'null') as CachedContent | null;
-		if (cached) apply(cached);
+		return JSON.parse(localStorage.getItem(key) ?? 'null');
 	} catch {
-		// No usable cache: the built-in content is used until the server answers.
+		return null;
 	}
 }
 
-function saveCache(copy: CachedContent) {
+function loadCache() {
+	// No usable cache: the built-in content is used until the server answers.
+	const snapshot = parseSnapshot(readCache(BANK_CACHE_KEY));
+	if (snapshot) applyBank(snapshot);
+	const cached = readCache(CACHE_KEY) as CachedContent | null;
+	if (cached) apply(cached);
+}
+
+function saveCache(key: string, copy: unknown) {
 	try {
-		localStorage.setItem(CACHE_KEY, JSON.stringify(copy));
+		localStorage.setItem(key, JSON.stringify(copy));
 	} catch {
 		// Not cached; fetched again next time.
 	}
@@ -51,13 +72,20 @@ function saveCache(copy: CachedContent) {
 
 // Takes a copy that came from the server (a fetch, or a save in the question bank).
 function accept(copy: ContentCopy) {
-	if (apply(copy)) saveCache(copy);
+	if (apply(copy)) saveCache(CACHE_KEY, copy);
+}
+
+async function refreshBank() {
+	// Only asks for the whole bank when it changed since this device's copy.
+	const snapshot = await bankApi.get(bankRevision.value || undefined);
+	if (snapshot && applyBank(snapshot)) saveCache(BANK_CACHE_KEY, snapshot);
 }
 
 async function refresh() {
 	status.value = 'loading';
 	try {
-		accept(await contentApi.get());
+		const [, copy] = await Promise.all([refreshBank(), contentApi.get()]);
+		accept(copy);
 		status.value = 'idle';
 	} catch {
 		status.value = 'failed';
@@ -82,5 +110,5 @@ function init() {
 
 export function useContentSync() {
 	init();
-	return { version, updatedAt, status, refresh, accept };
+	return { version, updatedAt, bankRevision, status, refresh, accept };
 }

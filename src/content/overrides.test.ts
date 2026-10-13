@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { MockTest, Passage, Question } from '@/types';
+import type { Passage, Question } from '@/types';
 import {
 	allMathQuestions,
 	allPassages,
-	applyToTest,
 	emptyOverrides,
 	parseOverrides,
 	visibleMathQuestions,
@@ -81,30 +80,5 @@ describe('content overrides', () => {
 		expect(visiblePassages(base, overrides({ hidden: ['p1'] })).map((p) => p.id)).toEqual(['p2']);
 		// Still reachable by id (e.g. a saved mistake from before it was hidden).
 		expect(allPassages(base, overrides({ hidden: ['p1'] })).map((p) => p.id)).toContain('p1');
-	});
-
-	it('apply corrections to a real test without dropping hidden items', () => {
-		const test: MockTest = {
-			id: 't', title: 'מבחן', source: 'official-2025',
-			sections: [
-				{ title: 'קריאה', passage: base.passages[0], questions: base.passages[0]?.questions ?? [] },
-				{ title: 'חשבון', questions: base.mathQuestions },
-			],
-		};
-		const o = overrides({
-			passages: { p1: passage('p1', ['p1-q1', 'p1-q2'], 'ערוך') },
-			questions: { m1: math('m1', 'ערוך') },
-			hidden: ['p1-q2', 'm2'],
-		});
-		const applied = applyToTest(test, o);
-		expect(applied.sections[0]?.passage?.title).toBe('ערוך');
-		// The section was titled after the passage, so it follows the rename.
-		const named = applyToTest({ ...test, sections: [{ ...test.sections[0]!, title: 'p1' }] }, o);
-		expect(named.sections[0]?.title).toBe('ערוך');
-		expect(applied.sections[0]?.title).toBe('קריאה');
-		expect(applied.sections[0]?.questions.map((q) => q.id)).toEqual(['p1-q1', 'p1-q2']);
-		expect(applied.sections[1]?.questions.map((q) => q.body)).toEqual(['ערוך', 'כמה?']);
-		// The original test object is not modified.
-		expect(test.sections[0]?.passage?.title).toBe('p1');
 	});
 });

@@ -6,7 +6,7 @@ import { useContentEditor } from '@/composables/useContentEditor';
 import { isHidden, itemOrigin, matches, passageText, questionText, type ItemOrigin } from '@/content/bank';
 import { setHidden } from '@/content/overrides';
 import { MATH_TYPES, READING_TYPES } from '@/content/validate';
-import { BASE_MATH_QUESTIONS, BASE_PASSAGES, SOURCE_LABELS } from '@/data/content';
+import { SOURCE_LABELS } from '@/data/content';
 import { TYPE_LABELS } from '@/data/labels';
 import type { ContentSource, Passage, Question, QuestionType } from '@/types';
 import { newMathQuestion, newPassage } from '@/content/templates';
@@ -17,9 +17,6 @@ import BankPreview from './BankPreview.vue';
 // changes marked. Generated math questions aren't stored anywhere, so they aren't listed.
 const content = useContent();
 const editor = useContentEditor();
-
-const BUILT_IN_PASSAGES = new Set(BASE_PASSAGES.map((p) => p.id));
-const BUILT_IN_QUESTIONS = new Set(BASE_MATH_QUESTIONS.map((q) => q.id));
 
 type Status = 'all' | 'visible' | 'hidden' | 'edited' | 'added';
 
@@ -68,7 +65,7 @@ const passageRows = computed<PassageRow[]>(() =>
 	content.everyPassage.value
 		.map((passage) => ({
 			passage,
-			origin: itemOrigin(passage.id, BUILT_IN_PASSAGES, content.overrides.value.passages),
+			origin: itemOrigin(passage.id, content.basePassageIds.value, content.overrides.value.passages),
 			hidden: hidden(passage.id),
 			hiddenQuestions: passage.questions.filter((q) => hidden(q.id)).length,
 		}))
@@ -89,7 +86,7 @@ const questionRows = computed<QuestionRow[]>(() =>
 	content.everyMathQuestion.value
 		.map((question) => ({
 			question,
-			origin: itemOrigin(question.id, BUILT_IN_QUESTIONS, content.overrides.value.questions),
+			origin: itemOrigin(question.id, content.baseQuestionIds.value, content.overrides.value.questions),
 			hidden: hidden(question.id),
 		}))
 		.filter((row) =>
@@ -128,11 +125,11 @@ const editing = computed(() => {
 	}
 	if (target.kind === 'passage') {
 		const passage = content.everyPassage.value.find((p) => p.id === target.id);
-		const origin = itemOrigin(target.id, BUILT_IN_PASSAGES, content.overrides.value.passages);
+		const origin = itemOrigin(target.id, content.basePassageIds.value, content.overrides.value.passages);
 		return passage && { passage, question: undefined, origin };
 	}
 	const question = content.everyMathQuestion.value.find((q) => q.id === target.id);
-	const origin = itemOrigin(target.id, BUILT_IN_QUESTIONS, content.overrides.value.questions);
+	const origin = itemOrigin(target.id, content.baseQuestionIds.value, content.overrides.value.questions);
 	return question && { passage: undefined, question, origin };
 });
 

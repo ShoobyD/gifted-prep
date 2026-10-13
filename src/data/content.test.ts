@@ -66,13 +66,26 @@ describe('generated mock test', () => {
 });
 
 describe('content store', () => {
-	it('serves exactly the built-in content while there are no changes', () => {
+	it('serves exactly the built-in content until the bank loads', () => {
 		const content = useContent();
 		expect(content.passages.value).toEqual(BASE_PASSAGES);
 		expect(content.mathPool.value).toEqual(BASE_MATH_QUESTIONS);
-		expect(content.applyToTest(official2025)).toEqual(official2025);
+		expect(content.tests.value.map((t) => t.id)).toEqual(['official-2025', 'official-sample', 'noam-2025']);
 		expect(content.findPassage('inf-1')).toBe(BASE_PASSAGES.find((p) => p.id === 'inf-1'));
 	});
+
+	// Section by section: title, instructions, passage and question ids.
+	const outline = (test: MockTest) =>
+		test.sections.map((s) => [s.title, s.instructions, s.passage?.id, s.questions.map((q) => q.id)]);
+
+	it.each([official2025, officialSample, noamTest].map((t) => [t.id, t] as const))(
+		'builds test %s from the bank like the booklet',
+		(id, test) => {
+			const built = findMockTest(id)?.build() as MockTest;
+			expect(built.title).toBe(test.title);
+			expect(outline(built)).toEqual(outline(test));
+		},
+	);
 });
 
 describe('real math pool', () => {
