@@ -2,9 +2,8 @@
 import { computed, ref, shallowRef } from 'vue';
 import RichText from '@/components/RichText.vue';
 import { useContent } from '@/composables/useContent';
-import { useContentEditor } from '@/composables/useContentEditor';
-import { isHidden, itemOrigin, matches, passageText, questionText, type ItemOrigin } from '@/content/bank';
-import { setHidden } from '@/content/overrides';
+import { useBankEditor } from '@/composables/useBankEditor';
+import { itemOrigin, matches, passageText, questionText, type ItemOrigin } from '@/content/bank';
 import { MATH_TYPES, READING_TYPES } from '@/content/validate';
 import { SOURCE_LABELS } from '@/data/content';
 import { TYPE_LABELS } from '@/data/labels';
@@ -16,7 +15,7 @@ import BankPreview from './BankPreview.vue';
 // The question bank on a parent device: everything (hidden included), with the parent's
 // changes marked. Generated math questions aren't stored anywhere, so they aren't listed.
 const content = useContent();
-const editor = useContentEditor();
+const editor = useBankEditor();
 
 type Status = 'all' | 'visible' | 'hidden' | 'edited' | 'added';
 
@@ -42,7 +41,8 @@ function switchArea(next: 'reading' | 'math') {
 	type.value = '';
 }
 
-const hidden = (id: string) => isHidden(content.overrides.value, id);
+const hidden = (id: string) => content.isHidden(id);
+const originOf = (id: string) => itemOrigin(id, content.versionOf(id));
 
 function statusMatches(origin: ItemOrigin, isHiddenItem: boolean): boolean {
 	switch (status.value) {
@@ -65,9 +65,9 @@ const passageRows = computed<PassageRow[]>(() =>
 	content.everyPassage.value
 		.map((passage) => ({
 			passage,
-			origin: itemOrigin(passage.id, content.basePassageIds.value, content.overrides.value.passages),
+			origin: originOf(passage.id),
 			hidden: hidden(passage.id),
-			hiddenQuestions: passage.questions.filter((q) => hidden(q.id)).length,
+			hiddenQuestions: passage.questions.filter((q) => q.hidden).length,
 		}))
 		.filter((row) =>
 			(!source.value || row.passage.source === source.value)
@@ -86,7 +86,7 @@ const questionRows = computed<QuestionRow[]>(() =>
 	content.everyMathQuestion.value
 		.map((question) => ({
 			question,
-			origin: itemOrigin(question.id, content.baseQuestionIds.value, content.overrides.value.questions),
+			origin: originOf(question.id),
 			hidden: hidden(question.id),
 		}))
 		.filter((row) =>
@@ -101,7 +101,7 @@ const total = computed(() =>
 	area.value === 'reading' ? content.everyPassage.value.length : content.everyMathQuestion.value.length,
 );
 
-const toggle = (id: string) => editor.update(setHidden(id, !hidden(id)));
+const toggle = (id: string) => editor.setHidden(id, !hidden(id));
 
 // The preview always shows the current version (it updates after hiding inside it).
 const previewId = shallowRef<{ kind: 'passage' | 'question'; id: string }>();
@@ -120,17 +120,16 @@ const editing = computed(() => {
 	if (!target) return undefined;
 	if (target.draft) {
 		return target.kind === 'passage'
-			? { passage: target.draft as Passage, question: undefined, origin: 'new' as const }
-			: { passage: undefined, question: target.draft as Question, origin: 'new' as const };
+			? { passage: target.draft as Passage, question: undefined, version: 0 }
+			: { passage: undefined, question: target.draft as Question, version: 0 };
 	}
+	const version = content.versionOf(target.id);
 	if (target.kind === 'passage') {
 		const passage = content.everyPassage.value.find((p) => p.id === target.id);
-		const origin = itemOrigin(target.id, content.basePassageIds.value, content.overrides.value.passages);
-		return passage && { passage, question: undefined, origin };
+		return passage && { passage, question: undefined, version };
 	}
 	const question = content.everyMathQuestion.value.find((q) => q.id === target.id);
-	const origin = itemOrigin(target.id, content.baseQuestionIds.value, content.overrides.value.questions);
-	return question && { passage: undefined, question, origin };
+	return question && { passage: undefined, question, version };
 });
 
 function addNew() {
@@ -219,9 +218,9 @@ const snippet = (q: Question) => q.body ?? (q.math ? `$${q.math}$` : q.id);
 		:key="editTarget.id"
 		:passage="editing.passage"
 		:question="editing.question"
-		:edited="editing.origin === 'edited'"
-		:added="editing.origin === 'added'"
-		:is-new="editing.origin === 'new'"
+		:version="editing.version"
+		:is-new="!!editTarget.draft"
+		:used-in-test="content.usedInTests.value.has(editTarget.id)"
 		@close="editTarget = undefined"
 	/>
 

@@ -26,6 +26,8 @@ export interface BankContent {
 	tests: BankTest[];
 	// Ids of hidden items (any kind).
 	hidden: string[];
+	// Each item's version on the server (0 for the built-in content): a write must name it.
+	versions: Record<string, number>;
 }
 
 const CHECKS: Record<BankItemKind, (data: unknown) => boolean> = {
@@ -36,7 +38,7 @@ const CHECKS: Record<BankItemKind, (data: unknown) => boolean> = {
 
 // Items of an unknown kind or a broken shape are left out; the rest of the bank still works.
 export function toBankContent(records: BankRecord[]): BankContent {
-	const content: BankContent = { passages: [], mathQuestions: [], tests: [], hidden: [] };
+	const content: BankContent = { passages: [], mathQuestions: [], tests: [], hidden: [], versions: {} };
 	for (const record of records) {
 		const check = CHECKS[record.kind] as ((data: unknown) => boolean) | undefined;
 		if (!check?.(record.data) || (record.data as { id: string }).id !== record.id) continue;
@@ -44,6 +46,7 @@ export function toBankContent(records: BankRecord[]): BankContent {
 		else if (record.kind === 'question') content.mathQuestions.push(record.data as Question);
 		else content.tests.push(record.data as BankTest);
 		if (record.hidden) content.hidden.push(record.id);
+		content.versions[record.id] = record.version;
 	}
 	return content;
 }

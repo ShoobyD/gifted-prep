@@ -1,51 +1,56 @@
 import { computed, shallowRef } from 'vue';
 import { buildTest, builtInBank, type BankContent } from '@/content/bankContent';
-import {
-	allMathQuestions,
-	allPassages,
-	emptyOverrides,
-	visibleMathQuestions,
-	visiblePassages,
-	type ContentOverrides,
-} from '@/content/overrides';
-import type { BankTest, MockTest, Passage } from '@/types';
+import type { BankTest, MockTest, Passage, Question } from '@/types';
 
 // The question bank as the app uses it: the bank from the server (the built-in content
-// until it first loads) with the parent's changes on top. Every screen reads content
-// through here, so a change shows up everywhere at once.
+// until it first loads). Every screen reads content through here, so a change shows up
+// everywhere at once.
 
 const bank = shallowRef<BankContent>(builtInBank());
-const overrides = shallowRef<ContentOverrides>(emptyOverrides());
 
-// The bank's own hiding and the parent's changes count together.
-const withBankHidden = computed<ContentOverrides>(() => ({
-	...overrides.value,
-	hidden: [...bank.value.hidden, ...overrides.value.hidden],
-}));
+const hiddenIds = computed(() => new Set(bank.value.hidden));
 
-const everyPassage = computed(() => allPassages(bank.value, overrides.value));
-const passages = computed(() => visiblePassages(bank.value, withBankHidden.value));
-const everyMathQuestion = computed(() => allMathQuestions(bank.value, overrides.value));
-const mathPool = computed(() => visibleMathQuestions(bank.value, withBankHidden.value));
-const basePassageIds = computed(() => new Set(bank.value.passages.map((p) => p.id)));
-const baseQuestionIds = computed(() => new Set(bank.value.mathQuestions.map((q) => q.id)));
+function isHidden(id: string): boolean {
+	return hiddenIds.value.has(id);
+}
+
+const everyPassage = computed(() => bank.value.passages);
+const everyMathQuestion = computed(() => bank.value.mathQuestions);
 const everyTest = computed(() => bank.value.tests);
-const tests = computed(() => everyTest.value.filter((t) => !bank.value.hidden.includes(t.id)));
+
+// What practice offers: hidden passages and questions left out, and a passage whose
+// questions are all hidden left out too.
+const passages = computed<Passage[]>(() =>
+	everyPassage.value
+		.filter((passage) => !isHidden(passage.id))
+		.map((passage) => ({ ...passage, questions: passage.questions.filter((q) => !q.hidden) }))
+		.filter((passage) => passage.questions.length > 0),
+);
+const mathPool = computed<Question[]>(() => everyMathQuestion.value.filter((q) => !isHidden(q.id)));
+const tests = computed(() => everyTest.value.filter((t) => !isHidden(t.id)));
+
+// Ids of passages and questions some test is made of.
+const usedInTests = computed(() => new Set(everyTest.value.flatMap((test) =>
+	test.sections.flatMap((s) => [...(s.passageId ? [s.passageId] : []), ...(s.questionIds ?? [])]))));
 
 // Hidden passages too: a saved mistake or session may point at one.
 function findPassage(id: string): Passage | undefined {
 	return everyPassage.value.find((p) => p.id === id);
 }
 
-// A test filled in with the current content, the parent's corrections included.
+// A test filled in with the current content.
 function resolveTest(test: BankTest): MockTest {
 	return buildTest(test, everyPassage.value, everyMathQuestion.value);
+}
+
+// The server version of an item (0: not in the bank as far as this device knows).
+function versionOf(id: string): number {
+	return bank.value.versions[id] ?? 0;
 }
 
 export function useContent() {
 	return {
 		bank,
-		overrides,
 		// What practice offers (hidden left out).
 		passages,
 		mathPool,
@@ -54,9 +59,9 @@ export function useContent() {
 		everyPassage,
 		everyMathQuestion,
 		everyTest,
-		// Items that come from the bank itself (as opposed to added as a change).
-		basePassageIds,
-		baseQuestionIds,
+		usedInTests,
+		isHidden,
+		versionOf,
 		findPassage,
 		resolveTest,
 	};

@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, shallowRef } from 'vue';
 import PassageText from '@/components/PassageText.vue';
-import { useContentEditor } from '@/composables/useContentEditor';
+import { useBankEditor } from '@/composables/useBankEditor';
+import { useContent } from '@/composables/useContent';
+import type { HistoryEntry } from '@/content/bankApi';
 import { lineCount, validatePassage, validateQuestion } from '@/content/validate';
-import { deleteItem, revertItem, savePassage, saveQuestion } from '@/content/overrides';
 import type { Passage, Question } from '@/types';
+import { formatDateTime } from '@/utils/format';
 import PassageForm from './PassageForm.vue';
 import QuestionForm from './QuestionForm.vue';
 import QuestionPreview from './QuestionPreview.vue';
@@ -14,45 +16,78 @@ import QuestionPreview from './QuestionPreview.vue';
 const props = defineProps<{
 	passage?: Passage;
 	question?: Question;
-	// A built-in item the parent already changed: it can go back to the original.
-	edited?: boolean;
-	// An item the parent added earlier: it can be deleted.
-	added?: boolean;
+	// The version being edited: saving fails if someone saved the item since.
+	version: number;
 	// A new item, not saved yet.
 	isNew?: boolean;
+	// Part of a test: hidden rather than deleted, so the test keeps its structure.
+	usedInTest?: boolean;
 }>();
 const emit = defineEmits<{ close: [] }>();
 
-const editor = useContentEditor();
+const editor = useBankEditor();
+const content = useContent();
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
-const draftPassage = props.passage ? reactive(clone(props.passage)) : undefined;
-const draftQuestion = props.question ? reactive(clone(props.question)) : undefined;
+const id = (props.passage ?? props.question)?.id ?? '';
+const baseVersion = ref(props.isNew ? 0 : props.version);
+const draftPassage = ref(props.passage && clone(props.passage));
+const draftQuestion = ref(props.question && clone(props.question));
 const original = JSON.stringify(props.passage ?? props.question);
+// Remounts the form when the whole draft is replaced (a version from the history).
+const formKey = ref(0);
 
 const view = ref<'edit' | 'preview'>('edit');
 
 const issues = computed(() => {
-	if (draftPassage) return validatePassage(draftPassage);
-	return draftQuestion ? validateQuestion(draftQuestion, 'math') : [];
+	if (draftPassage.value) return validatePassage(draftPassage.value);
+	return draftQuestion.value ? validateQuestion(draftQuestion.value, 'math') : [];
 });
-const dirty = computed(() => JSON.stringify(draftPassage ?? draftQuestion) !== original);
+const dirty = computed(() => JSON.stringify(draftPassage.value ?? draftQuestion.value) !== original);
 
 async function save() {
-	const change = draftPassage ? savePassage(clone(draftPassage)) : saveQuestion(clone(draftQuestion as Question));
-	if (await editor.update(change)) emit('close');
-}
-
-async function revert() {
-	if (!confirm('לבטל את כל השינויים שנעשו בפריט הזה ולחזור לגרסה המקורית?')) return;
-	const id = (props.passage ?? props.question)?.id;
-	if (id && (await editor.update(revertItem(id)))) emit('close');
+	const saved = draftPassage.value
+		? await editor.save('passage', clone(draftPassage.value), baseVersion.value)
+		: await editor.save('question', clone(draftQuestion.value as Question), baseVersion.value);
+	if (saved) {
+		emit('close');
+		return;
+	}
+	// Someone else saved meanwhile: the draft stays, and saving again replaces their version
+	// (the error message says so).
+	const latest = content.versionOf(id);
+	if (latest) baseVersion.value = latest;
 }
 
 async function remove() {
-	if (!confirm('למחוק את הפריט? הוא ייעלם מהתרגול בכל המכשירים, ואי אפשר לשחזר אותו.')) return;
-	const id = (props.passage ?? props.question)?.id;
-	if (id && (await editor.update(deleteItem(id)))) emit('close');
+	if (!confirm('למחוק את הפריט? הוא ייעלם מהתרגול בכל המכשירים, ואי אפשר לשחזר אותו מכאן.')) return;
+	if (await editor.remove(id)) emit('close');
+}
+
+// --- History: every saved version; one can be loaded into the form and saved again ---
+
+const history = shallowRef<HistoryEntry[]>([]);
+const historyState = ref<'closed' | 'loading' | 'open' | 'failed'>('closed');
+const restoredFrom = ref<number>();
+
+async function showHistory() {
+	historyState.value = 'loading';
+	try {
+		history.value = await editor.history(id);
+		historyState.value = 'open';
+	} catch {
+		historyState.value = 'failed';
+	}
+}
+
+function restore(entry: HistoryEntry) {
+	if (dirty.value && !confirm('לטעון את הגרסה הזאת במקום השינויים שעשית?')) return;
+	if (draftPassage.value) draftPassage.value = clone(entry.data as Passage);
+	else draftQuestion.value = clone(entry.data as Question);
+	formKey.value++;
+	restoredFrom.value = entry.version;
+	historyState.value = 'closed';
+	view.value = 'preview';
 }
 
 function close() {
@@ -79,6 +114,26 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
 				</div>
 			</header>
 
+			<p v-if="restoredFrom" class="message" role="status">
+				נטענה גרסה {{ restoredFrom }}. כדי שהיא תהיה הגרסה הנוכחית, לוחצים "שמירה".
+			</p>
+
+			<section v-if="historyState !== 'closed'" class="card history">
+				<div class="history-head">
+					<h3>גרסאות קודמות</h3>
+					<button type="button" class="btn small" @click="historyState = 'closed'">סגירה</button>
+				</div>
+				<p v-if="historyState === 'loading'" class="note">טוען…</p>
+				<p v-else-if="historyState === 'failed'" class="note tone--warn">אין חיבור לשרת, ואי אפשר להציג את הגרסאות.</p>
+				<p v-else-if="!history.length" class="note">אין גרסאות שמורות.</p>
+				<ul v-else class="versions">
+					<li v-for="entry in history" :key="entry.version">
+						<span>גרסה {{ entry.version }} · {{ formatDateTime(entry.savedAt) }}<template v-if="entry.version === baseVersion"> (הנוכחית)</template></span>
+						<button v-if="entry.version !== baseVersion" type="button" class="btn small" @click="restore(entry)">טעינה</button>
+					</li>
+				</ul>
+			</section>
+
 			<section v-if="issues.length" class="card issues" role="alert">
 				<p class="issues-title">צריך לתקן לפני שמירה:</p>
 				<ul>
@@ -87,8 +142,8 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
 			</section>
 
 			<section v-if="view === 'edit'" class="card">
-				<PassageForm v-if="draftPassage" v-model="draftPassage" :issues="issues" />
-				<QuestionForm v-else-if="draftQuestion" v-model="draftQuestion" context="math" :issues="issues" />
+				<PassageForm v-if="draftPassage" :key="formKey" v-model="draftPassage" :issues="issues" />
+				<QuestionForm v-else-if="draftQuestion" :key="formKey" v-model="draftQuestion" context="math" :issues="issues" />
 			</section>
 
 			<template v-else>
@@ -110,9 +165,12 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
 					{{ editor.saving.value ? 'שומר…' : 'שמירה' }}
 				</button>
 				<button type="button" class="btn" @click="close">סגירה</button>
-				<button v-if="edited" type="button" class="btn btn--danger" :disabled="editor.saving.value" @click="revert">חזרה למקור</button>
-				<button v-if="added" type="button" class="btn btn--danger" :disabled="editor.saving.value" @click="remove">מחיקה</button>
+				<template v-if="!isNew">
+					<button type="button" class="btn btn--side" :disabled="historyState === 'loading'" @click="showHistory">גרסאות קודמות</button>
+					<button v-if="!usedInTest" type="button" class="btn" :disabled="editor.saving.value" @click="remove">מחיקה</button>
+				</template>
 			</footer>
+			<p v-if="usedInTest && !isNew" class="note">הפריט הוא חלק ממבחן, ולכן אפשר להסתיר אותו אבל לא למחוק.</p>
 			<p v-if="editor.error.value" class="message tone--warn" role="alert">{{ editor.error.value }}</p>
 		</div>
 	</div>
@@ -194,6 +252,39 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
 	font-size: 15px;
 }
 
+.history-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+}
+
+.history h3 {
+	margin: 0;
+	font-size: 17px;
+}
+
+.versions {
+	display: grid;
+	gap: 6px;
+	margin: 10px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.versions li {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	min-height: 40px;
+}
+
+.btn.small {
+	min-height: 36px;
+	padding: 0 12px;
+}
+
 .q-number {
 	margin: 0 0 8px;
 	font-weight: 700;
@@ -219,7 +310,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
 	font-weight: 700;
 }
 
-.btn--danger {
+.btn--side {
 	margin-inline-start: auto;
 }
 </style>

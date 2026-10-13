@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { useContent } from '@/composables/useContent';
 import { isCorrect } from '@/composables/useMockTest';
 import { lineCount, validatePassage, validateQuestion } from '@/content/validate';
-import type { MockTest, Question, TestSection } from '@/types';
+import type { MockTest, Passage, Question, TestSection } from '@/types';
 import { BASE_MATH_QUESTIONS, BASE_PASSAGES } from './content';
 import { findMockTest } from './mockTests';
 import { noamTest } from './noam';
@@ -72,6 +72,33 @@ describe('content store', () => {
 		expect(content.mathPool.value).toEqual(BASE_MATH_QUESTIONS);
 		expect(content.tests.value.map((t) => t.id)).toEqual(['official-2025', 'official-sample', 'noam-2025']);
 		expect(content.findPassage('inf-1')).toBe(BASE_PASSAGES.find((p) => p.id === 'inf-1'));
+	});
+
+	it('leaves hidden items out of practice but not out of the bank', () => {
+		const content = useContent();
+		const original = content.bank.value;
+		const [first, second] = BASE_PASSAGES as [Passage, Passage];
+		const math = BASE_MATH_QUESTIONS[0] as Question;
+		try {
+			content.bank.value = {
+				...original,
+				passages: [
+					{ ...first, questions: first.questions.map((q, i) => (i === 0 ? { ...q, hidden: true } : q)) },
+					{ ...second, questions: second.questions.map((q) => ({ ...q, hidden: true })) },
+				],
+				hidden: [math.id, 'official-2025'],
+			};
+			// A passage with every question hidden is left out too.
+			expect(content.passages.value.map((p) => p.id)).toEqual([first.id]);
+			expect(content.passages.value[0]?.questions.length).toBe(first.questions.length - 1);
+			expect(content.everyPassage.value.length).toBe(2);
+			expect(content.mathPool.value.map((q) => q.id)).not.toContain(math.id);
+			expect(content.tests.value.map((t) => t.id)).not.toContain('official-2025');
+			expect(content.everyTest.value.map((t) => t.id)).toContain('official-2025');
+			expect(content.usedInTests.value.has(math.id)).toBe(true);
+		} finally {
+			content.bank.value = original;
+		}
 	});
 
 	// Section by section: title, instructions, passage and question ids.

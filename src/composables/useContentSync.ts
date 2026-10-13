@@ -1,95 +1,71 @@
-import { ref, watch } from 'vue';
+import { computed, shallowRef, ref, watch } from 'vue';
 import { bankApi } from '@/content/bankApi';
-import { parseSnapshot, toBankContent, type BankSnapshot } from '@/content/bankContent';
-import { contentApi, type ContentCopy } from '@/content/contentApi';
-import { emptyOverrides, parseOverrides } from '@/content/overrides';
+import { parseSnapshot, toBankContent, type BankRecord, type BankSnapshot } from '@/content/bankContent';
 import { useContent } from './useContent';
 import { useSession } from './useSession';
 
-// Brings the question bank, and the parent's changes to it, to every device. The last copy
-// of each is kept locally, so they apply offline and from the first moment the app opens.
-// Until the bank has loaded once, the content built into the app is used.
+// Brings the question bank to every device. The last copy is kept locally, so it works
+// offline and from the first moment the app opens. Until the bank has loaded once, the
+// content built into the app is used.
 
-const CACHE_KEY = 'gifted-prep:content';
-const BANK_CACHE_KEY = 'gifted-prep:bank';
+const CACHE_KEY = 'gifted-prep:bank';
+// Where the parent's changes were kept before they moved into the bank.
+const OLD_CACHE_KEY = 'gifted-prep:content';
 
-interface CachedContent {
-	overrides: unknown;
-	version: number;
-	updatedAt: number | null;
-}
-
-// The server version the local copy matches (0: never fetched). Writes in the question bank
-// are based on it.
-const version = ref(0);
-const updatedAt = ref<number | null>(null);
+const snapshot = shallowRef<BankSnapshot>();
 // The bank revision this device has (0: still the built-in content).
-const bankRevision = ref(0);
+const bankRevision = computed(() => snapshot.value?.revision ?? 0);
 const status = ref<'idle' | 'loading' | 'failed'>('idle');
 let initialized = false;
 
-function apply(copy: CachedContent): boolean {
-	// Nothing saved on the server yet means no changes.
-	const overrides = copy.overrides === null ? emptyOverrides() : parseOverrides(copy.overrides);
-	if (!overrides) return false;
-	useContent().overrides.value = overrides;
-	version.value = copy.version;
-	updatedAt.value = copy.updatedAt;
-	return true;
-}
-
 // Revision 0 is a bank nobody has loaded content into yet: the built-in content stays.
-function applyBank(snapshot: BankSnapshot): boolean {
-	if (snapshot.revision < 1) return false;
-	useContent().bank.value = toBankContent(snapshot.items);
-	bankRevision.value = snapshot.revision;
-	return true;
-}
-
-function readCache(key: string): unknown {
+function store(next: BankSnapshot) {
+	if (next.revision < 1) return;
+	snapshot.value = next;
+	useContent().bank.value = toBankContent(next.items);
 	try {
-		return JSON.parse(localStorage.getItem(key) ?? 'null');
-	} catch {
-		return null;
-	}
-}
-
-function loadCache() {
-	// No usable cache: the built-in content is used until the server answers.
-	const snapshot = parseSnapshot(readCache(BANK_CACHE_KEY));
-	if (snapshot) applyBank(snapshot);
-	const cached = readCache(CACHE_KEY) as CachedContent | null;
-	if (cached) apply(cached);
-}
-
-function saveCache(key: string, copy: unknown) {
-	try {
-		localStorage.setItem(key, JSON.stringify(copy));
+		localStorage.setItem(CACHE_KEY, JSON.stringify(next));
 	} catch {
 		// Not cached; fetched again next time.
 	}
 }
 
-// Takes a copy that came from the server (a fetch, or a save in the question bank).
-function accept(copy: ContentCopy) {
-	if (apply(copy)) saveCache(CACHE_KEY, copy);
-}
-
-async function refreshBank() {
-	// Only asks for the whole bank when it changed since this device's copy.
-	const snapshot = await bankApi.get(bankRevision.value || undefined);
-	if (snapshot && applyBank(snapshot)) saveCache(BANK_CACHE_KEY, snapshot);
+function loadCache() {
+	try {
+		localStorage.removeItem(OLD_CACHE_KEY);
+		const cached = parseSnapshot(JSON.parse(localStorage.getItem(CACHE_KEY) ?? 'null'));
+		if (cached) store(cached);
+	} catch {
+		// No usable cache: the built-in content is used until the server answers.
+	}
 }
 
 async function refresh() {
 	status.value = 'loading';
 	try {
-		const [, copy] = await Promise.all([refreshBank(), contentApi.get()]);
-		accept(copy);
+		// Only asks for the whole bank when it changed since this device's copy.
+		const next = await bankApi.get(bankRevision.value || undefined);
+		if (next) store(next);
 		status.value = 'idle';
 	} catch {
 		status.value = 'failed';
 	}
+}
+
+// Takes the server's reply to a write made on this device, without fetching the whole
+// bank again, as long as nothing else changed in between (otherwise fetches it).
+async function acceptWrite(revision: number, change: { item: BankRecord } | { deleted: string }) {
+	const current = snapshot.value;
+	if (!current || revision !== current.revision + 1) {
+		await refresh();
+		return;
+	}
+	const id = 'item' in change ? change.item.id : change.deleted;
+	const index = current.items.findIndex((item) => item.id === id);
+	const items = current.items.filter((item) => item.id !== id);
+	// An edited item keeps its place; a new one goes last, as on the server.
+	if ('item' in change) items.splice(index === -1 ? items.length : index, 0, change.item);
+	store({ revision, items });
 }
 
 function init() {
@@ -110,5 +86,5 @@ function init() {
 
 export function useContentSync() {
 	init();
-	return { version, updatedAt, bankRevision, status, refresh, accept };
+	return { bankRevision, status, refresh, acceptWrite };
 }

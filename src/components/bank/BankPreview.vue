@@ -1,21 +1,28 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue';
 import PassageText from '@/components/PassageText.vue';
-import { useContent } from '@/composables/useContent';
-import { useContentEditor } from '@/composables/useContentEditor';
-import { isHidden } from '@/content/bank';
-import { setHidden } from '@/content/overrides';
+import { useBankEditor } from '@/composables/useBankEditor';
 import type { Passage, Question } from '@/types';
 import QuestionPreview from './QuestionPreview.vue';
 
 // A full-screen look at one item: a passage with all its questions, or a math question.
-defineProps<{ passage?: Passage; question?: Question }>();
+const props = defineProps<{ passage?: Passage; question?: Question }>();
 const emit = defineEmits<{ close: [] }>();
 
-const { overrides } = useContent();
-const editor = useContentEditor();
+const editor = useBankEditor();
 
-const toggle = (id: string) => editor.update(setHidden(id, !isHidden(overrides.value, id)));
+// A question inside a passage is hidden by saving the passage with the question marked.
+function toggle(questionId: string) {
+	if (!props.passage) return;
+	void editor.change<Passage>('passage', props.passage.id, (passage) => ({
+		...passage,
+		questions: passage.questions.map((q) => {
+			if (q.id !== questionId) return q;
+			const { hidden, ...rest } = q;
+			return hidden ? rest : { ...rest, hidden: true };
+		}),
+	}));
+}
 
 function onKey(event: KeyboardEvent) {
 	if (event.key === 'Escape') emit('close');
@@ -31,15 +38,16 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
 				<h2>{{ passage ? passage.title : 'שאלה' }}</h2>
 				<button type="button" class="btn" @click="emit('close')">סגירה ✕</button>
 			</header>
+			<p v-if="editor.error.value" class="message tone--warn" role="alert">{{ editor.error.value }}</p>
 
 			<template v-if="passage">
 				<PassageText :passage="passage" />
-				<section v-for="(q, i) in passage.questions" :key="q.id" class="card item" :class="{ hidden: isHidden(overrides, q.id) }">
+				<section v-for="(q, i) in passage.questions" :key="q.id" class="card item" :class="{ hidden: q.hidden }">
 					<div class="item-head">
 						<strong>שאלה {{ i + 1 }}</strong>
-						<span v-if="isHidden(overrides, q.id)" class="badge">מוסתרת</span>
+						<span v-if="q.hidden" class="badge">מוסתרת</span>
 						<button type="button" class="btn small" :disabled="editor.saving.value" @click="toggle(q.id)">
-							{{ isHidden(overrides, q.id) ? 'הצגה' : 'הסתרה' }}
+							{{ q.hidden ? 'הצגה' : 'הסתרה' }}
 						</button>
 					</div>
 					<QuestionPreview :question="{ ...q, source: q.source ?? passage.source }" />

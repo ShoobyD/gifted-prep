@@ -88,12 +88,9 @@ console.log(`Built-in content: ${counts(items)} (all valid)`);
 // --- What the bank already has ---
 
 console.log(`Database: ${remote ? 'REMOTE (the real site)' : 'local (.wrangler/)'}`);
-const [existingRows, overrideRows] = d1('SELECT id, kind FROM bank_items; SELECT COUNT(*) AS n FROM content');
+const [existingRows] = d1('SELECT id, kind FROM bank_items');
 const existing = new Map(existingRows.map((row) => [row.id, row.kind]));
 console.log(`In the bank now: ${existing.size} items`);
-if (overrideRows[0]?.n) {
-	console.log('Note: there are saved changes in the old content table; they are not part of the bank.');
-}
 
 const clashes = items.filter((item) => existing.has(item.id) && existing.get(item.id) !== item.kind);
 for (const item of clashes) console.log(`Skipping ${item.id}: the bank has it as a ${existing.get(item.id)}`);

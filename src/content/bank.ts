@@ -1,17 +1,13 @@
 // Helpers for browsing the question bank: search and the state of each item.
 import type { Passage, Question } from '@/types';
-import type { ContentOverrides } from './overrides';
+import { CUSTOM_PREFIX } from './templates';
 
-// built-in: as shipped; edited: a built-in item changed by the parent; added: new from the parent.
+// built-in: as first loaded into the bank; edited: saved again since; added: new from the parent.
 export type ItemOrigin = 'built-in' | 'edited' | 'added';
 
-export function itemOrigin(id: string, builtInIds: Set<string>, changed: Record<string, unknown>): ItemOrigin {
-	if (!(id in changed)) return 'built-in';
-	return builtInIds.has(id) ? 'edited' : 'added';
-}
-
-export function isHidden(overrides: ContentOverrides, id: string): boolean {
-	return overrides.hidden.includes(id);
+export function itemOrigin(id: string, version: number): ItemOrigin {
+	if (id.startsWith(CUSTOM_PREFIX)) return 'added';
+	return version > 1 ? 'edited' : 'built-in';
 }
 
 const NIKUD = /[֑-ׇ]/g;

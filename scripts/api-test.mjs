@@ -61,8 +61,6 @@ check('a deep link also gets the login page', (await request('/reading')).status
 check('app assets are closed', (await request('/sw.js')).status === 401);
 check('the API is closed', (await request('/api/progress')).status === 401);
 check('writes are closed', (await request('/api/progress', { method: 'PUT', body: {} })).status === 401);
-check('content is closed', (await request('/api/content')).status === 401);
-check('content writes are closed', (await request('/api/content', { method: 'PUT', body: {} })).status === 401);
 check('the bank is closed', (await request('/api/bank')).status === 401);
 check('bank writes are closed', (await request('/api/bank/x', { method: 'PUT', body: {} })).status === 401);
 for (const open of ['/manifest.webmanifest', '/pwa-192.png', '/robots.txt']) {
@@ -88,7 +86,7 @@ const cookie = setCookie.split(';')[0];
 check('the app is served after login', (await request('/', { cookie })).status === 200);
 check('session reports logged in', (await request('/api/session', { cookie })).data.authenticated === true);
 
-// --- Versioned documents (progress, content) ---------------------------------
+// --- Versioned documents (progress) ---------------------------------
 
 // The same save / conflict / validation rules for every versioned document.
 async function testDocument({ path, field, make, foreign, read }) {
@@ -131,18 +129,6 @@ await testDocument({
 	make: (stars) => ({ version: 1, stars, stickers: [], sessions: [] }),
 	read: (doc) => doc?.stars,
 	foreign: { 'foreign document': { hello: 1 } },
-});
-
-await testDocument({
-	path: '/api/content',
-	field: 'overrides',
-	make: (n) => ({ version: 1, passages: {}, questions: {}, hidden: [`q-${n}`] }),
-	read: (doc) => Number(doc?.hidden?.[0]?.slice(2)),
-	foreign: {
-		'foreign document': { hello: 1 },
-		'passages not an object': { version: 1, passages: [], questions: {}, hidden: [] },
-		'hidden not a list of ids': { version: 1, passages: {}, questions: {}, hidden: [1] },
-	},
 });
 
 // --- Question bank -------------------------------------------------------------

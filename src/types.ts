@@ -62,6 +62,9 @@ export interface Question {
 	source?: ContentSource;
 	// Free-text detail on the source, e.g. a booklet page or a link.
 	sourceNote?: string;
+	// Left out of practice. Used for questions inside a passage; a standalone question is
+	// hidden as a whole bank item.
+	hidden?: boolean;
 }
 
 export const BLANK = '☐';

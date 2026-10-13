@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Question } from '@/types';
 import { itemOrigin, matches, normalize, paragraphsToText, questionText, textToParagraphs } from './bank';
-import { deleteItem, emptyOverrides, revertItem, saveQuestion, setHidden } from './overrides';
 import { CUSTOM_PREFIX, newMathQuestion, newPassage } from './templates';
 import { validatePassage, validateQuestion } from './validate';
 
@@ -28,11 +27,12 @@ describe('question bank search', () => {
 });
 
 describe('item origin', () => {
-	const builtIn = new Set(['p1']);
 	it('tells built-in, edited and added items apart', () => {
-		expect(itemOrigin('p1', builtIn, {})).toBe('built-in');
-		expect(itemOrigin('p1', builtIn, { p1: {} })).toBe('edited');
-		expect(itemOrigin('custom-1', builtIn, { 'custom-1': {} })).toBe('added');
+		expect(itemOrigin('p1', 1)).toBe('built-in');
+		expect(itemOrigin('p1', 0)).toBe('built-in');
+		expect(itemOrigin('p1', 2)).toBe('edited');
+		expect(itemOrigin('custom-1', 1)).toBe('added');
+		expect(itemOrigin('custom-1', 3)).toBe('added');
 	});
 });
 
@@ -48,24 +48,6 @@ describe('passage text', () => {
 	});
 });
 
-describe('edit intents', () => {
-	const q = (id: string, body: string): Question => ({
-		id, type: 'exercise', body, explanation: 'כי.', answer: { kind: 'number', rule: { op: 'eq', value: 1 }, solution: 1 },
-	});
-
-	it('saves an edited question and reverts it', () => {
-		const edited = saveQuestion(q('m1', 'ערוך'))(emptyOverrides());
-		expect(edited.questions.m1?.body).toBe('ערוך');
-		expect(revertItem('m1')(edited).questions).toEqual({});
-	});
-
-	it('keeps changes someone else saved meanwhile', () => {
-		const theirs = saveQuestion(q('m2', 'שלהם'))(emptyOverrides());
-		const both = saveQuestion(q('m1', 'שלי'))(theirs);
-		expect(Object.keys(both.questions).sort()).toEqual(['m1', 'm2']);
-	});
-});
-
 describe('added content', () => {
 	it('gets unique ids that never look built-in', () => {
 		const ids = new Set(Array.from({ length: 200 }, () => newMathQuestion().id));
@@ -78,26 +60,5 @@ describe('added content', () => {
 	it('starts invalid, so an empty item can never be saved', () => {
 		expect(validateQuestion(newMathQuestion(), 'math').length).toBeGreaterThan(0);
 		expect(validatePassage(newPassage()).length).toBeGreaterThan(0);
-	});
-
-	it('can be deleted, hiding included', () => {
-		const q = newMathQuestion();
-		const added = setHidden(q.id, true)(saveQuestion(q)(emptyOverrides()));
-		const deleted = deleteItem(q.id)(added);
-		expect(deleted.questions).toEqual({});
-		expect(deleted.hidden).toEqual([]);
-	});
-});
-
-describe('setHidden', () => {
-	it('hides and unhides without duplicates', () => {
-		const hidden = setHidden('q1', true)(setHidden('q1', true)(emptyOverrides()));
-		expect(hidden.hidden).toEqual(['q1']);
-		expect(setHidden('q1', false)(hidden).hidden).toEqual([]);
-	});
-
-	it('re-applies cleanly on a copy someone else changed meanwhile', () => {
-		const theirs = { ...emptyOverrides(), hidden: ['other'] };
-		expect(setHidden('q1', true)(theirs).hidden).toEqual(['other', 'q1']);
 	});
 });

@@ -10,16 +10,7 @@ CREATE TABLE IF NOT EXISTS progress (
 	updated_at INTEGER NOT NULL
 );
 
--- The parent's changes to the question bank (the app's ContentOverrides), same shape and
--- versioning as progress. Single row, id 'family'.
-CREATE TABLE IF NOT EXISTS content (
-	id TEXT PRIMARY KEY,
-	data TEXT NOT NULL,
-	version INTEGER NOT NULL,
-	updated_at INTEGER NOT NULL
-);
-
--- The question bank (replacing built-in content). One row per item: a passage with its
+-- The question bank. One row per item: a passage with its
 -- questions, a standalone math question, or an official test whose sections reference
 -- passages and questions by id.
 CREATE TABLE IF NOT EXISTS bank_items (
