@@ -100,6 +100,30 @@ export interface MockTest {
 	sections: TestSection[];
 }
 
+// The kinds of items in the question bank (the server's bank_items table).
+export type BankItemKind = 'passage' | 'question' | 'test';
+
+// A test as stored in the bank: its sections point at bank items instead of holding copies,
+// so editing a passage or question changes it in the test too.
+export interface BankTestSection {
+	// Omitted for a reading section named after its passage (it follows a rename).
+	title?: string;
+	instructions?: string;
+	// A reading section: the passage with all its questions.
+	passageId?: string;
+	// A math section: questions, in order.
+	questionIds?: string[];
+}
+
+export interface BankTest {
+	id: string;
+	title: string;
+	// One line on the test's card, e.g. "הַמִּבְחָן הָאֲמִתִּי מִשְּׁנַת 2025".
+	description?: string;
+	source: ContentSource;
+	sections: BankTestSection[];
+}
+
 // first: right on the first try; second: right after one mistake; failed: answer revealed.
 export type Outcome = 'first' | 'second' | 'failed';
 
