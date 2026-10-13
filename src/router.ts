@@ -28,7 +28,8 @@ export const router = createRouter({
 			props: (route) => ({ entry: findMockTest(String(route.params.id)) }),
 		},
 		{ path: '/stickers', name: 'stickers', component: () => import('./views/StickersView.vue'), meta: { title: 'הַמַּדְבֵּקוֹת שֶׁלִּי' } },
-		{ path: '/parents', name: 'parents', component: () => import('./views/ParentsView.vue'), meta: { title: 'הוֹרִים' } },
+		// Hidden on purpose: reached by a long press on the title (see App.vue).
+		{ path: '/device', name: 'device', component: () => import('./views/DeviceView.vue'), meta: { title: 'הַגְדָּרוֹת מַכְשִׁיר' } },
 		{
 			path: '/practice/:set',
 			name: 'practice',

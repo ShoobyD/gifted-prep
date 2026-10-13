@@ -31,6 +31,20 @@ const title = computed(() => {
 
 const isHome = computed(() => mode.value !== 'app' || route.name === 'home');
 
+// The tablet's hidden technical menu: a long press on the title (then the grown-up check).
+// Long enough that a child tapping around won't open it by chance.
+const LONG_PRESS_MS = 1500;
+let pressTimer: ReturnType<typeof setTimeout> | undefined;
+
+function startPress() {
+	if (mode.value !== 'app') return;
+	pressTimer = setTimeout(() => router.push({ name: 'device' }), LONG_PRESS_MS);
+}
+
+function cancelPress() {
+	clearTimeout(pressTimer);
+}
+
 function goBack() {
 	// Pop when we came from inside the app; otherwise (deep link) replace with home.
 	if (window.history.state?.back) {
@@ -52,7 +66,16 @@ function goBack() {
 		>
 			→
 		</button>
-		<h1 class="topbar-title">{{ title }}</h1>
+		<h1
+			class="topbar-title"
+			@pointerdown="startPress"
+			@pointerup="cancelPress"
+			@pointerleave="cancelPress"
+			@pointercancel="cancelPress"
+			@contextmenu.prevent
+		>
+			{{ title }}
+		</h1>
 	</header>
 
 	<main class="page">
@@ -77,8 +100,12 @@ function goBack() {
 }
 
 .topbar-title {
+	flex: 1;
 	margin: 0;
 	font-size: 26px;
+	/* Long press opens the device menu, not the browser's own selection or callout. */
+	-webkit-touch-callout: none;
+	user-select: none;
 }
 
 .back-btn {

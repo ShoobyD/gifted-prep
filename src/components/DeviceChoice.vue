@@ -8,7 +8,7 @@ const { setRole } = useDevice();
 <template>
 	<section class="choice">
 		<h2 class="title">מה המכשיר הזה?</h2>
-		<p class="hint">בוחרים פעם אחת. אפשר לשנות אחר כך באזור ההורים.</p>
+		<p class="hint">בוחרים פעם אחת. אפשר לשנות אחר כך: במכשיר הורה בלשונית "הגדרות", ובטאבלט בלחיצה ארוכה על הכותרת.</p>
 		<div class="options">
 			<button type="button" class="option" @click="setRole('child')">
 				<span class="icon" aria-hidden="true">🧒</span>

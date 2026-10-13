@@ -15,7 +15,6 @@ const items: MenuItem[] = [
 	{ to: { name: 'reading' }, icon: '📖', label: 'הֲבָנַת הַנִּקְרָא', color: 'var(--reading)' },
 	{ to: { name: 'math' }, icon: '🔢', label: 'חֶשְׁבּוֹן', color: 'var(--math)' },
 	{ to: { name: 'test' }, icon: '📝', label: 'מִבְחַן דֻּגְמָה', color: 'var(--test)' },
-	{ to: { name: 'parents' }, icon: '👪', label: 'הוֹרִים', color: 'var(--parents)' },
 ];
 </script>
 
@@ -108,7 +107,7 @@ const items: MenuItem[] = [
 
 .menu {
 	display: grid;
-	grid-template-columns: repeat(2, 1fr);
+	grid-template-columns: repeat(3, 1fr);
 	gap: 20px;
 }
 
@@ -144,7 +143,7 @@ const items: MenuItem[] = [
 	font-weight: 700;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
 	.menu {
 		grid-template-columns: 1fr;
 	}
