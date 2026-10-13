@@ -1,5 +1,5 @@
 // Empty items for the "add" buttons of the question bank. Ids of added content start with
-// "custom-" plus a random part, so they never collide with built-in ids or with each other.
+// "custom-" plus a random part, so they never collide with the original items' ids or with each other.
 import type { Passage, Question } from '@/types';
 
 export const CUSTOM_PREFIX = 'custom-';

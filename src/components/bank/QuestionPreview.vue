@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import QuestionStem from '@/components/QuestionStem.vue';
 import RichText from '@/components/RichText.vue';
-import { SOURCE_LABELS } from '@/data/content';
+import { SOURCE_LABELS } from '@/data/sources';
 import { TYPE_LABELS } from '@/data/labels';
 import { CHOICE_LABELS, correctAnswerText } from '@/engine/answerText';
 import type { Question } from '@/types';

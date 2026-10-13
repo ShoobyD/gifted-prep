@@ -1,10 +1,6 @@
-// The built-in content as question bank items: what scripts/seed-bank.mjs loads into the
-// database. checkBankItems guards the whole set, so nothing broken reaches the bank.
-import { BASE_MATH_QUESTIONS, BASE_PASSAGES } from '@/data/content';
-import { noamTest } from '@/data/noam';
-import { official2025 } from '@/data/official2025';
-import { officialSample } from '@/data/officialSample';
-import type { BankItemKind, BankTest, BankTestSection, MockTest, Passage, Question } from '@/types';
+// Checks a whole question bank before it is loaded into a database (npm run db:import)
+// and when it is exported: everything that would make it unusable.
+import type { BankItemKind, BankTest, Passage, Question } from '@/types';
 import { validatePassage, validateQuestion } from './validate';
 
 export type BankItemData = Passage | Question | BankTest;
@@ -13,46 +9,12 @@ export interface BankItem {
 	id: string;
 	kind: BankItemKind;
 	data: BankItemData;
+	hidden?: boolean;
 }
 
 // Same limits as the server (functions/_lib/bank.ts).
 const ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,99}$/i;
 const MAX_ITEM_BYTES = 256 * 1024;
-
-function toSection({ title, instructions, passage, questions }: MockTest['sections'][number]): BankTestSection {
-	const extra = instructions ? { instructions } : {};
-	if (passage) return { ...(title !== passage.title && { title }), ...extra, passageId: passage.id };
-	return { title, ...extra, questionIds: questions.map((q) => q.id) };
-}
-
-export function toBankTest(test: MockTest, description?: string): BankTest {
-	return {
-		id: test.id,
-		title: test.title,
-		...(description && { description }),
-		source: test.source,
-		sections: test.sections.map(toSection),
-	};
-}
-
-const BUILT_IN_TESTS: [MockTest, string][] = [
-	[official2025, 'הַמִּבְחָן הָאֲמִתִּי מִשְּׁנַת 2025'],
-	[officialSample, 'מִבְחָן קָצָר מֵחוֹבֶרֶת הַדֻּגְמָאוֹת שֶׁל מִשְׂרַד הַחִנּוּךְ'],
-	[noamTest, 'מִבְחָן לְדֻגְמָה שֶׁל מָכוֹן לְהָכָנָה'],
-];
-
-// Passages, then math questions, then tests: the order the bank lists them in.
-export function seedItems(): BankItem[] {
-	return [
-		...BASE_PASSAGES.map((data): BankItem => ({ id: data.id, kind: 'passage', data })),
-		...BASE_MATH_QUESTIONS.map((data): BankItem => ({ id: data.id, kind: 'question', data })),
-		...BUILT_IN_TESTS.map(([test, description]): BankItem => ({
-			id: test.id,
-			kind: 'test',
-			data: toBankTest(test, description),
-		})),
-	];
-}
 
 function testProblems(test: BankTest, kinds: Map<string, BankItemKind>): string[] {
 	const problems: string[] = [];

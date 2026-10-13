@@ -12,7 +12,7 @@ import QuestionForm from './QuestionForm.vue';
 import QuestionPreview from './QuestionPreview.vue';
 
 // Edits one item on a working copy; nothing changes until "save". Saving is blocked while
-// the shared validation (the same one the built-in content passes) reports a problem.
+// the shared validation (the same one an import of the bank runs) reports a problem.
 const props = defineProps<{
 	passage?: Passage;
 	question?: Question;

@@ -5,20 +5,20 @@ import { useContent } from './useContent';
 import { useSession } from './useSession';
 
 // Brings the question bank to every device. The last copy is kept locally, so it works
-// offline and from the first moment the app opens. Until the bank has loaded once, the
-// content built into the app is used.
+// offline and from the first moment the app opens. A device that never loaded it has no
+// passages or real-test questions yet (generated math still works).
 
 const CACHE_KEY = 'gifted-prep:bank';
 // Where the parent's changes were kept before they moved into the bank.
 const OLD_CACHE_KEY = 'gifted-prep:content';
 
 const snapshot = shallowRef<BankSnapshot>();
-// The bank revision this device has (0: still the built-in content).
+// The bank revision this device has (0: never loaded).
 const bankRevision = computed(() => snapshot.value?.revision ?? 0);
 const status = ref<'idle' | 'loading' | 'failed'>('idle');
 let initialized = false;
 
-// Revision 0 is a bank nobody has loaded content into yet: the built-in content stays.
+// Revision 0 is a bank nobody has loaded content into yet.
 function store(next: BankSnapshot) {
 	if (next.revision < 1) return;
 	snapshot.value = next;
@@ -36,7 +36,7 @@ function loadCache() {
 		const cached = parseSnapshot(JSON.parse(localStorage.getItem(CACHE_KEY) ?? 'null'));
 		if (cached) store(cached);
 	} catch {
-		// No usable cache: the built-in content is used until the server answers.
+		// No usable cache: the bank stays empty until the server answers.
 	}
 }
 

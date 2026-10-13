@@ -28,8 +28,8 @@ describe('question bank search', () => {
 
 describe('item origin', () => {
 	it('tells built-in, edited and added items apart', () => {
-		expect(itemOrigin('p1', 1)).toBe('built-in');
-		expect(itemOrigin('p1', 0)).toBe('built-in');
+		expect(itemOrigin('p1', 1)).toBe('unchanged');
+		expect(itemOrigin('p1', 0)).toBe('unchanged');
 		expect(itemOrigin('p1', 2)).toBe('edited');
 		expect(itemOrigin('custom-1', 1)).toBe('added');
 		expect(itemOrigin('custom-1', 3)).toBe('added');

@@ -13,9 +13,11 @@
 		"dev:api": "npm run build && wrangler pages dev",
 		"db:schema": "wrangler d1 execute gifted-prep --remote --file=./schema.sql",
 		"db:schema:local": "wrangler d1 execute gifted-prep --local --file=./schema.sql",
-		"test:api": "node scripts/api-test.mjs",
-		"db:seed": "node scripts/seed-bank.mjs --remote",
-		"db:seed:local": "node scripts/seed-bank.mjs"
+		"db:export": "node scripts/bank-export.mjs --remote",
+		"db:export:local": "node scripts/bank-export.mjs",
+		"db:import": "node scripts/bank-import.mjs --remote",
+		"db:import:local": "node scripts/bank-import.mjs",
+		"test:api": "node scripts/api-test.mjs"
 	},
 	"dependencies": {
 		"vue": "^3.5.43",

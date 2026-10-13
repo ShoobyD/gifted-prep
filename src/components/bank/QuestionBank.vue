@@ -5,7 +5,7 @@ import { useContent } from '@/composables/useContent';
 import { useBankEditor } from '@/composables/useBankEditor';
 import { itemOrigin, matches, passageText, questionText, type ItemOrigin } from '@/content/bank';
 import { MATH_TYPES, READING_TYPES } from '@/content/validate';
-import { SOURCE_LABELS } from '@/data/content';
+import { SOURCE_LABELS } from '@/data/sources';
 import { TYPE_LABELS } from '@/data/labels';
 import type { ContentSource, Passage, Question, QuestionType } from '@/types';
 import { newMathQuestion, newPassage } from '@/content/templates';
@@ -32,7 +32,7 @@ const STATUS_LABELS: Record<Status, string> = {
 	edited: 'נערכו',
 	added: 'נוספו',
 };
-const ORIGIN_LABELS: Record<Exclude<ItemOrigin, 'built-in'>, string> = { edited: 'נערך', added: 'נוסף' };
+const ORIGIN_LABELS: Record<Exclude<ItemOrigin, 'unchanged'>, string> = { edited: 'נערך', added: 'נוסף' };
 
 const types = computed(() => (area.value === 'reading' ? READING_TYPES : MATH_TYPES));
 
@@ -177,7 +177,7 @@ const snippet = (q: Question) => q.body ?? (q.math ? `$${q.math}$` : q.id);
 				</p>
 				<p class="badges">
 					<span v-if="row.hidden" class="badge">מוסתר</span>
-					<span v-if="row.origin !== 'built-in'" class="badge badge--changed">{{ ORIGIN_LABELS[row.origin] }}</span>
+					<span v-if="row.origin !== 'unchanged'" class="badge badge--changed">{{ ORIGIN_LABELS[row.origin] }}</span>
 				</p>
 			</div>
 			<div class="row-actions">
@@ -199,7 +199,7 @@ const snippet = (q: Question) => q.body ?? (q.math ? `$${q.math}$` : q.id);
 				</p>
 				<p class="badges">
 					<span v-if="row.hidden" class="badge">מוסתרת</span>
-					<span v-if="row.origin !== 'built-in'" class="badge badge--changed">{{ ORIGIN_LABELS[row.origin] }}</span>
+					<span v-if="row.origin !== 'unchanged'" class="badge badge--changed">{{ ORIGIN_LABELS[row.origin] }}</span>
 				</p>
 			</div>
 			<div class="row-actions">

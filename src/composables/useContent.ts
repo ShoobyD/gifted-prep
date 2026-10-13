@@ -1,12 +1,12 @@
 import { computed, shallowRef } from 'vue';
-import { buildTest, builtInBank, type BankContent } from '@/content/bankContent';
+import { buildTest, emptyBank, type BankContent } from '@/content/bankContent';
 import type { BankTest, MockTest, Passage, Question } from '@/types';
 
-// The question bank as the app uses it: the bank from the server (the built-in content
-// until it first loads). Every screen reads content through here, so a change shows up
-// everywhere at once.
+// The question bank as the app uses it: the bank from the server (empty until it first
+// loads; then kept on the device). Every screen reads content through here, so a change
+// shows up everywhere at once.
 
-const bank = shallowRef<BankContent>(builtInBank());
+const bank = shallowRef<BankContent>(emptyBank());
 
 const hiddenIds = computed(() => new Set(bank.value.hidden));
 

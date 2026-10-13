@@ -2,7 +2,7 @@ import { useContent } from '@/composables/useContent';
 import { MATH_GENERATORS } from '@/generators';
 import { pick } from '@/generators/random';
 import type { BankTest, Level, MathQuestionType, MockTest, Passage, PassageKind, Question, TestSection } from '@/types';
-import { isTestMaterial } from './content';
+import { isTestMaterial } from './sources';
 
 export interface MockTestEntry {
 	id: string;
@@ -22,7 +22,7 @@ function generate(type: MathQuestionType, levels: Level[]): Question[] {
 	return levels.map((level) => MATH_GENERATORS[type](level, Math.random));
 }
 
-// A passage written for practice (built-in originals and ones the parent added) rather
+// A passage written for practice (originals and ones the parent added) rather
 // than a real test's own; hidden ones left out. Falls back to any passage of the kind if
 // the parent hid them all, and to none if there is nothing at all.
 function practiceSection(kind: PassageKind): TestSection[] {

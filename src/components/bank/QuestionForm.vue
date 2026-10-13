@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue';
 import { isMachineCheckable, MATH_TYPES, READING_TYPES, type Issue } from '@/content/validate';
-import { SOURCE_LABELS } from '@/data/content';
+import { SOURCE_LABELS } from '@/data/sources';
 import { TYPE_LABELS } from '@/data/labels';
 import { CHOICE_LABELS } from '@/engine/answerText';
 import { PICTURES } from '@/generators/pictureRiddles';

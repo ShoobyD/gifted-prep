@@ -1,5 +1,5 @@
-// Checks a question or passage before it can be used: by the content tests for the built-in
-// material, and by the question editor before saving. Messages are for the parent (Hebrew).
+// Checks a question or passage before it can be used: by the question editor before saving,
+// and by the bank import and export. Messages are for the parent (Hebrew).
 import { checkNumber } from '@/engine/checkAnswer';
 import { fill, holds, isWellFormed, solutions, variablesOf } from '@/engine/expressions';
 import { BLANK, type MathQuestionType, type Passage, type Question, type ReadingQuestionType } from '@/types';

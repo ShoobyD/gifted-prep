@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useContent } from '@/composables/useContent';
 import { useProgress } from '@/composables/useProgress';
-import { isTestMaterial, SOURCE_LABELS } from '@/data/content';
+import { isTestMaterial, SOURCE_LABELS } from '@/data/sources';
 import { readingSetName } from '@/data/questionSets';
 import type { Passage } from '@/types';
 
@@ -26,6 +26,8 @@ const groups = computed<Group[]>(() => {
 </script>
 
 <template>
+	<!-- Only before the bank first loads (it needs the internet once). -->
+	<p v-if="!groups.length" class="empty">הַקְּטָעִים עוֹד לֹא הִגִּיעוּ. צָרִיךְ חִבּוּר לָאִינְטֶרְנֶט.</p>
 	<section v-for="group in groups" :key="group.title" class="group">
 		<h2 class="group-title">{{ group.title }}</h2>
 		<nav class="passages">
@@ -50,6 +52,12 @@ const groups = computed<Group[]>(() => {
 </template>
 
 <style scoped>
+.empty {
+	margin: 24px 0;
+	text-align: center;
+	color: var(--muted);
+}
+
 .group + .group {
 	margin-top: 28px;
 }

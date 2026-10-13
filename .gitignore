@@ -11,3 +11,6 @@ Thumbs.db
 
 # Local secrets, never committed
 .dev.vars
+
+# Question bank exports (npm run db:export): personal-use content
+backups/

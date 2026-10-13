@@ -1,6 +1,5 @@
 // The question bank as the server sends it (GET /api/bank), turned into what the app uses.
 import type { BankItemKind, BankTest, MockTest, Passage, Question, TestSection } from '@/types';
-import { seedItems } from './seed';
 import { isRecord, looksLikePassage, looksLikeQuestion, looksLikeTest } from './shapes';
 
 // One row of the bank, as the server sends it.
@@ -26,7 +25,7 @@ export interface BankContent {
 	tests: BankTest[];
 	// Ids of hidden items (any kind).
 	hidden: string[];
-	// Each item's version on the server (0 for the built-in content): a write must name it.
+	// Each item's version on the server: a write must name it.
 	versions: Record<string, number>;
 }
 
@@ -60,9 +59,9 @@ export function parseSnapshot(value: unknown): BankSnapshot | undefined {
 	return { revision: value.revision as number, items };
 }
 
-// The content shipped with the app: used until the bank has been loaded once.
-export function builtInBank(): BankContent {
-	return toBankContent(seedItems().map((item) => ({ ...item, hidden: false, version: 0, updatedAt: 0 })));
+// Before the bank has been loaded once: no content (generated math still works).
+export function emptyBank(): BankContent {
+	return toBankContent([]);
 }
 
 // A test with its sections filled in from the bank. Hidden items stay in: a test keeps the

@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue';
 import { paragraphsToText, textToParagraphs } from '@/content/bank';
 import { lineCount, type Issue } from '@/content/validate';
-import { SOURCE_LABELS } from '@/data/content';
+import { SOURCE_LABELS } from '@/data/sources';
 import { newReadingQuestion } from '@/content/templates';
 import type { Passage } from '@/types';
 import QuestionForm from './QuestionForm.vue';

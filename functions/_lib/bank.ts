@@ -1,7 +1,7 @@
 import type { Env } from './types';
 
 // The question bank in D1: one row per item (see schema.sql). Content rules (answers,
-// line numbers, …) are checked by the app's editor and by the seed script; the server only
+// line numbers, …) are checked by the app's editor and by the bank import; the server only
 // guards the shape, so a broken item can never take the bank down.
 
 export type ItemKind = 'passage' | 'question' | 'test';

@@ -2,12 +2,12 @@
 import type { Passage, Question } from '@/types';
 import { CUSTOM_PREFIX } from './templates';
 
-// built-in: as first loaded into the bank; edited: saved again since; added: new from the parent.
-export type ItemOrigin = 'built-in' | 'edited' | 'added';
+// unchanged: as first loaded into the bank; edited: saved again since; added: new from the parent.
+export type ItemOrigin = 'unchanged' | 'edited' | 'added';
 
 export function itemOrigin(id: string, version: number): ItemOrigin {
 	if (id.startsWith(CUSTOM_PREFIX)) return 'added';
-	return version > 1 ? 'edited' : 'built-in';
+	return version > 1 ? 'edited' : 'unchanged';
 }
 
 const NIKUD = /[֑-ׇ]/g;

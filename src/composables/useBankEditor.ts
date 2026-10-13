@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 import { bankApi, type WriteResult } from '@/content/bankApi';
-import type { BankItemData } from '@/content/seed';
+import type { BankItemData } from '@/content/checkBank';
 import type { Passage, Question } from '@/types';
 import { useContent } from './useContent';
 import { useContentSync } from './useContentSync';

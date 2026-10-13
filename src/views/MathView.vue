@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useContent } from '@/composables/useContent';
 import { useLevels } from '@/composables/useLevels';
 import { mathSetName } from '@/data/questionSets';
 import type { MathQuestionType } from '@/types';
@@ -19,6 +20,7 @@ const TOPICS: Topic[] = [
 ];
 
 const { levels } = useLevels();
+const { mathPool } = useContent();
 </script>
 
 <template>
@@ -26,7 +28,7 @@ const { levels } = useLevels();
 		<span class="mix-icon" aria-hidden="true">🎲</span>
 		<span>עִרְבּוּב – קְצָת מִכָּל דָּבָר</span>
 	</RouterLink>
-	<RouterLink class="mix mix--real" :to="{ name: 'practice', params: { set: mathSetName('real') } }">
+	<RouterLink v-if="mathPool.length" class="mix mix--real" :to="{ name: 'practice', params: { set: mathSetName('real') } }">
 		<span class="mix-icon" aria-hidden="true">🏅</span>
 		<span>שְׁאֵלוֹת מִמִּבְחָנִים אֲמִתִּיִּים</span>
 	</RouterLink>

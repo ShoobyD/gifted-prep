@@ -1,6 +1,6 @@
 import type { BankItemKind } from '@/types';
 import { parseSnapshot, type BankRecord, type BankSnapshot } from './bankContent';
-import type { BankItemData } from './seed';
+import type { BankItemData } from './checkBank';
 
 const URL = '/api/bank';
 // As with progress: a hung request must not block later ones.
