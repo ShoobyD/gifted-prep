@@ -63,6 +63,8 @@ check('the API is closed', (await request('/api/progress')).status === 401);
 check('writes are closed', (await request('/api/progress', { method: 'PUT', body: {} })).status === 401);
 check('content is closed', (await request('/api/content')).status === 401);
 check('content writes are closed', (await request('/api/content', { method: 'PUT', body: {} })).status === 401);
+check('the bank is closed', (await request('/api/bank')).status === 401);
+check('bank writes are closed', (await request('/api/bank/x', { method: 'PUT', body: {} })).status === 401);
 for (const open of ['/manifest.webmanifest', '/pwa-192.png', '/robots.txt']) {
 	check(`${open} stays open (install / crawlers)`, (await request(open)).status === 200);
 }
@@ -142,6 +144,59 @@ await testDocument({
 		'hidden not a list of ids': { version: 1, passages: {}, questions: {}, hidden: [1] },
 	},
 });
+
+// --- Question bank -------------------------------------------------------------
+
+console.log('— /api/bank (logged in)');
+{
+	const bank = (path = '', options = {}) => request(`/api/bank${path}`, { ...options, cookie });
+	// A unique id per run, so the test works on a database that already holds items.
+	const id = `test-${Date.now().toString(36)}`;
+	const question = (body) => ({
+		id, type: 'word-problem', body, explanation: 'כי.', answer: { kind: 'choice', options: ['א', 'ב'], correctIndex: 0 },
+	});
+
+	const first = await bank();
+	check('GET answers with the items and a revision', first.status === 200 && Array.isArray(first.data.items) && Number.isInteger(first.data.revision), first.data);
+	check('GET is never cached', first.headers.get('cache-control') === 'no-store');
+	const unchanged = await bank(`?rev=${first.data.revision}`);
+	check('an up-to-date device gets "unchanged" without the items', unchanged.data.unchanged === true && !unchanged.data.items, unchanged.data);
+
+	const created = await bank(`/${id}`, { method: 'PUT', body: { kind: 'question', data: question('v1'), baseVersion: 0 } });
+	check('creating an item answers 200 with version 1', created.status === 200 && created.data.item?.version === 1, created.data);
+	check('a change bumps the bank revision', created.data.revision > first.data.revision, created.data);
+	const listed = await bank(`?rev=${first.data.revision}`);
+	check('a device with an old revision gets the new item', listed.data.items?.some((item) => item.id === id && item.data.body === 'v1'), listed.data);
+	check('creating the same id again → 409', (await bank(`/${id}`, { method: 'PUT', body: { kind: 'question', data: question('again'), baseVersion: 0 } })).status === 409);
+
+	const updated = await bank(`/${id}`, { method: 'PUT', body: { kind: 'question', data: question('v2'), baseVersion: 1 } });
+	check('an update on the current version bumps it', updated.status === 200 && updated.data.item?.version === 2 && updated.data.item.data.body === 'v2', updated.data);
+	const stale = await bank(`/${id}`, { method: 'PUT', body: { kind: 'question', data: question('stale'), baseVersion: 1 } });
+	check('an update on a stale version → 409 with the current item', stale.status === 409 && stale.data.item?.data.body === 'v2', stale.data);
+	check('the kind of an item cannot change', (await bank(`/${id}`, { method: 'PUT', body: { kind: 'passage', data: { id, title: 'x', paragraphs: [], questions: [] }, baseVersion: 2 } })).status === 409);
+
+	const hidden = await bank(`/${id}`, { method: 'PATCH', body: { hidden: true } });
+	check('hiding sets the flag without a new content version', hidden.status === 200 && hidden.data.item?.hidden === true && hidden.data.item.version === 2, hidden.data);
+	check('hiding bumps the revision', hidden.data.revision > updated.data.revision, hidden.data);
+
+	const history = await bank(`/${id}/history`);
+	check('the history keeps every saved version, newest first', JSON.stringify(history.data.versions?.map((v) => [v.version, v.data.body])) === JSON.stringify([[2, 'v2'], [1, 'v1']]), history.data);
+
+	check('an item filed under another id → 400', (await bank('/other-id', { method: 'PUT', body: { kind: 'question', data: question('x'), baseVersion: 0 } })).status === 400);
+	check('an unknown kind → 400', (await bank(`/${id}-k`, { method: 'PUT', body: { kind: 'poem', data: { id: `${id}-k` }, baseVersion: 0 } })).status === 400);
+	check('a broken shape → 400', (await bank(`/${id}-s`, { method: 'PUT', body: { kind: 'question', data: { id: `${id}-s` }, baseVersion: 0 } })).status === 400);
+	check('an invalid id → 400', (await bank('/bad%20id', { method: 'PUT', body: { kind: 'question', data: { ...question('x'), id: 'bad id' }, baseVersion: 0 } })).status === 400);
+	check('an oversized item → 413', (await bank(`/${id}-big`, { method: 'PUT', body: { kind: 'question', data: { ...question('x'), id: `${id}-big`, padding: 'x'.repeat(300 * 1024) }, baseVersion: 0 } })).status === 413);
+	check('updating a missing item → 404', (await bank('/no-such-item', { method: 'PUT', body: { kind: 'question', data: { ...question('x'), id: 'no-such-item' }, baseVersion: 3 } })).status === 404);
+	check('hiding a missing item → 404', (await bank('/no-such-item', { method: 'PATCH', body: { hidden: true } })).status === 404);
+
+	check('deleting a stale version → 409', (await bank(`/${id}?baseVersion=1`, { method: 'DELETE' })).status === 409);
+	const deleted = await bank(`/${id}?baseVersion=2`, { method: 'DELETE' });
+	check('deleting the current version works', deleted.status === 200 && deleted.data.deleted === id, deleted.data);
+	check('the deleted item is gone from the bank', !(await bank()).data.items.some((item) => item.id === id));
+	check('its history stays', (await bank(`/${id}/history`)).data.versions?.length === 2);
+	check('deleting it again → 404', (await bank(`/${id}?baseVersion=2`, { method: 'DELETE' })).status === 404);
+}
 
 // --- Logout --------------------------------------------------------------------
 
