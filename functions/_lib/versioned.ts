@@ -1,10 +1,9 @@
-import { errorResponse, jsonResponse, type Env } from './types';
+import { errorResponse, jsonResponse, type Env, type RequestData } from './types';
 
-// A single JSON document per table (one family per deployment), written with optimistic
-// versioning: every write names the version it was based on, so two devices can't silently
-// overwrite each other. Shared by the progress and the content endpoints.
+// JSON documents, one per row, written with optimistic versioning: every write names the
+// version it was based on, so two devices can't silently overwrite each other.
 
-const ROW_ID = 'family';
+type Context = EventContext<Env, string, RequestData>;
 
 export interface VersionedDocument {
 	// A constant table name (never user input) with columns id, data, version, updated_at.
@@ -16,6 +15,8 @@ export interface VersionedDocument {
 	maxBytes: number;
 	// Extra shape checks beyond { version: formatVersion }.
 	isValid?(value: Record<string, unknown>): boolean;
+	// The row a request reads and writes (e.g. the child's), or a Response refusing it.
+	rowOf(context: Context): Promise<string | Response>;
 }
 
 interface Row {
@@ -31,8 +32,8 @@ function isDocument(doc: VersionedDocument, value: unknown): value is Record<str
 }
 
 export function versionedHandlers(doc: VersionedDocument) {
-	const readRow = (env: Env) =>
-		env.DB.prepare(`SELECT data, version, updated_at FROM ${doc.table} WHERE id = ?`).bind(ROW_ID).first<Row>();
+	const readRow = (env: Env, id: string) =>
+		env.DB.prepare(`SELECT data, version, updated_at FROM ${doc.table} WHERE id = ?`).bind(id).first<Row>();
 
 	const toDto = (row: Row | null) =>
 		row
@@ -40,11 +41,17 @@ export function versionedHandlers(doc: VersionedDocument) {
 			: { [doc.field]: null, version: 0, updatedAt: null };
 
 	// The saved document, or null with version 0 when nothing was saved yet.
-	const onRequestGet: PagesFunction<Env> = async ({ env }) => jsonResponse(toDto(await readRow(env)));
+	const onRequestGet: PagesFunction<Env, string, RequestData> = async (context) => {
+		const id = await doc.rowOf(context);
+		return id instanceof Response ? id : jsonResponse(toDto(await readRow(context.env, id)));
+	};
 
 	// Replaces the document if nobody wrote since baseVersion; otherwise 409 with the
 	// current server copy, so the client can merge and retry.
-	const onRequestPut: PagesFunction<Env> = async ({ request, env }) => {
+	const onRequestPut: PagesFunction<Env, string, RequestData> = async (context) => {
+		const { request, env } = context;
+		const id = await doc.rowOf(context);
+		if (id instanceof Response) return id;
 		const text = await request.text();
 		if (text.length > doc.maxBytes) return errorResponse(`${doc.field} too large`, 413);
 
@@ -68,13 +75,13 @@ export function versionedHandlers(doc: VersionedDocument) {
 		// when there is no row yet (base 0), or update only if the version still matches.
 		const result = baseVersion === 0
 			? await env.DB.prepare(`INSERT OR IGNORE INTO ${doc.table} (id, data, version, updated_at) VALUES (?, ?, 1, ?)`)
-				.bind(ROW_ID, data, now)
+				.bind(id, data, now)
 				.run()
 			: await env.DB.prepare(`UPDATE ${doc.table} SET data = ?, version = version + 1, updated_at = ? WHERE id = ? AND version = ?`)
-				.bind(data, now, ROW_ID, baseVersion)
+				.bind(data, now, id, baseVersion)
 				.run();
 
-		const row = await readRow(env);
+		const row = await readRow(env, id);
 		if (!result.meta.changes) return jsonResponse({ error: 'conflict', ...toDto(row) }, 409);
 		return jsonResponse(toDto(row));
 	};

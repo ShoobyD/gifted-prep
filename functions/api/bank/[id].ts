@@ -10,9 +10,10 @@ import {
 	rowToDto,
 	type ItemKind,
 } from '../../_lib/bank';
-import { errorResponse, jsonResponse, type Env } from '../../_lib/types';
+import { requireAdmin } from '../../_lib/families';
+import { errorResponse, jsonResponse, type Env, type RequestData } from '../../_lib/types';
 
-type Context = EventContext<Env, 'id', Record<string, unknown>>;
+type Context = EventContext<Env, 'id', RequestData>;
 
 const idOf = (context: Context) => String(context.params.id);
 
@@ -38,7 +39,9 @@ async function itemResponse(env: Env, id: string, status = 200) {
 // Creates (baseVersion 0) or updates an item. An update must name the version it edited;
 // if someone saved meanwhile, 409 with the current item. Every saved version is kept in
 // the history.
-export const onRequestPut: PagesFunction<Env, 'id'> = async (context) => {
+export const onRequestPut: PagesFunction<Env, 'id', RequestData> = async (context) => {
+	const denied = requireAdmin(context.data);
+	if (denied) return denied;
 	const { request, env } = context;
 	const id = idOf(context);
 	if (!isValidId(id)) return errorResponse('invalid id', 400);
@@ -75,7 +78,9 @@ export const onRequestPut: PagesFunction<Env, 'id'> = async (context) => {
 };
 
 // Hides or shows an item. Not a content change: no version check, nothing in the history.
-export const onRequestPatch: PagesFunction<Env, 'id'> = async (context) => {
+export const onRequestPatch: PagesFunction<Env, 'id', RequestData> = async (context) => {
+	const denied = requireAdmin(context.data);
+	if (denied) return denied;
 	const { request, env } = context;
 	const id = idOf(context);
 	const body = await readBody(request, 1024);
@@ -92,7 +97,9 @@ export const onRequestPatch: PagesFunction<Env, 'id'> = async (context) => {
 
 // Deletes an item, if it is still the version the caller saw (?baseVersion=N). Its history
 // stays, so a deleted item can still be recovered from the database.
-export const onRequestDelete: PagesFunction<Env, 'id'> = async (context) => {
+export const onRequestDelete: PagesFunction<Env, 'id', RequestData> = async (context) => {
+	const denied = requireAdmin(context.data);
+	if (denied) return denied;
 	const { request, env } = context;
 	const id = idOf(context);
 	const baseVersion = Number(new URL(request.url).searchParams.get('baseVersion'));

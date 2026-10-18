@@ -1,5 +1,5 @@
 import { readSession, secretsMatch } from './session';
-import type { Env } from './types';
+import { errorResponse, type Env, type RequestData } from './types';
 
 // Families log in with a password only: each family's password is its own, so the
 // password alone tells which family it is (the admin makes sure two families never share one).
@@ -67,4 +67,23 @@ export async function findFamilyByPassword(env: Env, password: string): Promise<
 		.bind(await passwordKey(password, secret))
 		.first<FamilyRow>();
 	return toFamily(row);
+}
+
+// Only the admin family manages the bank and the other families.
+export function requireAdmin(data: RequestData): Response | null {
+	return data.family.isAdmin ? null : errorResponse('admin only', 403);
+}
+
+const MIN_PASSWORD_LENGTH = 6;
+const MAX_PASSWORD_LENGTH = 100;
+
+// A new password for a family, as the key to store, or a Response refusing it. A password
+// must belong to one family only: otherwise the login couldn't tell which family it is.
+export async function newPasswordKey(env: Env, password: unknown, familyId?: string): Promise<string | Response> {
+	if (typeof password !== 'string' || password.length < MIN_PASSWORD_LENGTH || password.length > MAX_PASSWORD_LENGTH) {
+		return errorResponse(`a password needs ${MIN_PASSWORD_LENGTH} to ${MAX_PASSWORD_LENGTH} characters`, 400);
+	}
+	const owner = await findFamilyByPassword(env, password);
+	if (owner && owner.id !== familyId) return errorResponse('password taken', 409);
+	return passwordKey(password, env.SESSION_SECRET as string);
 }

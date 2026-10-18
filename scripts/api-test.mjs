@@ -9,7 +9,6 @@
 
 import { createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { d1, quote } from './d1.mjs';
 
 const BASE = process.env.API_BASE ?? 'http://localhost:8788';
 
@@ -89,17 +88,17 @@ check('the app is served after login', (await request('/', { cookie })).status =
 check('session reports logged in', (await request('/api/session', { cookie })).data.authenticated === true);
 
 // --- Families --------------------------------------------------------------------
-// Needs the admin family in the local database (npm run db:bootstrap:local -- ...).
+// Needs the admin family in the local database (npm run db:bootstrap:local -- ...), with
+// FAMILY_PASSWORD as its password (as right after bootstrap).
 
 console.log('— families');
 const base64url = (buffer) => buffer.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const hmac = (text) => base64url(createHmac('sha256', vars.SESSION_SECRET).update(text).digest());
-// The same signing and hashing as functions/_lib/session.ts and families.ts.
+// The same signing as functions/_lib/session.ts.
 const signToken = (payload) => {
 	const body = base64url(Buffer.from(JSON.stringify(payload)));
 	return `${body}.${hmac(body)}`;
 };
-const passwordKey = (password) => hmac(`family-password:${password}`);
 
 const adminSession = (await request('/api/session', { cookie })).data;
 check('FAMILY_PASSWORD logs in as the admin family', adminSession.family?.admin === true, adminSession);
@@ -109,25 +108,83 @@ const oldSession = (await request('/api/session', { cookie: oldCookie })).data;
 check('a cookie from before families belongs to the admin family', oldSession.family?.id === adminSession.family?.id, oldSession);
 check('... and still opens the API', (await request('/api/progress', { cookie: oldCookie })).status === 200);
 
-const familyId = `f-apitest-${Date.now().toString(36)}`;
+// --- Children and progress per child (as the admin family) ---------------------------
+
+console.log('— /api/children');
+const children = (path = '', options = {}) => request(`/api/children${path}`, { ...options, cookie });
+const listed = await children();
+check('the family has its first child', listed.status === 200 && listed.data.children.length >= 1, listed.data);
+const firstChild = listed.data.children[0];
+
+const added = await children('', { method: 'POST', body: { name: '  ילד   בדיקה ', icon: '🦊' } });
+const addedId = added.data.child?.id;
+check('a child can be added (name tidied)', added.status === 201 && added.data.child?.name === 'ילד בדיקה' && added.data.child.icon === '🦊', added.data);
+check('a new child goes last', added.data.children?.at(-1)?.id === addedId);
+check('a child needs a name', (await children('', { method: 'POST', body: { name: '   ' } })).status === 400);
+check('a child name has a length limit', (await children('', { method: 'POST', body: { name: 'א'.repeat(41) } })).status === 400);
+const renamed = await children(`/${addedId}`, { method: 'PATCH', body: { name: 'שם חדש' } });
+check('a child can be renamed (icon kept)', renamed.data.child?.name === 'שם חדש' && renamed.data.child.icon === '🦊', renamed.data);
+
+console.log('— /api/progress per child');
+const progressOf = (child, options = {}) => request(`/api/progress${child ? `?child=${child}` : ''}`, { ...options, cookie });
+const firstProgress = await progressOf(firstChild.id);
+check('no child named → the first child', (await progressOf()).data.version === firstProgress.data.version);
+const addedProgress = await progressOf(addedId, { method: 'PUT', body: { progress: { version: 1, stars: 7, stickers: [], sessions: [] }, baseVersion: 0 } });
+check('each child has its own progress', addedProgress.status === 200 && (await progressOf(addedId)).data.progress?.stars === 7, addedProgress.data);
+check('... which leaves the first child alone', (await progressOf(firstChild.id)).data.version === firstProgress.data.version);
+check('an unknown child → 404', (await progressOf('c-nobody')).status === 404);
+
+// --- Other families (the admin API) -----------------------------------------------
+
+console.log('— /api/admin/families');
+const admin = (path = '', options = {}) => request(`/api/admin/families${path}`, { ...options, cookie });
+const familyName = `בדיקה ${Date.now().toString(36)}`;
 const familyPassword = `pw-${Math.random().toString(36).slice(2)}`;
-const dropFamily = () => d1(`DELETE FROM families WHERE id = ${quote(familyId)}`, { remote: false });
-d1(`INSERT INTO families (id, name, password_hash, is_admin, created_at)
-	VALUES (${quote(familyId)}, ${quote(familyId)}, ${quote(passwordKey(familyPassword))}, 0, ${Date.now()})`, { remote: false });
+const created = await admin('', { method: 'POST', body: { name: familyName, password: familyPassword, child: { name: 'נכד', icon: '🐢' } } });
+const familyId = created.data.created;
 try {
+	const entry = created.data.families?.find((f) => f.id === familyId);
+	check('the admin creates a family with a first child', created.status === 201 && entry?.children[0]?.name === 'נכד', created.data);
+	check('the list never holds passwords', !JSON.stringify(created.data).includes(familyPassword) && entry?.hasPassword === true);
+	check('the admin family comes first', created.data.families?.[0]?.admin === true);
+	check('a password belongs to one family', (await admin('', { method: 'POST', body: { name: `${familyName}-2`, password: familyPassword } })).status === 409);
+	check('so does a name (any case)', (await admin('', { method: 'POST', body: { name: familyName.toUpperCase(), password: `${familyPassword}-2` } })).status === 409);
+	check('FAMILY_PASSWORD is taken too', (await admin('', { method: 'POST', body: { name: `${familyName}-3`, password: vars.FAMILY_PASSWORD } })).status === 409);
+	check('a short password → 400', (await admin('', { method: 'POST', body: { name: `${familyName}-4`, password: '123' } })).status === 400);
+
 	const otherLogin = await request('/api/login', { method: 'POST', body: { password: familyPassword } });
 	const otherCookie = (otherLogin.headers.get('set-cookie') ?? '').split(';')[0];
-	const otherSession = (await request('/api/session', { cookie: otherCookie })).data;
-	check('a family password logs in as that family', otherSession.family?.id === familyId && otherSession.family.admin === false, otherSession);
-	check('another family can use the API', (await request('/api/bank?rev=-1', { cookie: otherCookie })).status === 200);
-	dropFamily();
-	check('a deleted family is out of the API', (await request('/api/bank', { cookie: otherCookie })).status === 401);
-	check('... and its session reports logged out', (await request('/api/session', { cookie: otherCookie })).data.authenticated === false);
-	const forged = `session=${signToken({ exp: Date.now() + 60_000, fam: 'f-nobody' })}`;
-	check('a cookie for an unknown family is rejected', (await request('/api/progress', { cookie: forged })).status === 401);
+	const as = (path, options = {}) => request(path, { ...options, cookie: otherCookie });
+	const otherSession = (await as('/api/session')).data;
+	check('the family logs in with its password', otherSession.family?.id === familyId && otherSession.family.admin === false, otherSession);
+	const theirChildren = (await as('/api/children')).data.children;
+	check('a family sees only its own children', theirChildren?.length === 1 && theirChildren[0].name === 'נכד', theirChildren);
+	check('another family\'s child is out of reach', (await as(`/api/progress?child=${firstChild.id}`)).status === 404);
+	check('... also for renaming', (await as(`/api/children/${firstChild.id}`, { method: 'PATCH', body: { name: 'x' } })).status === 404);
+	check('a family reads the bank', (await as('/api/bank?rev=-1')).status === 200);
+	check('only the admin writes the bank', (await as('/api/bank/x', { method: 'PATCH', body: { hidden: true } })).status === 403);
+	check('only the admin manages families', (await as('/api/admin/families')).status === 403);
+	check('the last child cannot be removed', (await as(`/api/children/${theirChildren[0].id}`, { method: 'DELETE' })).status === 409);
+
+	const newPassword = `${familyPassword}-new`;
+	check('the admin sets a new password', (await admin(`/${familyId}`, { method: 'PATCH', body: { password: newPassword } })).status === 200);
+	check('the old password stops working', (await request('/api/login', { method: 'POST', body: { password: familyPassword } })).status === 401);
+	check('the new one works', (await request('/api/login', { method: 'POST', body: { password: newPassword } })).status === 200);
+
+	check('the admin family cannot be deleted', (await admin(`/${adminSession.family.id}`, { method: 'DELETE' })).status === 409);
+	const deleted = await admin(`/${familyId}`, { method: 'DELETE' });
+	check('a family can be deleted', deleted.status === 200 && !deleted.data.families.some((f) => f.id === familyId), deleted.data);
+	check('a deleted family is out of the API', (await as('/api/children')).status === 401);
+	check('... and its session reports logged out', (await as('/api/session')).data.authenticated === false);
 } finally {
-	dropFamily();
+	if (familyId) await admin(`/${familyId}`, { method: 'DELETE' });
 }
+
+const forged = `session=${signToken({ exp: Date.now() + 60_000, fam: 'f-nobody' })}`;
+check('a cookie for an unknown family is rejected', (await request('/api/progress', { cookie: forged })).status === 401);
+
+check('a child can be removed, with its progress', (await children(`/${addedId}`, { method: 'DELETE' })).status === 200
+	&& (await progressOf(addedId)).status === 404);
 
 // --- Versioned documents (progress) ---------------------------------
 
