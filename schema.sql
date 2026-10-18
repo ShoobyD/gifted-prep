@@ -41,3 +41,29 @@ CREATE TABLE IF NOT EXISTS bank_meta (
 	value INTEGER NOT NULL
 );
 INSERT OR IGNORE INTO bank_meta (key, value) VALUES ('revision', 0);
+
+-- Families: each logs in with its name and password and sees only its own children. The
+-- admin family also edits the question bank and manages the other families.
+CREATE TABLE IF NOT EXISTS families (
+	id TEXT PRIMARY KEY,
+	-- What the family types at login; unique regardless of case.
+	name TEXT NOT NULL UNIQUE COLLATE NOCASE,
+	-- A salted password hash. NULL only for the admin family before it sets a password of
+	-- its own: it then logs in with FAMILY_PASSWORD, as before families existed.
+	password_hash TEXT,
+	is_admin INTEGER NOT NULL DEFAULT 0,
+	created_at INTEGER NOT NULL
+);
+
+-- A family's children. Each child has its own progress (the progress row with the child's id).
+CREATE TABLE IF NOT EXISTS children (
+	id TEXT PRIMARY KEY,
+	family_id TEXT NOT NULL REFERENCES families (id) ON DELETE CASCADE,
+	name TEXT NOT NULL,
+	-- An emoji the child recognizes on the shared tablet's "who is practicing?" screen.
+	icon TEXT NOT NULL DEFAULT '',
+	-- Display order; the first child also gets requests that name no child.
+	position INTEGER NOT NULL DEFAULT 0,
+	created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS children_by_family ON children (family_id, position);

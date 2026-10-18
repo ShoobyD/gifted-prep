@@ -17,6 +17,8 @@
 		"db:export:local": "node scripts/bank-export.mjs",
 		"db:import": "node scripts/bank-import.mjs --remote",
 		"db:import:local": "node scripts/bank-import.mjs",
+		"db:bootstrap": "node scripts/family-bootstrap.mjs --remote",
+		"db:bootstrap:local": "node scripts/family-bootstrap.mjs",
 		"test:api": "node scripts/api-test.mjs"
 	},
 	"dependencies": {
