@@ -1,6 +1,6 @@
 import { ref, shallowRef } from 'vue';
 import { defaultProgress, parseProgress, type ProgressState } from '@/progress/state';
-import { progressApi } from '@/sync/progressApi';
+import { progressApiFor } from '@/sync/progressApi';
 import type { ServerCopy } from '@/sync/syncEngine';
 
 // The server copy of the child's progress, for parent devices. Kept only in memory: a
@@ -13,6 +13,9 @@ const saving = ref(false);
 const error = ref('');
 
 const MAX_ATTEMPTS = 3;
+
+// The family's first child (choosing another comes with managing children).
+const progressApi = progressApiFor(undefined);
 
 function parse(copy: ServerCopy): ProgressState | null {
 	return copy.progress && (parseProgress(JSON.stringify(copy.progress)) ?? null);

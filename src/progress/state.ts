@@ -1,7 +1,6 @@
-// Progress model and pure update logic; persistence lives in useProgress.
+// Progress model and pure update logic; persistence lives in useProgress (keys: storage.ts).
 import type { Level, MathQuestionType, Outcome, Question, QuestionType } from '@/types';
 
-export const STORAGE_KEY = 'gifted-prep:progress';
 export const PROGRESS_VERSION = 1;
 const MAX_SESSIONS = 300;
 const MAX_MISTAKES = 60;

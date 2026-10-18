@@ -1,5 +1,6 @@
-import { computed, reactive, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { newStickers, type Sticker } from '@/progress/stickers';
+import { adoptLegacyProgress, progressKey } from '@/progress/storage';
 import {
 	applyAnswer,
 	applyMistake,
@@ -9,15 +10,15 @@ import {
 	importedProgress,
 	parseProgress,
 	resetProgress,
-	STORAGE_KEY,
 	type ProgressState,
 	type SessionRecord,
 } from '@/progress/state';
 import type { Outcome, Question, QuestionType } from '@/types';
+import { useChildren } from './useChildren';
 
-function load(): ProgressState {
+function load(key: string): ProgressState {
 	try {
-		const saved = localStorage.getItem(STORAGE_KEY);
+		const saved = localStorage.getItem(key);
 		return (saved && parseProgress(saved)) || defaultProgress();
 	} catch {
 		// Storage can be unavailable (private mode, blocked site data): run in memory.
@@ -25,26 +26,47 @@ function load(): ProgressState {
 	}
 }
 
-// One shared, persisted state for the whole app.
-const state = reactive<ProgressState>(load());
+function adoptLegacy(id: string) {
+	try {
+		adoptLegacyProgress(localStorage, id);
+	} catch {
+		// Storage unavailable: nothing kept to move.
+	}
+}
 
-watch(
-	state,
-	() => {
-		try {
-			localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-		} catch {
-			// Not persisted; progress still works for this visit.
-		}
-	},
-	{ deep: true },
-);
+// The child whose progress this is; undefined until the device knows its child (the
+// progress then lives under the device's old key, and moves to the child once known).
+const childId = ref(useChildren().activeChild.value?.id);
+if (childId.value) adoptLegacy(childId.value);
+
+// One shared, persisted state for the whole app: the current child's.
+const state = reactive<ProgressState>(load(progressKey(childId.value)));
+
+function save() {
+	try {
+		localStorage.setItem(progressKey(childId.value), JSON.stringify(state));
+	} catch {
+		// Not persisted; progress still works for this visit.
+	}
+}
+
+watch(state, save, { deep: true });
 
 // Keeps the levels object identity, since useLevels hands out a readonly view of it.
 function replace(next: ProgressState) {
 	const { levels, ...rest } = next;
 	Object.assign(state, rest);
 	Object.assign(state.levels, levels);
+}
+
+// Makes another child's progress the current one. The device's old progress, if it never
+// had a child, becomes this child's. Callers make sure no sync is running (see useSync).
+function switchTo(id: string) {
+	if (id === childId.value) return;
+	save();
+	adoptLegacy(id);
+	childId.value = id;
+	replace(load(progressKey(id)));
 }
 
 export function useProgress() {
@@ -82,5 +104,5 @@ export function useProgress() {
 		replace(resetProgress(state));
 	}
 
-	return { state, streak, recordAnswer, recordMistake, finishSession, exportJson, importJson, reset, replace };
+	return { state, childId, streak, recordAnswer, recordMistake, finishSession, exportJson, importJson, reset, replace, switchTo };
 }

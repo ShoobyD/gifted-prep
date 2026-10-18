@@ -15,7 +15,7 @@ export function useDeviceReport() {
 	started = true;
 	const device = useDevice();
 	const speech = useSpeech();
-	const { state } = useProgress();
+	const { state, childId } = useProgress();
 
 	function report(hebrewVoice: string | null) {
 		if (!device.isChild.value || state.device?.hebrewVoice === hebrewVoice) return;
@@ -23,8 +23,9 @@ export function useDeviceReport() {
 	}
 
 	// Reports a voice as soon as it's known; with none yet, waits a little before reporting
-	// "none" (also when the device is chosen as the child's only later).
-	watch([speech.voiceName, device.isChild], ([name, isChild]) => {
+	// "none" (also when the device is chosen as the child's only later). Each child's
+	// progress gets the report, so it's made again when another child takes the tablet.
+	watch([speech.voiceName, device.isChild, childId], ([name, isChild]) => {
 		if (name) report(name);
 		else if (isChild) setTimeout(() => {
 			if (!speech.voiceName.value) report(null);
