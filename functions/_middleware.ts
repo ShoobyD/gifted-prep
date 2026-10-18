@@ -1,6 +1,7 @@
+import { familyOfRequest } from './_lib/families';
 import { loginPageResponse } from './_lib/login-page';
-import { isAuthenticated } from './_lib/session';
-import { errorResponse, type Env } from './_lib/types';
+import { readSession } from './_lib/session';
+import { errorResponse, type Env, type RequestData } from './_lib/types';
 
 // Must stay open, or nobody could log in.
 const OPEN_API_PATHS = new Set(['/api/login', '/api/logout', '/api/session']);
@@ -18,14 +19,20 @@ const OPEN_FILES = new Set([
 ]);
 
 // The gate: runs before every request. The whole site holds copyrighted test material
-// for private use, so everything else requires the family login.
-export const onRequest: PagesFunction<Env> = async (context) => {
+// for private use, so everything else requires a family login.
+export const onRequest: PagesFunction<Env, string, RequestData> = async (context) => {
 	const { request, env } = context;
 	const path = new URL(request.url).pathname;
 
 	if (OPEN_API_PATHS.has(path) || OPEN_FILES.has(path)) return context.next();
-	if (await isAuthenticated(request, env.SESSION_SECRET)) return context.next();
 
-	// A full page for people, a short error for API calls.
-	return path.startsWith('/api/') ? errorResponse('login required', 401) : loginPageResponse();
+	// API calls also need the family itself (it may have been deleted since it logged in),
+	// and pass it on to the function. The app's files only need a valid cookie.
+	if (path.startsWith('/api/')) {
+		const family = await familyOfRequest(request, env);
+		if (!family) return errorResponse('login required', 401);
+		context.data.family = family;
+		return context.next();
+	}
+	return (await readSession(request, env.SESSION_SECRET)) ? context.next() : loginPageResponse();
 };

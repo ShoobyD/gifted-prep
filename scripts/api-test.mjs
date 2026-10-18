@@ -7,7 +7,9 @@
 //
 // Works on the local database only (.wrangler/), never on the real site.
 
+import { createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { d1, quote } from './d1.mjs';
 
 const BASE = process.env.API_BASE ?? 'http://localhost:8788';
 
@@ -85,6 +87,47 @@ const cookie = setCookie.split(';')[0];
 
 check('the app is served after login', (await request('/', { cookie })).status === 200);
 check('session reports logged in', (await request('/api/session', { cookie })).data.authenticated === true);
+
+// --- Families --------------------------------------------------------------------
+// Needs the admin family in the local database (npm run db:bootstrap:local -- ...).
+
+console.log('— families');
+const base64url = (buffer) => buffer.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const hmac = (text) => base64url(createHmac('sha256', vars.SESSION_SECRET).update(text).digest());
+// The same signing and hashing as functions/_lib/session.ts and families.ts.
+const signToken = (payload) => {
+	const body = base64url(Buffer.from(JSON.stringify(payload)));
+	return `${body}.${hmac(body)}`;
+};
+const passwordKey = (password) => hmac(`family-password:${password}`);
+
+const adminSession = (await request('/api/session', { cookie })).data;
+check('FAMILY_PASSWORD logs in as the admin family', adminSession.family?.admin === true, adminSession);
+
+const oldCookie = `session=${signToken({ exp: Date.now() + 60_000 })}`;
+const oldSession = (await request('/api/session', { cookie: oldCookie })).data;
+check('a cookie from before families belongs to the admin family', oldSession.family?.id === adminSession.family?.id, oldSession);
+check('... and still opens the API', (await request('/api/progress', { cookie: oldCookie })).status === 200);
+
+const familyId = `f-apitest-${Date.now().toString(36)}`;
+const familyPassword = `pw-${Math.random().toString(36).slice(2)}`;
+const dropFamily = () => d1(`DELETE FROM families WHERE id = ${quote(familyId)}`, { remote: false });
+d1(`INSERT INTO families (id, name, password_hash, is_admin, created_at)
+	VALUES (${quote(familyId)}, ${quote(familyId)}, ${quote(passwordKey(familyPassword))}, 0, ${Date.now()})`, { remote: false });
+try {
+	const otherLogin = await request('/api/login', { method: 'POST', body: { password: familyPassword } });
+	const otherCookie = (otherLogin.headers.get('set-cookie') ?? '').split(';')[0];
+	const otherSession = (await request('/api/session', { cookie: otherCookie })).data;
+	check('a family password logs in as that family', otherSession.family?.id === familyId && otherSession.family.admin === false, otherSession);
+	check('another family can use the API', (await request('/api/bank?rev=-1', { cookie: otherCookie })).status === 200);
+	dropFamily();
+	check('a deleted family is out of the API', (await request('/api/bank', { cookie: otherCookie })).status === 401);
+	check('... and its session reports logged out', (await request('/api/session', { cookie: otherCookie })).data.authenticated === false);
+	const forged = `session=${signToken({ exp: Date.now() + 60_000, fam: 'f-nobody' })}`;
+	check('a cookie for an unknown family is rejected', (await request('/api/progress', { cookie: forged })).status === 401);
+} finally {
+	dropFamily();
+}
 
 // --- Versioned documents (progress) ---------------------------------
 

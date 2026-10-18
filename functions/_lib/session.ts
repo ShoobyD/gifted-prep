@@ -1,8 +1,9 @@
 // Family login: a stateless signed cookie.
 //
-// The cookie holds an expiry date and an HMAC signature over it. It contains no secret
-// and can't be forged without the key, which lives only on the server. It is HttpOnly,
-// so scripts in the page can't read it.
+// The cookie holds an expiry date and the family's id, with an HMAC signature over both.
+// It contains no secret and can't be forged without the key, which lives only on the
+// server. It is HttpOnly, so scripts in the page can't read it. Cookies from before
+// families existed have no family id; they belong to the admin family.
 
 export const SESSION_COOKIE = 'session';
 
@@ -45,16 +46,21 @@ export async function secretsMatch(given: string, expected: string, secret: stri
 	return diff === 0;
 }
 
-export async function createSessionToken(secret: string, now: number): Promise<string> {
-	const payload = toBase64Url(encoder.encode(JSON.stringify({ exp: now + SESSION_TTL_SECONDS * 1000 })));
+// What a valid cookie says: which family logged in (undefined for an old cookie).
+export interface SessionPayload {
+	familyId?: string;
+}
+
+export async function createSessionToken(secret: string, now: number, familyId: string): Promise<string> {
+	const payload = toBase64Url(encoder.encode(JSON.stringify({ exp: now + SESSION_TTL_SECONDS * 1000, fam: familyId })));
 	const key = await hmacKey(secret);
 	const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
 	return `${payload}.${toBase64Url(new Uint8Array(signature))}`;
 }
 
-async function isTokenValid(token: string, secret: string, now: number): Promise<boolean> {
+async function readToken(token: string, secret: string, now: number): Promise<SessionPayload | null> {
 	const [payload, signature] = token.split('.');
-	if (!payload || !signature) return false;
+	if (!payload || !signature) return null;
 
 	const key = await hmacKey(secret);
 	let signatureOk: boolean;
@@ -62,15 +68,16 @@ async function isTokenValid(token: string, secret: string, now: number): Promise
 		signatureOk = await crypto.subtle.verify('HMAC', key, fromBase64Url(signature), encoder.encode(payload));
 	} catch {
 		// Malformed base64.
-		return false;
+		return null;
 	}
-	if (!signatureOk) return false;
+	if (!signatureOk) return null;
 
 	try {
-		const parsed = JSON.parse(new TextDecoder().decode(fromBase64Url(payload))) as { exp?: unknown };
-		return typeof parsed.exp === 'number' && now < parsed.exp;
+		const parsed = JSON.parse(new TextDecoder().decode(fromBase64Url(payload))) as { exp?: unknown; fam?: unknown };
+		if (typeof parsed.exp !== 'number' || now >= parsed.exp) return null;
+		return { familyId: typeof parsed.fam === 'string' ? parsed.fam : undefined };
 	} catch {
-		return false;
+		return null;
 	}
 }
 
@@ -85,11 +92,12 @@ export function readCookie(request: Request, name: string): string | null {
 	return null;
 }
 
-export async function isAuthenticated(request: Request, secret: string | undefined): Promise<boolean> {
-	if (!secret) return false;
+// The signed cookie's content, or null when there is no valid one.
+export async function readSession(request: Request, secret: string | undefined): Promise<SessionPayload | null> {
+	if (!secret) return null;
 	const token = readCookie(request, SESSION_COOKIE);
-	if (!token) return false;
-	return isTokenValid(token, secret, Date.now());
+	if (!token) return null;
+	return readToken(token, secret, Date.now());
 }
 
 export function sessionCookie(token: string): string {
