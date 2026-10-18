@@ -1,10 +1,11 @@
-import { ref, shallowRef } from 'vue';
+import { ref, shallowRef, watch } from 'vue';
 import { defaultProgress, parseProgress, type ProgressState } from '@/progress/state';
 import { progressApiFor } from '@/sync/progressApi';
 import type { ServerCopy } from '@/sync/syncEngine';
+import { useChildren } from './useChildren';
 
-// The server copy of the child's progress, for parent devices. Kept only in memory: a
-// parent device never mixes it into a local progress of its own.
+// The server copy of the active child's progress, for parent devices. Kept only in memory:
+// a parent device never mixes it into a local progress of its own.
 const progress = shallowRef<ProgressState | null>(null);
 const version = ref(0);
 const updatedAt = ref<number | null>(null);
@@ -14,8 +15,9 @@ const error = ref('');
 
 const MAX_ATTEMPTS = 3;
 
-// The family's first child (choosing another comes with managing children).
-const progressApi = progressApiFor(undefined);
+// The child the copy above belongs to.
+let shownChild: string | undefined;
+const api = () => progressApiFor(useChildren().activeChild.value?.id);
 
 function parse(copy: ServerCopy): ProgressState | null {
 	return copy.progress && (parseProgress(JSON.stringify(copy.progress)) ?? null);
@@ -28,9 +30,20 @@ function accept(copy: ServerCopy) {
 }
 
 async function refresh() {
+	const childId = useChildren().activeChild.value?.id;
+	// Another child's numbers must never show under this one's name, even for a moment.
+	if (childId !== shownChild) {
+		progress.value = null;
+		version.value = 0;
+		updatedAt.value = null;
+	}
 	status.value = 'loading';
 	try {
-		accept(await progressApi.get());
+		const copy = await api().get();
+		// The parent switched children while this was loading: that child's refresh wins.
+		if (childId !== useChildren().activeChild.value?.id) return;
+		shownChild = childId;
+		accept(copy);
 		status.value = 'idle';
 	} catch {
 		status.value = 'failed';
@@ -47,7 +60,7 @@ async function update(change: (current: ProgressState) => ProgressState): Promis
 		let base = progress.value ?? defaultProgress();
 		let baseVersion = version.value;
 		for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-			const result = await progressApi.put(change(base), baseVersion);
+			const result = await api().put(change(base), baseVersion);
 			if (result.ok) {
 				accept(result.copy);
 				return true;
@@ -66,6 +79,15 @@ async function update(change: (current: ProgressState) => ProgressState): Promis
 	}
 }
 
+let watching = false;
+
 export function useRemoteProgress() {
+	if (!watching) {
+		watching = true;
+		// Showing another child: that child's numbers.
+		watch(() => useChildren().activeChild.value?.id, (id, previous) => {
+			if (id !== previous) void refresh();
+		});
+	}
 	return { progress, version, updatedAt, status, saving, error, refresh, update };
 }

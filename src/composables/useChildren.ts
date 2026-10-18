@@ -3,7 +3,7 @@ import { childrenApi, parseChildren, type Child } from '@/family/childrenApi';
 import { useSession } from './useSession';
 
 // The logged-in family's children, kept on the device so it knows them offline too, and
-// the child this device practices as.
+// the active child: the one practicing on a child's device, the one shown on a parent's.
 
 const CHILDREN_KEY = 'gifted-prep:children';
 const SELECTED_KEY = 'gifted-prep:child';
@@ -40,11 +40,16 @@ let initialized = false;
 // The chosen child, or the family's first; undefined until the list is known.
 const activeChild = computed(() => children.value.find((c) => c.id === selectedId.value) ?? children.value[0]);
 
+// Takes a list from the server (a fetch, or the reply to a change made here).
+function accept(list: Child[]) {
+	children.value = list;
+	write(CHILDREN_KEY, JSON.stringify(list));
+}
+
 async function refresh() {
 	status.value = 'loading';
 	try {
-		children.value = await childrenApi.list();
-		write(CHILDREN_KEY, JSON.stringify(children.value));
+		accept(await childrenApi.list());
 		status.value = 'idle';
 	} catch {
 		status.value = 'failed';
@@ -67,5 +72,5 @@ function init() {
 
 export function useChildren() {
 	init();
-	return { children, activeChild, status, refresh, select };
+	return { children, activeChild, status, refresh, select, accept };
 }

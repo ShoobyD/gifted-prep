@@ -21,12 +21,26 @@ export function parseChildren(value: unknown): Child[] | undefined {
 	return Array.isArray(value) && value.every(isChild) ? value.map(({ id, name, icon }) => ({ id, name, icon })) : undefined;
 }
 
+// Every call answers with the family's whole list after it.
+async function call(url: string, method: string, body?: unknown): Promise<Child[]> {
+	const response = await fetch(url, {
+		method,
+		cache: 'no-store',
+		...(body !== undefined && { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
+		signal: AbortSignal.timeout(TIMEOUT_MS),
+	});
+	if (!response.ok) throw new Error(`${method} ${url}: ${response.status}`);
+	const children = parseChildren(((await response.json()) as { children?: unknown }).children);
+	if (!children) throw new Error(`${method} ${url}: not a list of children`);
+	return children;
+}
+
+const childUrl = (id: string) => `${URL}/${encodeURIComponent(id)}`;
+
 export const childrenApi = {
-	async list(): Promise<Child[]> {
-		const response = await fetch(URL, { cache: 'no-store', signal: AbortSignal.timeout(TIMEOUT_MS) });
-		if (!response.ok) throw new Error(`GET ${URL}: ${response.status}`);
-		const children = parseChildren(((await response.json()) as { children?: unknown }).children);
-		if (!children) throw new Error(`GET ${URL}: not a list of children`);
-		return children;
-	},
+	list: () => call(URL, 'GET'),
+	add: (child: { name: string; icon: string }) => call(URL, 'POST', child),
+	update: (id: string, change: { name?: string; icon?: string }) => call(childUrl(id), 'PATCH', change),
+	// Deletes the child's progress too. The server refuses the family's last child.
+	remove: (id: string) => call(childUrl(id), 'DELETE'),
 };

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import QuestionBank from '@/components/bank/QuestionBank.vue';
+import ChildPicker from '@/components/ChildPicker.vue';
+import ChildrenManager from '@/components/ChildrenManager.vue';
 import ChildSettings from '@/components/ChildSettings.vue';
 import ProgressDashboard from '@/components/ProgressDashboard.vue';
 import { useDevice } from '@/composables/useDevice';
@@ -8,8 +10,8 @@ import { useRemoteProgress } from '@/composables/useRemoteProgress';
 import { useSession } from '@/composables/useSession';
 import { formatDateTime } from '@/utils/format';
 
-// The whole app on a parent device: the child's progress as last backed up by the tablet.
-// Read-only by design; settings and resets belong to the tablet.
+// The whole app on a parent device: each child's progress as last backed up by the tablet,
+// the child's settings, the family's children, and the question bank.
 const REFRESH_MS = 60_000;
 
 const remote = useRemoteProgress();
@@ -58,10 +60,13 @@ function onChangeDevice() {
 			<button type="button" role="tab" :aria-selected="tab === 'settings'" :class="{ on: tab === 'settings' }" @click="tab = 'settings'">⚙️ הגדרות</button>
 		</nav>
 
+		<ChildPicker v-if="tab !== 'bank'" />
+
 		<QuestionBank v-if="tab === 'bank'" />
 
 		<template v-else-if="tab === 'settings'">
 			<ChildSettings />
+			<ChildrenManager />
 
 			<section class="card">
 				<h2>המכשיר הזה</h2>

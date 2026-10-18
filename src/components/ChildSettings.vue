@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useChildren } from '@/composables/useChildren';
 import { useRemoteProgress } from '@/composables/useRemoteProgress';
 import { importedProgress, localDate, parseProgress, resetProgress } from '@/progress/state';
 import { formatDateTime } from '@/utils/format';
@@ -7,6 +8,9 @@ import { formatDateTime } from '@/utils/format';
 // The child's settings and progress, managed from a parent device. Every change is written to
 // the server; the tablet picks it up the next time it syncs (when the app opens or returns).
 const remote = useRemoteProgress();
+const { activeChild } = useChildren();
+// "the child" until the family's children are known.
+const childName = computed(() => activeChild.value?.name ?? 'הילד');
 const message = ref('');
 const fileInput = ref<HTMLInputElement>();
 
@@ -27,7 +31,7 @@ function downloadExport() {
 	const url = URL.createObjectURL(blob);
 	const link = document.createElement('a');
 	link.href = url;
-	link.download = `gifted-prep-progress-${localDate(new Date())}.json`;
+	link.download = `gifted-prep-progress-${activeChild.value?.id ?? 'child'}-${localDate(new Date())}.json`;
 	link.click();
 	URL.revokeObjectURL(url);
 }
@@ -42,12 +46,12 @@ async function onImport(event: Event) {
 		message.value = 'הקובץ אינו קובץ התקדמות תקין.';
 		return;
 	}
-	if (!confirm('הייבוא יחליף את כל ההתקדמות של הילד, גם בטאבלט. להמשיך?')) return;
+	if (!confirm(`הייבוא יחליף את כל ההתקדמות של ${childName.value}, גם בטאבלט. להמשיך?`)) return;
 	if (await remote.update((current) => importedProgress(current, parsed))) message.value = 'ההתקדמות יובאה. היא תגיע לטאבלט בפתיחה הבאה שלו.';
 }
 
 async function onReset() {
-	if (!confirm('למחוק את כל ההתקדמות של הילד: כוכבים, מדבקות, סבבים, רמות ושאלות לחזרה? אי אפשר לבטל.')) return;
+	if (!confirm(`למחוק את כל ההתקדמות של ${childName.value}: כוכבים, מדבקות, סבבים, רמות ושאלות לחזרה? אי אפשר לבטל.`)) return;
 	if (await remote.update(resetProgress)) message.value = 'ההתקדמות אופסה. האיפוס יגיע לטאבלט בפתיחה הבאה שלו.';
 }
 </script>
@@ -73,7 +77,7 @@ async function onReset() {
 	</section>
 
 	<section class="card">
-		<h2>התקדמות הילד</h2>
+		<h2>ההתקדמות של {{ childName }}</h2>
 		<p class="note">השינויים כאן נשמרים בשרת ומגיעים לטאבלט בפעם הבאה שהאפליקציה נפתחת בו או חוזרים אליה.</p>
 		<div class="actions">
 			<button type="button" class="btn" :disabled="!remote.progress.value" @click="downloadExport">ייצוא לקובץ</button>
