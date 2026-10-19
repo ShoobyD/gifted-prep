@@ -1,9 +1,11 @@
-// End-to-end test of the login and the progress API against a local dev server.
+// End-to-end test of the API (login, families, children, progress, bank) against a local
+// dev server.
 //
 //   1. cp .dev.vars.example .dev.vars   (once; set a password and a secret)
 //   2. npm run db:schema:local          (once)
-//   3. npm run dev:api                  (in one terminal)
-//   4. npm run test:api                 (in another)
+//   3. npm run db:bootstrap:local -- --family="..." --child="..."   (once)
+//   4. npm run dev:api                  (in one terminal)
+//   5. npm run test:api                 (in another)
 //
 // Works on the local database only (.wrangler/), never on the real site.
 
