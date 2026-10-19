@@ -1,14 +1,23 @@
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+
+export interface SessionFamily {
+	id: string;
+	name: string;
+	// The admin family edits the question bank and manages the other families.
+	admin: boolean;
+}
 
 // undefined until known; stays undefined without a server (plain `npm run dev`, offline),
 // where /api/session doesn't answer with JSON.
 const authenticated = ref<boolean>();
+const family = ref<SessionFamily>();
 
 async function check() {
 	try {
 		const response = await fetch('/api/session', { cache: 'no-store' });
-		const data = (await response.json()) as { authenticated?: unknown };
+		const data = (await response.json()) as { authenticated?: unknown; family?: SessionFamily };
 		authenticated.value = data.authenticated === true;
+		family.value = authenticated.value ? data.family : undefined;
 	} catch {
 		// No server behind the app.
 	}
@@ -24,7 +33,9 @@ async function logout() {
 	location.reload();
 }
 
+const isAdmin = computed(() => family.value?.admin === true);
+
 export function useSession() {
 	if (authenticated.value === undefined) void check();
-	return { authenticated, check, logout };
+	return { authenticated, family, isAdmin, check, logout };
 }

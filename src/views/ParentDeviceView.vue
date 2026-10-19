@@ -4,6 +4,7 @@ import QuestionBank from '@/components/bank/QuestionBank.vue';
 import ChildPicker from '@/components/ChildPicker.vue';
 import ChildrenManager from '@/components/ChildrenManager.vue';
 import ChildSettings from '@/components/ChildSettings.vue';
+import FamiliesAdmin from '@/components/FamiliesAdmin.vue';
 import ProgressDashboard from '@/components/ProgressDashboard.vue';
 import { useDevice } from '@/composables/useDevice';
 import { useRemoteProgress } from '@/composables/useRemoteProgress';
@@ -11,12 +12,22 @@ import { useSession } from '@/composables/useSession';
 import { formatDateTime } from '@/utils/format';
 
 // The whole app on a parent device: each child's progress as last backed up by the tablet,
-// the child's settings, the family's children, and the question bank.
+// the child's settings and the family's children; for the admin also the question bank
+// and the families.
 const REFRESH_MS = 60_000;
 
 const remote = useRemoteProgress();
-const tab = ref<'tracking' | 'bank' | 'settings'>('tracking');
+type Tab = 'tracking' | 'bank' | 'families' | 'settings';
 const session = useSession();
+const tab = ref<Tab>('tracking');
+
+const tabs = computed(() => [
+	{ id: 'tracking' as const, label: '📊 מעקב' },
+	...(session.isAdmin.value
+		? [{ id: 'bank' as const, label: '📚 מאגר שאלות' }, { id: 'families' as const, label: '👪 משפחות' }]
+		: []),
+	{ id: 'settings' as const, label: '⚙️ הגדרות' },
+]);
 const device = useDevice();
 
 const statusLine = computed(() => {
@@ -55,14 +66,24 @@ function onChangeDevice() {
 <template>
 	<div class="parents">
 		<nav class="tabs" role="tablist">
-			<button type="button" role="tab" :aria-selected="tab === 'tracking'" :class="{ on: tab === 'tracking' }" @click="tab = 'tracking'">📊 מעקב</button>
-			<button type="button" role="tab" :aria-selected="tab === 'bank'" :class="{ on: tab === 'bank' }" @click="tab = 'bank'">📚 מאגר שאלות</button>
-			<button type="button" role="tab" :aria-selected="tab === 'settings'" :class="{ on: tab === 'settings' }" @click="tab = 'settings'">⚙️ הגדרות</button>
+			<button
+				v-for="item in tabs"
+				:key="item.id"
+				type="button"
+				role="tab"
+				:aria-selected="tab === item.id"
+				:class="{ on: tab === item.id }"
+				@click="tab = item.id"
+			>
+				{{ item.label }}
+			</button>
 		</nav>
 
-		<ChildPicker v-if="tab !== 'bank'" />
+		<ChildPicker v-if="tab === 'tracking' || tab === 'settings'" />
 
 		<QuestionBank v-if="tab === 'bank'" />
+
+		<FamiliesAdmin v-else-if="tab === 'families'" />
 
 		<template v-else-if="tab === 'settings'">
 			<ChildSettings />
@@ -70,7 +91,7 @@ function onChangeDevice() {
 
 			<section class="card">
 				<h2>המכשיר הזה</h2>
-				<p class="note">זהו מכשיר הורה: מעקב, ניהול המאגר והגדרות. לא ניתן לתרגל בו.</p>
+				<p class="note">זהו מכשיר הורה: מעקב והגדרות. לא ניתן לתרגל בו.</p>
 				<div class="actions">
 					<button type="button" class="btn" @click="onChangeDevice">שינוי סוג המכשיר</button>
 					<button type="button" class="btn" @click="onLogout">התנתקות</button>
@@ -93,7 +114,7 @@ function onChangeDevice() {
 <style scoped>
 .tabs {
 	display: grid;
-	grid-template-columns: repeat(3, 1fr);
+	grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
 	gap: 8px;
 }
 
