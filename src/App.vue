@@ -3,15 +3,20 @@ import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import DeviceChoice from './components/DeviceChoice.vue';
 import UpdateBanner from './components/UpdateBanner.vue';
+import WhoIsPracticing from './components/WhoIsPracticing.vue';
+import { useChildren } from './composables/useChildren';
 import { useDevice } from './composables/useDevice';
 import { useContentSync } from './composables/useContentSync';
 import { useDeviceReport } from './composables/useDeviceReport';
 import { useSync } from './composables/useSync';
+import { useTablet } from './composables/useTablet';
 import ParentDeviceView from './views/ParentDeviceView.vue';
 
 const route = useRoute();
 const router = useRouter();
 const device = useDevice();
+const tablet = useTablet();
+const { activeChild } = useChildren();
 
 // Keeps the progress backed up on the server whenever the app runs behind its login.
 useSync();
@@ -20,14 +25,27 @@ useContentSync();
 // The child's tablet reports whether it has a Hebrew voice, for the parent's settings.
 useDeviceReport();
 
-// Behind the login, a device first says what it is; a parent device shows only the dashboard.
-const mode = computed(() => (device.needsChoice.value ? 'choice' : device.isParent.value ? 'parent' : 'app'));
+// Behind the login, a device first says what it is; a parent device shows only the dashboard;
+// a shared tablet asks who is practicing.
+const mode = computed(() => {
+	if (device.needsChoice.value) return 'choice';
+	if (device.isParent.value) return 'parent';
+	return tablet.needsChoice.value ? 'who' : 'app';
+});
 
 const title = computed(() => {
 	if (mode.value === 'choice') return 'בְּרוּכִים הַבָּאִים';
 	if (mode.value === 'parent') return 'מעקב הורים';
+	if (mode.value === 'who') return 'שָׁלוֹם!';
 	return route.meta.title;
 });
+
+// Another child picks up the tablet: start from home, not inside the previous child's session.
+function onChoose(childId: string) {
+	const changed = childId !== activeChild.value?.id;
+	tablet.choose(childId);
+	if (changed && route.name !== 'home') void router.replace({ name: 'home' });
+}
 
 const isHome = computed(() => mode.value !== 'app' || route.name === 'home');
 
@@ -81,6 +99,7 @@ function goBack() {
 	<main class="page">
 		<DeviceChoice v-if="mode === 'choice'" />
 		<ParentDeviceView v-else-if="mode === 'parent'" />
+		<WhoIsPracticing v-else-if="mode === 'who'" @choose="onChoose" />
 		<!-- Keyed so a new practice set always starts a fresh session. -->
 		<RouterView v-else :key="route.fullPath" />
 	</main>

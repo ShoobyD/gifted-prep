@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router';
+import { useChildren } from '@/composables/useChildren';
 import { useProgress } from '@/composables/useProgress';
+import { useTablet } from '@/composables/useTablet';
 
 const { state, streak } = useProgress();
+const { activeChild } = useChildren();
+// On a shared tablet: who is practicing, and a way to hand over to another child.
+const tablet = useTablet();
 
 interface MenuItem {
 	to: RouteLocationRaw;
@@ -24,7 +29,10 @@ const items: MenuItem[] = [
 		<span v-if="streak" class="stat">🔥 {{ streak }} {{ streak === 1 ? 'יוֹם' : 'יָמִים' }}</span>
 		<span class="stat">🎖️ {{ state.stickers.length }} מַדְבֵּקוֹת</span>
 	</RouterLink>
-	<p class="greeting">שָׁלוֹם! בְּמָה נִתְאַמֵּן הַיּוֹם?</p>
+	<p class="greeting">שָׁלוֹם<template v-if="tablet.isShared.value && activeChild">, {{ activeChild.name }}</template>! בְּמָה נִתְאַמֵּן הַיּוֹם?</p>
+	<button v-if="tablet.isShared.value" type="button" class="switch" @click="tablet.ask()">
+		<span aria-hidden="true">🔄</span> מִישֶׁהוּ אַחֵר מְתַרְגֵּל?
+	</button>
 	<RouterLink
 		v-if="state.mistakes.length"
 		class="review"
@@ -49,6 +57,20 @@ const items: MenuItem[] = [
 </template>
 
 <style scoped>
+.switch {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: -8px auto 20px;
+	min-height: 48px;
+	padding: 0 20px;
+	border: 2px solid #e2ddff;
+	border-radius: 999px;
+	background: var(--surface);
+	font: inherit;
+	font-size: 18px;
+}
+
 .status {
 	display: flex;
 	flex-wrap: wrap;

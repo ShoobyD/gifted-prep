@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import ParentGate from '@/components/ParentGate.vue';
+import TabletModePicker from '@/components/TabletModePicker.vue';
+import { useChildren } from '@/composables/useChildren';
 import { useDevice } from '@/composables/useDevice';
 import { useSession } from '@/composables/useSession';
 import { useSync } from '@/composables/useSync';
+import { useTablet, type TabletMode } from '@/composables/useTablet';
 import { formatDateTime } from '@/utils/format';
 
 // The tablet's hidden technical menu (long press on the title, then the grown-up check).
@@ -13,6 +16,12 @@ const unlocked = ref(false);
 const session = useSession();
 const sync = useSync();
 const device = useDevice();
+const tablet = useTablet();
+const { children, activeChild } = useChildren();
+
+function onPickMode(mode: TabletMode, childId?: string) {
+	tablet.setMode(mode, childId);
+}
 
 const syncState = computed(() => {
 	const { status, meta } = sync;
@@ -45,6 +54,11 @@ function onLogout() {
 		<section class="card">
 			<h2>הטאבלט של הילד</h2>
 			<p class="note">מעקב, הגדרות, איפוס וניהול המאגר נעשים ממכשיר הורה (טלפון או מחשב), בכתובת של האתר.</p>
+		</section>
+
+		<section v-if="children.length > 1" class="card">
+			<h2>של מי הטאבלט?</h2>
+			<TabletModePicker :mode="tablet.mode.value" :child-id="activeChild?.id" @pick="onPickMode" />
 		</section>
 
 		<section v-if="session.authenticated.value" class="card">
