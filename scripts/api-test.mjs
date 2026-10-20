@@ -65,6 +65,7 @@ check('app assets are closed', (await request('/sw.js')).status === 401);
 check('the API is closed', (await request('/api/progress')).status === 401);
 check('writes are closed', (await request('/api/progress', { method: 'PUT', body: {} })).status === 401);
 check('the bank is closed', (await request('/api/bank')).status === 401);
+check('the profiles are closed', (await request('/api/profiles')).status === 401);
 check('bank writes are closed', (await request('/api/bank/x', { method: 'PUT', body: {} })).status === 401);
 for (const open of ['/manifest.webmanifest', '/pwa-192.png', '/robots.txt']) {
 	check(`${open} stays open (install / crawlers)`, (await request(open)).status === 200);
@@ -167,6 +168,37 @@ try {
 	check('only the admin writes the bank', (await as('/api/bank/x', { method: 'PATCH', body: { hidden: true } })).status === 403);
 	check('only the admin manages families', (await as('/api/admin/families')).status === 403);
 	check('the last child cannot be removed', (await as(`/api/children/${theirChildren[0].id}`, { method: 'DELETE' })).status === 409);
+
+	// --- Profiles: what children see of each other, across families ---
+	console.log('— /api/profiles');
+	const israelDay = (date) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem', year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
+	const daysAgo = (n) => israelDay(new Date(Date.now() - n * 86_400_000));
+	const today = israelDay(new Date());
+	const weekday = new Date(`${today}T00:00:00Z`).getUTCDay();
+	const grandchild = theirChildren[0].id;
+	const theirProgress = {
+		version: 1, stars: 40, stickers: ['first-session', 'streak-3'], sessions: [
+			{ at: new Date(Date.now() - 8 * 86_400_000).toISOString(), set: 'math-mix', correct: 5, total: 10, stars: 9, seconds: 60 },
+			{ at: new Date().toISOString(), set: 'math-mix', correct: 7, total: 10, stars: 11, seconds: 60 },
+		],
+		practiceDays: [daysAgo(9), daysAgo(1), today], typeStats: { exercise: { first: 9, second: 0, failed: 1 } },
+		mistakes: [], mistakesFixed: 0, generation: 0, settings: { speech: true }, levels: {}, passages: {},
+	};
+	const wrote = await as(`/api/progress?child=${grandchild}`, { method: 'PUT', body: { progress: theirProgress, baseVersion: 0 } });
+	check('the other family saves its child\'s progress', wrote.status === 200, wrote.data);
+
+	const profiles = await request('/api/profiles', { cookie });
+	const theirs = profiles.data.profiles?.find((p) => p.id === grandchild);
+	check('every family sees every child', profiles.status === 200 && !!theirs && profiles.data.profiles.some((p) => p.id === firstChild.id), profiles.data);
+	check('the admin family comes first', profiles.data.profiles?.[0]?.family === adminSession.family.name);
+	check('a profile is the summary only', JSON.stringify(Object.keys(theirs ?? {}).sort())
+		=== JSON.stringify(['family', 'icon', 'id', 'lastPractice', 'name', 'stars', 'stickers', 'streak', 'weekStars']), theirs);
+	check('stars, stickers and family as stored', theirs?.stars === 40 && theirs.stickers.length === 2 && theirs.family === familyName && theirs.icon === '🐢', theirs);
+	check('the streak counts today and yesterday', theirs?.streak === 2, theirs);
+	check('the last practice is today', theirs?.lastPractice === today && profiles.data.today === today, profiles.data.today);
+	// Today's session always counts; the one from 8 days ago never does.
+	check('this week\'s stars count sessions since Sunday', theirs?.weekStars === 11, { weekday, theirs });
+	check('the other family sees the same list', JSON.stringify((await as('/api/profiles')).data) === JSON.stringify(profiles.data));
 
 	const newPassword = `${familyPassword}-new`;
 	check('the admin sets a new password', (await admin(`/${familyId}`, { method: 'PATCH', body: { password: newPassword } })).status === 200);
