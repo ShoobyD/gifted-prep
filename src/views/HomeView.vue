@@ -2,10 +2,12 @@
 import type { RouteLocationRaw } from 'vue-router';
 import { useChildren } from '@/composables/useChildren';
 import { useProgress } from '@/composables/useProgress';
+import { useSession } from '@/composables/useSession';
 import { useTablet } from '@/composables/useTablet';
 
 const { state, streak } = useProgress();
 const { activeChild } = useChildren();
+const session = useSession();
 // On a shared tablet: who is practicing, and a way to hand over to another child.
 const tablet = useTablet();
 
@@ -54,9 +56,35 @@ const items: MenuItem[] = [
 			<span class="menu-label">{{ item.label }}</span>
 		</RouterLink>
 	</nav>
+	<!-- Only behind the server: the other children's achievements come from it. -->
+	<RouterLink v-if="session.authenticated.value" class="friends" :to="{ name: 'friends' }">
+		<span aria-hidden="true">👫</span>
+		<span>הַחֲבֵרִים</span>
+	</RouterLink>
 </template>
 
 <style scoped>
+.friends {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	min-height: 72px;
+	margin-top: 20px;
+	border-radius: var(--radius);
+	border-bottom: 6px solid var(--parents);
+	background: var(--surface);
+	color: var(--text);
+	font-size: 26px;
+	font-weight: 700;
+	text-decoration: none;
+	box-shadow: var(--shadow);
+}
+
+.friends:active {
+	transform: translateY(3px);
+}
+
 .switch {
 	display: flex;
 	align-items: center;
