@@ -251,6 +251,38 @@ describe('sync engine', () => {
 		// One run, plus one rerun for the calls that arrived meanwhile.
 		expect(gets).toBe(2);
 	});
+
+	it('merges with a partial server copy, filling in the missing fields', async () => {
+		// The server only checks the version (scripts/api-test.mjs writes such documents).
+		const server = fakeServer({ version: 1, stars: 5, stickers: [], sessions: [] } as unknown as ProgressState);
+		const tablet = device(
+			server,
+			progressWith((p) => {
+				p.stars = 3;
+				p.practiceDays = ['2026-10-10'];
+				p.sessions = [session('2026-10-10T10:00:00Z')];
+				p.typeStats = { exercise: { first: 2, second: 0, failed: 0 } };
+			}),
+			{ serverVersion: 0, dirty: true, lastSyncedAt: null },
+		);
+
+		await tablet.engine.sync();
+		expect(tablet.statuses.at(-1)).toBe('idle');
+		expect(tablet.meta.lastSyncedAt).not.toBeNull();
+		expect(tablet.state.stars).toBe(5);
+		expect(tablet.state.practiceDays).toEqual(['2026-10-10']);
+		expect(tablet.state.typeStats.exercise).toEqual({ first: 2, second: 0, failed: 0 });
+		expect(server.copy.progress?.sessions).toHaveLength(1);
+		expect(tablet.meta.dirty).toBe(false);
+	});
+
+	it('treats a server document that is not progress as empty', async () => {
+		const server = fakeServer({ hello: 'world' } as unknown as ProgressState);
+		const tablet = device(server, progressWith((p) => { p.stars = 2; }));
+		await tablet.engine.sync();
+		expect(tablet.statuses.at(-1)).toBe('idle');
+		expect(server.copy.progress?.stars).toBe(2);
+	});
 });
 
 describe('reset and import (generations)', () => {

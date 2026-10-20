@@ -1,5 +1,5 @@
 import { ref, shallowRef, watch } from 'vue';
-import { defaultProgress, parseProgress, type ProgressState } from '@/progress/state';
+import { defaultProgress, normalizeProgress, type ProgressState } from '@/progress/state';
 import { progressApiFor } from '@/sync/progressApi';
 import type { ServerCopy } from '@/sync/syncEngine';
 import { useChildren } from './useChildren';
@@ -20,7 +20,7 @@ let shownChild: string | undefined;
 const api = () => progressApiFor(useChildren().activeChild.value?.id);
 
 function parse(copy: ServerCopy): ProgressState | null {
-	return copy.progress && (parseProgress(JSON.stringify(copy.progress)) ?? null);
+	return normalizeProgress(copy.progress) ?? null;
 }
 
 function accept(copy: ServerCopy) {

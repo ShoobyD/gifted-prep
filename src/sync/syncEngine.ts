@@ -1,4 +1,4 @@
-import type { ProgressState } from '@/progress/state';
+import { normalizeProgress, type ProgressState } from '@/progress/state';
 import { mergeProgress } from './merge';
 
 // What the server holds: version 0 and progress null when nothing was saved yet.
@@ -54,6 +54,12 @@ function hasContent(progress: ProgressState): boolean {
 	return progress.sessions.length > 0 || progress.stars > 0 || progress.stickers.length > 0;
 }
 
+// The server only checks the version, so its copy may lack fields (older or hand-written
+// data): fill them in like a local copy. Anything that isn't progress counts as empty.
+function normalizeCopy(copy: ServerCopy): ServerCopy {
+	return { ...copy, progress: normalizeProgress(copy.progress) ?? null };
+}
+
 export function createSyncEngine(options: SyncEngineOptions) {
 	const { api, read, write, meta, saveMeta } = options;
 	const now = options.now ?? Date.now;
@@ -97,7 +103,7 @@ export function createSyncEngine(options: SyncEngineOptions) {
 		}
 
 		// Someone wrote in between.
-		const { conflict } = result;
+		const conflict = normalizeCopy(result.conflict);
 		if (conflict.progress) {
 			const order = compareGenerations(conflict.progress, read());
 			// A reset or import on another device wins outright: take it and stop.
@@ -115,7 +121,7 @@ export function createSyncEngine(options: SyncEngineOptions) {
 	async function run() {
 		setStatus('syncing');
 		try {
-			const server = await api.get();
+			const server = normalizeCopy(await api.get());
 			const local = read();
 
 			const order = server.progress ? compareGenerations(server.progress, local) : 0;

@@ -93,19 +93,23 @@ export function defaultProgress(): ProgressState {
 // Tolerates missing fields from older or hand-edited data; rejects anything that isn't ours.
 export function parseProgress(json: string): ProgressState | undefined {
 	try {
-		const data: unknown = JSON.parse(json);
-		if (!data || typeof data !== 'object' || (data as ProgressState).version !== PROGRESS_VERSION) return undefined;
-		const defaults = defaultProgress();
-		const parsed = data as Partial<ProgressState>;
-		return {
-			...defaults,
-			...parsed,
-			levels: { ...defaults.levels, ...parsed.levels },
-			settings: { ...defaults.settings, ...parsed.settings },
-		};
+		return normalizeProgress(JSON.parse(json));
 	} catch {
 		return undefined;
 	}
+}
+
+// The same for data already parsed, e.g. a copy the server sent.
+export function normalizeProgress(data: unknown): ProgressState | undefined {
+	if (!data || typeof data !== 'object' || (data as ProgressState).version !== PROGRESS_VERSION) return undefined;
+	const defaults = defaultProgress();
+	const parsed = data as Partial<ProgressState>;
+	return {
+		...defaults,
+		...parsed,
+		levels: { ...defaults.levels, ...parsed.levels },
+		settings: { ...defaults.settings, ...parsed.settings },
+	};
 }
 
 // A fresh start (reset), one generation after the current progress. Settings and the
