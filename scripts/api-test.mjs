@@ -262,7 +262,11 @@ await testDocument({
 	field: 'progress',
 	make: (stars) => ({ version: 1, stars, stickers: [], sessions: [] }),
 	read: (doc) => doc?.stars,
-	foreign: { 'foreign document': { hello: 1 } },
+	foreign: {
+		'foreign document': { hello: 1 },
+		'stars that are not a number': { version: 1, stars: '5', stickers: [], sessions: [] },
+		'sessions that are not a list': { version: 1, stars: 5, stickers: [], sessions: {} },
+	},
 });
 
 // --- Question bank -------------------------------------------------------------
