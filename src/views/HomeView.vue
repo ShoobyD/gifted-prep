@@ -34,7 +34,16 @@ const items: MenuItem[] = [
 		<span v-if="streak" class="stat">🔥 {{ streak }} {{ streak === 1 ? 'יוֹם' : 'יָמִים' }}</span>
 		<span class="stat">🎖️ {{ stickerCount }} מַדְבֵּקוֹת</span>
 	</RouterLink>
-	<p class="greeting">שָׁלוֹם<template v-if="activeChild">, {{ activeChild.name }}</template>! בְּמָה נִתְאַמֵּן הַיּוֹם?</p>
+	<div class="hello">
+		<!-- The child's picture; it opens their profile, where they can pick another one. -->
+		<RouterLink
+			v-if="activeChild && session.authenticated.value"
+			class="avatar"
+			:to="{ name: 'friend', params: { id: activeChild.id } }"
+			aria-label="הַפְּרוֹפִיל שֶׁלִּי"
+		>{{ activeChild.icon || '🙂' }}</RouterLink>
+		<p class="greeting">שָׁלוֹם<template v-if="activeChild">, {{ activeChild.name }}</template>! בְּמָה נִתְאַמֵּן הַיּוֹם?</p>
+	</div>
 	<button v-if="tablet.isShared.value" type="button" class="switch" @click="tablet.ask()">
 		<span aria-hidden="true">🔄</span> מִישֶׁהוּ אַחֵר מְתַרְגֵּל?
 	</button>
@@ -119,8 +128,35 @@ const items: MenuItem[] = [
 	text-decoration: none;
 }
 
-.greeting {
+.hello {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 8px 16px;
 	margin: 0 0 24px;
+}
+
+.avatar {
+	display: grid;
+	place-items: center;
+	width: 72px;
+	height: 72px;
+	border: 3px solid var(--primary);
+	border-radius: 50%;
+	background: var(--surface);
+	box-shadow: var(--shadow);
+	font-size: 42px;
+	line-height: 1;
+	text-decoration: none;
+}
+
+.avatar:active {
+	transform: translateY(3px);
+}
+
+.greeting {
+	margin: 0;
 	font-size: 28px;
 	text-align: center;
 }

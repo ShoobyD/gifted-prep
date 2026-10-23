@@ -90,7 +90,8 @@ const lastPractice = computed(() => {
 
 .stats {
 	display: grid;
-	grid-template-columns: repeat(4, 1fr);
+	/* Four in a row; two rows on a narrow phone. */
+	grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
 	gap: 6px;
 	margin: 0;
 	text-align: center;
