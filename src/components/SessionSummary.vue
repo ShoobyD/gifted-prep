@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useChildren } from '@/composables/useChildren';
 import type { Sticker } from '@/progress/stickers';
 
 const props = defineProps<{
@@ -11,12 +12,15 @@ const props = defineProps<{
 
 const emit = defineEmits<{ again: [] }>();
 
-// Praise effort, not only the score.
+const { activeChild } = useChildren();
+
+// Praise effort, not only the score; by name when the app knows it.
 const title = computed(() => {
+	const name = activeChild.value?.name;
 	const ratio = props.total ? props.correct / props.total : 0;
-	if (ratio === 1) return 'מֻשְׁלָם! 🎉';
-	if (ratio >= 0.7) return 'כָּל הַכָּבוֹד! 🎉';
-	return 'סִיַּמְתֶּם! כָּל תִּרְגּוּל מְחַזֵּק 💪';
+	if (ratio === 1) return name ? `מֻשְׁלָם, ${name}! 🎉` : 'מֻשְׁלָם! 🎉';
+	if (ratio >= 0.7) return name ? `כָּל הַכָּבוֹד, ${name}! 🎉` : 'כָּל הַכָּבוֹד! 🎉';
+	return name ? `אִמּוּן טוֹב, ${name}! כָּל תִּרְגּוּל מְחַזֵּק 💪` : 'סִיַּמְתֶּם! כָּל תִּרְגּוּל מְחַזֵּק 💪';
 });
 </script>
 

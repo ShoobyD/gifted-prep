@@ -34,7 +34,7 @@ const items: MenuItem[] = [
 		<span v-if="streak" class="stat">🔥 {{ streak }} {{ streak === 1 ? 'יוֹם' : 'יָמִים' }}</span>
 		<span class="stat">🎖️ {{ stickerCount }} מַדְבֵּקוֹת</span>
 	</RouterLink>
-	<p class="greeting">שָׁלוֹם<template v-if="tablet.isShared.value && activeChild">, {{ activeChild.name }}</template>! בְּמָה נִתְאַמֵּן הַיּוֹם?</p>
+	<p class="greeting">שָׁלוֹם<template v-if="activeChild">, {{ activeChild.name }}</template>! בְּמָה נִתְאַמֵּן הַיּוֹם?</p>
 	<button v-if="tablet.isShared.value" type="button" class="switch" @click="tablet.ask()">
 		<span aria-hidden="true">🔄</span> מִישֶׁהוּ אַחֵר מְתַרְגֵּל?
 	</button>
