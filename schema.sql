@@ -1,7 +1,7 @@
 -- Idempotent: safe to run again (npm run db:schema / db:schema:local).
 
--- The child's progress as one JSON document (the app's ProgressState).
--- A single row, id 'family': one child per deployment.
+-- Each child's progress as one JSON document (the app's ProgressState).
+-- One row per child, with the child's id (see children).
 CREATE TABLE IF NOT EXISTS progress (
 	id TEXT PRIMARY KEY,
 	data TEXT NOT NULL,
