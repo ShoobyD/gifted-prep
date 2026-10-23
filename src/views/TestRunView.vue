@@ -184,7 +184,7 @@ function answerText(q: Question, value: MockAnswer | undefined): string {
 		<article v-for="m in mistakes" :key="m.question.id" class="card mistake">
 			<p class="mistake-section">{{ m.section.title }}</p>
 			<QuestionStem :question="m.question" :fill="m.question.answer.kind === 'number' ? String(m.question.answer.solution) : undefined" state="revealed" />
-			<p class="yours">הַתְּשׁוּבָה שֶׁלְּךָ: <RichText :text="answerText(m.question, answers.get(m.question.id))" /></p>
+			<p class="yours">הַתְּשׁוּבָה בַּמִּבְחָן: <RichText :text="answerText(m.question, answers.get(m.question.id))" /></p>
 			<p class="right">הַתְּשׁוּבָה הַנְּכוֹנָה: <RichText :text="correctAnswerText(m.question)" /></p>
 			<p v-if="m.question.explanation" class="explanation"><RichText :text="m.question.explanation" /></p>
 		</article>

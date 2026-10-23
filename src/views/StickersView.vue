@@ -9,7 +9,7 @@ const count = computed(() => earnedStickers(state.stickers).length);
 </script>
 
 <template>
-	<p class="count">אָסַפְתָּ {{ count }} מִתּוֹךְ {{ STICKERS.length }} מַדְבֵּקוֹת</p>
+	<p class="count">{{ count }} מִתּוֹךְ {{ STICKERS.length }} מַדְבֵּקוֹת</p>
 	<StickerGrid :earned="state.stickers" />
 </template>
 

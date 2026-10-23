@@ -14,14 +14,14 @@ const props = defineProps<{
 
 const emit = defineEmits<{ next: [] }>();
 
-const PRAISE = ['כָּל הַכָּבוֹד!', 'מְצֻיָּן!', 'יָפֶה מְאוֹד!', 'אַלּוּף!', 'נָכוֹן!'];
+const PRAISE = ['כָּל הַכָּבוֹד!', 'מְצֻיָּן!', 'יָפֶה מְאוֹד!', 'מַדְהִים!', 'נָכוֹן!'];
 
 const message = computed(() => {
 	switch (props.status) {
 		case 'correct':
 			return `${PRAISE[Math.floor(Math.random() * PRAISE.length)]} ⭐`;
 		case 'wrong':
-			return 'לֹא נוֹרָא, נַסֵּה שׁוּב 💪';
+			return 'לֹא נוֹרָא, נְנַסֶּה שׁוּב 💪';
 		case 'revealed':
 			return 'זוֹ הַתְּשׁוּבָה הַנְּכוֹנָה. בַּפַּעַם הַבָּאָה! 🌱';
 		default:
