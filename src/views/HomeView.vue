@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
 import { useChildren } from '@/composables/useChildren';
 import { useProgress } from '@/composables/useProgress';
 import { useSession } from '@/composables/useSession';
 import { useTablet } from '@/composables/useTablet';
+import { earnedStickers } from '@/progress/stickers';
 
 const { state, streak } = useProgress();
+const stickerCount = computed(() => earnedStickers(state.stickers).length);
 const { activeChild } = useChildren();
 const session = useSession();
 // On a shared tablet: who is practicing, and a way to hand over to another child.
@@ -29,7 +32,7 @@ const items: MenuItem[] = [
 	<RouterLink class="status" :to="{ name: 'stickers' }">
 		<span class="stat">⭐ {{ state.stars }}</span>
 		<span v-if="streak" class="stat">🔥 {{ streak }} {{ streak === 1 ? 'יוֹם' : 'יָמִים' }}</span>
-		<span class="stat">🎖️ {{ state.stickers.length }} מַדְבֵּקוֹת</span>
+		<span class="stat">🎖️ {{ stickerCount }} מַדְבֵּקוֹת</span>
 	</RouterLink>
 	<p class="greeting">שָׁלוֹם<template v-if="tablet.isShared.value && activeChild">, {{ activeChild.name }}</template>! בְּמָה נִתְאַמֵּן הַיּוֹם?</p>
 	<button v-if="tablet.isShared.value" type="button" class="switch" @click="tablet.ask()">

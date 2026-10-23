@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { newStickers } from './stickers';
+import { earnedStickers, newStickers } from './stickers';
 import type { Question } from '@/types';
 import {
 	applyAnswer,
@@ -14,6 +14,13 @@ import {
 
 const session = (at: string, correct = 5, total = 10): SessionRecord => ({
 	at, set: 'math-mix', correct, total, stars: 0, seconds: 60,
+});
+
+describe('earnedStickers', () => {
+	it('keeps only stickers that exist, in collection order', () => {
+		expect(earnedStickers(['streak-3', 'stars-100', 'first-session']).map((s) => s.id)).toEqual(['first-session', 'streak-3']);
+		expect(earnedStickers([])).toEqual([]);
+	});
 });
 
 describe('progress state', () => {

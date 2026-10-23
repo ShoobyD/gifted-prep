@@ -130,6 +130,13 @@ export const STICKERS: Sticker[] = [
 ];
 
 // Stickers newly earned now (not already in the collection).
+// The stickers among these ids that exist (an id from a sticker since renamed or removed
+// counts as none).
+export function earnedStickers(ids: string[]): Sticker[] {
+	const owned = new Set(ids);
+	return STICKERS.filter((sticker) => owned.has(sticker.id));
+}
+
 export function newStickers(state: ProgressState, last: SessionRecord | undefined, today: Date): Sticker[] {
 	return STICKERS.filter((sticker) => !state.stickers.includes(sticker.id) && sticker.earned(state, last, today));
 }
