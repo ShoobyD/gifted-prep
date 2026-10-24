@@ -6,6 +6,8 @@ import { resolveSet, type PracticeSet } from './data/questionSets';
 declare module 'vue-router' {
 	interface RouteMeta {
 		title: string;
+		// One of the album's chapters (or its home): the page has the area tabs on its edge.
+		tabs?: boolean;
 		// Built once per navigation by the guard below.
 		practice?: PracticeSet;
 	}
@@ -15,10 +17,10 @@ declare module 'vue-router' {
 export const router = createRouter({
 	history: createWebHashHistory(),
 	routes: [
-		{ path: '/', name: 'home', component: HomeView, meta: { title: 'מְחֻנָּנִים – תִּרְגּוּל' } },
-		{ path: '/reading', name: 'reading', component: () => import('./views/ReadingView.vue'), meta: { title: 'הֲבָנַת הַנִּקְרָא' } },
-		{ path: '/math', name: 'math', component: () => import('./views/MathView.vue'), meta: { title: 'חֶשְׁבּוֹן' } },
-		{ path: '/test', name: 'test', component: () => import('./views/TestView.vue'), meta: { title: 'מִבְחַן דֻּגְמָה' } },
+		{ path: '/', name: 'home', component: HomeView, meta: { title: 'מְחֻנָּנִים – תִּרְגּוּל', tabs: true } },
+		{ path: '/reading', name: 'reading', component: () => import('./views/ReadingView.vue'), meta: { title: 'הֲבָנַת הַנִּקְרָא', tabs: true } },
+		{ path: '/math', name: 'math', component: () => import('./views/MathView.vue'), meta: { title: 'חֶשְׁבּוֹן', tabs: true } },
+		{ path: '/test', name: 'test', component: () => import('./views/TestView.vue'), meta: { title: 'מִבְחַן דֻּגְמָה', tabs: true } },
 		{
 			path: '/test/:id',
 			name: 'test-run',
@@ -28,7 +30,7 @@ export const router = createRouter({
 			props: (route) => ({ entry: findMockTest(String(route.params.id)) }),
 		},
 		{ path: '/stickers', name: 'stickers', component: () => import('./views/StickersView.vue'), meta: { title: 'הַמַּדְבֵּקוֹת שֶׁלִּי' } },
-		{ path: '/friends', name: 'friends', component: () => import('./views/FriendsView.vue'), meta: { title: 'הַחֲבֵרִים' } },
+		{ path: '/friends', name: 'friends', component: () => import('./views/FriendsView.vue'), meta: { title: 'הַחֲבֵרִים', tabs: true } },
 		{
 			path: '/friends/:id',
 			name: 'friend',

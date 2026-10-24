@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import AppIcon from '@/components/AppIcon.vue';
+import AreaTile from '@/components/AreaTile.vue';
+import ChapterHead from '@/components/ChapterHead.vue';
+import IndexHeading from '@/components/IndexHeading.vue';
+import IndexRow from '@/components/IndexRow.vue';
 import { useContent } from '@/composables/useContent';
 import { useProgress } from '@/composables/useProgress';
 import { isTestMaterial, SOURCE_LABELS } from '@/data/sources';
@@ -23,30 +28,44 @@ const groups = computed<Group[]>(() => {
 		{ title: 'קְטָעִים מֵידָעִיִּים', passages: practice.filter((p) => p.kind === 'informational') },
 	].filter((group) => group.passages.length);
 });
+
+// The chapter's count: passages read at least once.
+const read = computed(() => passages.value.filter((p) => p.id in state.passages).length);
+
+// Each passage's number in the chapter, running on across the groups.
+const numbers = computed(() => new Map(groups.value.flatMap((g) => g.passages).map((p, i) => [p.id, i + 1])));
+
+function meta(passage: Passage): string {
+	const count = `${passage.questions.length} שְׁאֵלוֹת`;
+	return isTestMaterial(passage.source) ? `${count} · ${SOURCE_LABELS[passage.source]}` : count;
+}
 </script>
 
 <template>
+	<ChapterHead title="פֶּרֶק קְרִיאָה" color="var(--reading)" :done="read" :total="passages.length" unit="קְטָעִים שֶׁנִּקְרְאוּ" />
 	<!-- Only before the bank first loads (it needs the internet once). -->
 	<p v-if="!groups.length" class="empty">הַקְּטָעִים עוֹד לֹא הִגִּיעוּ. צָרִיךְ חִבּוּר לָאִינְטֶרְנֶט.</p>
-	<section v-for="group in groups" :key="group.title" class="group">
-		<h2 class="group-title">{{ group.title }}</h2>
-		<nav class="passages">
-			<RouterLink
+	<section v-for="group in groups" :key="group.title">
+		<IndexHeading :title="group.title" :meta="`${group.passages.length} קְטָעִים`" />
+		<nav class="index">
+			<IndexRow
 				v-for="passage in group.passages"
 				:key="passage.id"
-				class="passage"
 				:to="{ name: 'practice', params: { set: readingSetName(passage) } }"
+				:title="passage.title"
+				:meta="meta(passage)"
 			>
-				<span class="icon" aria-hidden="true">{{ passage.kind === 'story' ? '📗' : '📘' }}</span>
-				<span class="title">{{ passage.title }}</span>
-				<span v-if="passage.id in state.passages" class="done">
-					✅ {{ state.passages[passage.id] }}/{{ passage.questions.length }}
-				</span>
-				<span class="meta">
-					{{ passage.questions.length }} שְׁאֵלוֹת
-					<template v-if="isTestMaterial(passage.source)"> · {{ SOURCE_LABELS[passage.source] }}</template>
-				</span>
-			</RouterLink>
+				<template #tile>
+					<AreaTile :icon="passage.kind === 'story' ? 'book' : 'facts'" color="var(--reading)" :num="numbers.get(passage.id)" />
+				</template>
+				<template #end>
+					<!-- Read already: how many it got right. -->
+					<span v-if="passage.id in state.passages" class="done">
+						<AppIcon name="check" />
+						<bdi>{{ state.passages[passage.id] }}/{{ passage.questions.length }}</bdi>
+					</span>
+				</template>
+			</IndexRow>
 		</nav>
 	</section>
 </template>
@@ -58,61 +77,21 @@ const groups = computed<Group[]>(() => {
 	color: var(--muted);
 }
 
-.group + .group {
-	margin-top: 28px;
-}
-
-.group-title {
-	margin: 0 0 12px;
-	font-size: 24px;
-	color: var(--muted);
-}
-
-.passages {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-	gap: 16px;
-}
-
-.passage {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 6px;
-	min-height: 150px;
-	padding: 16px 12px;
-	border-radius: var(--radius);
-	border-bottom: 6px solid var(--reading);
-	background: var(--surface);
-	color: inherit;
-	text-align: center;
-	text-decoration: none;
-	box-shadow: var(--shadow);
-}
-
-.passage:active {
-	transform: translateY(3px);
-}
-
-.icon {
-	font-size: 44px;
-	line-height: 1;
-}
-
-.title {
-	font-size: 22px;
-	font-weight: 700;
-	line-height: 1.3;
+/* The first section's heading sits right under the chapter's head. */
+section:first-of-type :deep(.heading) {
+	margin-top: 0;
 }
 
 .done {
+	flex: none;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 2px 10px;
+	border-radius: 999px;
+	background: var(--good-soft);
 	color: var(--good);
 	font-size: 18px;
 	font-weight: 700;
-}
-
-.meta {
-	color: var(--muted);
-	font-size: 16px;
 }
 </style>

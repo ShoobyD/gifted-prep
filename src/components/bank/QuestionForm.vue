@@ -219,7 +219,7 @@ select {
 	width: 100%;
 	min-height: 44px;
 	padding: 8px 10px;
-	border: 2px solid #e2ddff;
+	border: 2px solid var(--line);
 	border-radius: 12px;
 	background: var(--surface);
 	font: inherit;
@@ -241,7 +241,7 @@ textarea {
 	display: grid;
 	gap: 10px;
 	padding: 10px 12px;
-	border: 2px solid #e2ddff;
+	border: 2px solid var(--line);
 	border-radius: 14px;
 }
 
@@ -250,7 +250,7 @@ textarea {
 	grid-template-columns: 1fr 1fr;
 	padding: 4px;
 	border-radius: 12px;
-	background: #eeeaff;
+	background: var(--tint);
 }
 
 .segmented button {
@@ -297,7 +297,7 @@ textarea {
 .key {
 	min-width: 40px;
 	min-height: 40px;
-	border: 2px solid #e2ddff;
+	border: 2px solid var(--line);
 	border-radius: 10px;
 	background: var(--surface);
 	font-size: 18px;

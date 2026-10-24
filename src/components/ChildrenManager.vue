@@ -117,7 +117,7 @@ async function remove(child: Child) {
 	justify-content: space-between;
 	gap: 8px;
 	padding: 8px 0;
-	border-bottom: 1px solid #eeeaff;
+	border-bottom: 1px solid var(--line-soft);
 }
 
 .who {

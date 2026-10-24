@@ -1,19 +1,69 @@
+/* Design tokens: the sticker album. The app is an album lying open on a blue cover;
+   every screen is a white page of it. Components use only these. */
 :root {
-	--bg: #f4f1ff;
+	/* The album's cover, around the page. */
+	--cover: #1446a0;
+	--on-cover: #ffffff;
+	--on-cover-soft: rgba(255, 255, 255, .8);
+	--bg: #eef2fa;
 	--surface: #ffffff;
-	--text: #2a2550;
-	--muted: #6b6690;
-	--primary: #5b4bdb;
-	--reading: #ff8a5b;
-	--math: #3bb4a1;
-	--test: #5b8def;
-	--parents: #a97ad8;
-	--good: #23a26d;
-	--bad: #e5484d;
-	--warn: #f5a524;
-	--radius: 24px;
-	--shadow: 0 4px 0 rgba(42, 37, 80, .15);
+	--text: #10224f;
+	--muted: #5a6b96;
+	--primary: #1446a0;
+	/* Text and icons on a colored background (primary, good, bad…). */
+	--on-primary: #ffffff;
+	/* Each area has its own album tab color. */
+	--reading: #d6305f;
+	--math: #ffb000;
+	/* Math's yellow is light; what sits on it is dark. */
+	--on-math: #10224f;
+	--test: #0f8a64;
+	--parents: #6b4ae6;
+	/* The daily sticker pack and the gold of a star. */
+	--pack: #c8264f;
+	--gold: #ffd23f;
+	/* The streak's flame: readable both on the cover's blue and on a white card. */
+	--flame: #f26b1d;
+	--good: #0f8a64;
+	--bad: #d43a3a;
+	--warn: #e09400;
+
+	/* Soft fills: badges, selected items, right and wrong answers. */
+	--tint-soft: #f2f5fb;
+	--tint: #e6ecf8;
+	--tint-strong: #c9d4ec;
+	--good-soft: #dff4ec;
+	--bad-soft: #fde8e8;
+	--warn-soft: #fff3d6;
+	--accent-soft: #fde6ee;
+	--test-soft: #e2f3ee;
+
+	/* Borders and dividers; an empty sticker slot is a dashed --line. */
+	--line-soft: #e3e8f2;
+	--line: #c9d1e3;
+	--line-strong: #9aa8c9;
+
+	/* The bar at the top sits on the cover. */
+	--topbar-bg: transparent;
+	--on-topbar: var(--on-cover);
+	--on-topbar-soft: rgba(255, 255, 255, .16);
+	--on-topbar-pressed: rgba(255, 255, 255, .3);
+
+	--radius: 18px;
+	/* The page's outer edge is round, its edge at the spine nearly square. */
+	--radius-page: 22px 6px 6px 22px;
+	--shadow: 0 6px 14px rgba(16, 34, 79, .16);
+	--shadow-sm: 0 2px 4px rgba(16, 34, 79, .16);
+	--shadow-up: 0 -2px 8px rgba(16, 34, 79, .08);
+	--shadow-float: 0 10px 24px rgba(5, 16, 50, .35);
+	/* The open page, lifted off the cover. */
+	--shadow-page: 0 18px 40px rgba(5, 16, 50, .35);
+	/* Behind a dialog. */
+	--overlay: rgba(16, 34, 79, .5);
+
 	--font: "Rubik", "Noto Sans Hebrew", "Segoe UI", Arial, sans-serif;
+	/* The album's lettering: titles, big numbers, big buttons. Narrow, so it runs large. */
+	--font-display: "Karantina", var(--font);
 }
 
 *,
@@ -29,7 +79,7 @@ body {
 }
 
 body {
-	background: var(--bg);
+	background: var(--cover);
 	color: var(--text);
 	font-family: var(--font);
 	font-size: 22px;
@@ -42,6 +92,32 @@ body {
 	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
+}
+
+h1,
+h2,
+h3 {
+	font-family: var(--font-display);
+}
+
+/* The browser's own parts wear the album too. */
+::selection {
+	background: var(--gold);
+	color: var(--text);
+}
+
+:focus-visible {
+	outline: 3px solid var(--gold);
+	outline-offset: 3px;
+}
+
+input,
+textarea {
+	caret-color: var(--primary);
+}
+
+html {
+	scrollbar-color: var(--on-topbar-pressed) var(--cover);
 }
 
 button {

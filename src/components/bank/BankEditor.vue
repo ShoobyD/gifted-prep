@@ -183,7 +183,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
 	z-index: 30;
 	overflow-y: auto;
 	padding: 16px;
-	background: rgba(42, 37, 80, .45);
+	background: var(--overlay);
 }
 
 .sheet {
@@ -219,7 +219,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
 	grid-template-columns: 1fr 1fr;
 	padding: 4px;
 	border-radius: 12px;
-	background: #eeeaff;
+	background: var(--tint);
 }
 
 .segmented button {
@@ -300,13 +300,13 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
 	padding: 12px 16px;
 	border-radius: 0 0 var(--radius) var(--radius);
 	background: var(--bg);
-	box-shadow: 0 -2px 8px rgba(42, 37, 80, .08);
+	box-shadow: var(--shadow-up);
 }
 
 .btn--primary {
 	background: var(--primary);
 	border-color: var(--primary);
-	color: #fff;
+	color: var(--on-primary);
 	font-weight: 700;
 }
 

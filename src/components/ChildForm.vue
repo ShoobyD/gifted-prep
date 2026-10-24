@@ -39,7 +39,7 @@ const icon = defineModel<string>('icon', { required: true });
 .form input {
 	min-height: 44px;
 	padding: 0 12px;
-	border: 2px solid #e2ddff;
+	border: 2px solid var(--line);
 	border-radius: 12px;
 	font: inherit;
 	font-size: 16px;
@@ -56,7 +56,7 @@ const icon = defineModel<string>('icon', { required: true });
 	height: 44px;
 	border: 2px solid transparent;
 	border-radius: 12px;
-	background: #f4f1ff;
+	background: var(--tint-soft);
 	font-size: 24px;
 }
 
@@ -68,7 +68,7 @@ const icon = defineModel<string>('icon', { required: true });
 .btn--primary {
 	background: var(--primary);
 	border-color: var(--primary);
-	color: #fff;
+	color: var(--on-primary);
 	font-weight: 700;
 }
 </style>

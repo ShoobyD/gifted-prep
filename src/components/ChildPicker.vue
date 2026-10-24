@@ -34,7 +34,7 @@ const { children, activeChild, select } = useChildren();
 	gap: 6px;
 	min-height: 44px;
 	padding: 0 16px;
-	border: 2px solid #e2ddff;
+	border: 2px solid var(--line);
 	border-radius: 999px;
 	background: var(--surface);
 	font: inherit;
@@ -44,6 +44,6 @@ const { children, activeChild, select } = useChildren();
 .picker button.on {
 	border-color: var(--primary);
 	background: var(--primary);
-	color: #fff;
+	color: var(--on-primary);
 }
 </style>

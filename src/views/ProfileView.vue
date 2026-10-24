@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import AppIcon from '@/components/AppIcon.vue';
 import ProfileCard from '@/components/ProfileCard.vue';
 import StickerGrid from '@/components/StickerGrid.vue';
 import { useChildren } from '@/composables/useChildren';
@@ -51,10 +52,13 @@ async function pick(icon: string) {
 
 <template>
 	<template v-if="profile && data">
-		<ProfileCard :profile="profile" :today="data.today" :me="isMe" />
+		<ProfileCard class="card" :profile="profile" :today="data.today" :me="isMe" />
 
 		<template v-if="isMe">
-			<button v-if="!picking" type="button" class="change" @click="picking = true">🎨 לְהַחְלִיף צִיּוּר</button>
+			<button v-if="!picking" type="button" class="change" @click="picking = true">
+				<AppIcon name="pencil" />
+				לְהַחְלִיף צִיּוּר
+			</button>
 			<section v-else class="picker" aria-label="בְּחִירַת צִיּוּר">
 				<p class="picker-title">אֵיזֶה צִיּוּר תִּבְחֲרוּ?</p>
 				<div class="icons">
@@ -74,7 +78,10 @@ async function pick(icon: string) {
 			</section>
 		</template>
 
-		<p class="count">{{ stickers }} מִתּוֹךְ {{ STICKERS.length }} מַדְבֵּקוֹת</p>
+		<h2 class="count">
+			<span>הָאַלְבּוֹם</span>
+			<small>{{ stickers }} מִתּוֹךְ {{ STICKERS.length }}</small>
+		</h2>
 		<StickerGrid :earned="profile.stickers" />
 	</template>
 	<p v-else-if="status === 'loading'" class="note">טוֹעֲנִים…</p>
@@ -82,10 +89,26 @@ async function pick(icon: string) {
 </template>
 
 <style scoped>
+.card {
+	max-width: 360px;
+	margin: 0 auto;
+}
+
 .count {
-	margin: 24px 0 16px;
-	text-align: center;
-	font-size: 24px;
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	margin: 36px 0 16px;
+	font-size: 46px;
+	line-height: 1;
+}
+
+.count small {
+	color: var(--muted);
+	font-family: var(--font);
+	font-size: 22px;
+	font-weight: 400;
 }
 
 .note {
@@ -94,11 +117,13 @@ async function pick(icon: string) {
 }
 
 .change {
-	display: block;
+	display: flex;
+	align-items: center;
+	gap: 10px;
 	min-height: 56px;
 	margin: 16px auto 0;
 	padding: 0 24px;
-	border: 2px solid #e2ddff;
+	border: 2px solid var(--line);
 	border-radius: 999px;
 	background: var(--surface);
 	font: inherit;
@@ -109,9 +134,9 @@ async function pick(icon: string) {
 .picker {
 	margin-top: 16px;
 	padding: 16px;
+	border: 2px solid var(--line-soft);
 	border-radius: var(--radius);
-	background: var(--surface);
-	box-shadow: var(--shadow);
+	background: var(--tint-soft);
 	text-align: center;
 }
 
@@ -131,7 +156,7 @@ async function pick(icon: string) {
 	min-height: 72px;
 	border: 3px solid transparent;
 	border-radius: 18px;
-	background: #f4f1ff;
+	background: var(--surface);
 	font-size: 40px;
 }
 

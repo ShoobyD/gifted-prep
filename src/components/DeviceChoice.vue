@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import AreaTile from '@/components/AreaTile.vue';
 import TabletModePicker from '@/components/TabletModePicker.vue';
 import { useChildren } from '@/composables/useChildren';
 import { useDevice } from '@/composables/useDevice';
@@ -35,12 +36,12 @@ function onPick(mode: TabletMode, childId?: string) {
 		<p class="hint">בוחרים פעם אחת. אפשר לשנות אחר כך: במכשיר הורה בלשונית "הגדרות", ובטאבלט בלחיצה ארוכה על הכותרת.</p>
 		<div class="options">
 			<button type="button" class="option" @click="chooseChildDevice">
-				<span class="icon" aria-hidden="true">🧒</span>
+				<AreaTile icon="tablet" color="var(--primary)" class="icon" />
 				<span class="label">הַטַּאבְּלֶט שֶׁל הַיֶּלֶד</span>
 				<span class="desc">לתרגול. ההתקדמות נשמרת כאן ומגובה בשרת.</span>
 			</button>
 			<button type="button" class="option" @click="setRole('parent')">
-				<span class="icon" aria-hidden="true">📊</span>
+				<AreaTile icon="chart" color="var(--parents)" class="icon" />
 				<span class="label">מכשיר של הורה</span>
 				<span class="desc">למעקב בלבד: מציג את ההתקדמות שהטאבלט שמר בשרת.</span>
 			</button>
@@ -56,7 +57,7 @@ function onPick(mode: TabletMode, childId?: string) {
 .back {
 	min-height: 44px;
 	padding: 0 20px;
-	border: 2px solid #e2ddff;
+	border: 2px solid var(--line);
 	border-radius: 14px;
 	background: var(--surface);
 	font: inherit;
@@ -107,8 +108,9 @@ function onPick(mode: TabletMode, childId?: string) {
 }
 
 .icon {
-	font-size: 56px;
-	line-height: 1;
+	width: 80px;
+	height: 80px;
+	font-size: 44px;
 }
 
 .label {

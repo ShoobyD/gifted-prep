@@ -210,7 +210,7 @@ async function remove(family: FamilyEntry) {
 	display: grid;
 	gap: 6px;
 	padding: 12px;
-	border: 2px solid #eeeaff;
+	border: 2px solid var(--line-soft);
 	border-radius: 14px;
 }
 
@@ -224,7 +224,7 @@ async function remove(family: FamilyEntry) {
 .badge {
 	padding: 2px 10px;
 	border-radius: 999px;
-	background: #eeeaff;
+	background: var(--tint);
 	font-size: 13px;
 }
 
@@ -245,7 +245,7 @@ async function remove(family: FamilyEntry) {
 .add {
 	margin-top: 12px;
 	padding: 12px;
-	border: 2px dashed #e2ddff;
+	border: 2px dashed var(--line);
 	border-radius: 14px;
 }
 
@@ -271,7 +271,7 @@ async function remove(family: FamilyEntry) {
 	flex: 1 1 180px;
 	min-height: 44px;
 	padding: 0 12px;
-	border: 2px solid #e2ddff;
+	border: 2px solid var(--line);
 	border-radius: 12px;
 	font: inherit;
 	font-size: 16px;
@@ -298,7 +298,7 @@ async function remove(family: FamilyEntry) {
 .password {
 	padding: 6px 12px;
 	border-radius: 10px;
-	background: #eeeaff;
+	background: var(--tint);
 	color: var(--text);
 	font-family: ui-monospace, Consolas, monospace;
 	font-size: 20px;
@@ -308,7 +308,7 @@ async function remove(family: FamilyEntry) {
 .btn--primary {
 	background: var(--primary);
 	border-color: var(--primary);
-	color: #fff;
+	color: var(--on-primary);
 	font-weight: 700;
 }
 </style>

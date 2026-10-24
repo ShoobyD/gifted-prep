@@ -61,7 +61,7 @@ function check() {
 .input {
 	width: 140px;
 	padding: 8px;
-	border: 3px solid #e2ddff;
+	border: 3px solid var(--line);
 	border-radius: 14px;
 	font: inherit;
 	font-size: 32px;
@@ -80,7 +80,7 @@ function check() {
 	border: 0;
 	border-radius: 16px;
 	background: var(--primary);
-	color: #fff;
+	color: var(--on-primary);
 	font-weight: 700;
 }
 

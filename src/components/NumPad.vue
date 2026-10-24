@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AppIcon from './AppIcon.vue';
+
 const MAX_DIGITS = 3;
 
 const model = defineModel<string>({ required: true });
@@ -37,7 +39,7 @@ function erase() {
 		>
 			{{ key }}
 		</button>
-		<button type="button" class="key key--erase" :disabled="disabled || !model" aria-label="מחיקה" @click="erase">⌫</button>
+		<button type="button" class="key key--erase" :disabled="disabled || !model" aria-label="מחיקה" @click="erase"><AppIcon name="erase" /></button>
 		<button type="button" class="key" :disabled="disabled" @click="press('0')">0</button>
 		<button v-if="!noSubmit" type="button" class="key key--ok" :disabled="disabled || !model" @click="emit('submit')">בְּדִיקָה</button>
 	</div>
@@ -53,18 +55,21 @@ function erase() {
 }
 
 .key {
+	display: grid;
+	place-items: center;
 	min-height: 72px;
-	border: 0;
-	border-radius: 18px;
+	border: 3px solid var(--line);
+	border-radius: 16px;
 	background: var(--surface);
-	box-shadow: var(--shadow);
+	box-shadow: var(--shadow-sm);
 	font-size: 34px;
 	font-weight: 700;
+	font-variant-numeric: tabular-nums;
 }
 
 .key:active:not(:disabled) {
 	transform: translateY(2px);
-	box-shadow: 0 1px 0 rgba(42, 37, 80, .15);
+	box-shadow: none;
 }
 
 .key:disabled {
@@ -73,12 +78,15 @@ function erase() {
 }
 
 .key--erase {
-	background: #ffe9dc;
+	border-color: var(--accent-soft);
+	background: var(--accent-soft);
+	color: var(--reading);
 }
 
 .key--ok {
+	border-color: var(--good);
 	background: var(--good);
-	color: #fff;
+	color: var(--on-primary);
 	font-size: 24px;
 }
 </style>

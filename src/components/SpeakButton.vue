@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onUnmounted } from 'vue';
+import AppIcon from './AppIcon.vue';
 import { useSpeech } from '@/composables/useSpeech';
 
 const props = defineProps<{ text: string }>();
@@ -30,25 +31,33 @@ onUnmounted(() => {
 		:aria-label="speaking ? 'עצירת ההקראה' : 'הקראה'"
 		@click="toggle"
 	>
-		{{ speaking ? '⏹️' : '🔊' }}
+		<AppIcon :name="speaking ? 'stop' : 'speaker'" />
 	</button>
 </template>
 
 <style scoped>
 .speak {
 	flex: none;
+	display: grid;
+	place-items: center;
 	width: 56px;
 	height: 56px;
-	border: 0;
+	border: 3px solid var(--line);
 	border-radius: 50%;
-	background: #ece8ff;
+	background: var(--surface);
+	color: var(--primary);
 	font-size: 28px;
-	line-height: 1;
-	box-shadow: var(--shadow);
+	box-shadow: var(--shadow-sm);
+}
+
+.speak:active {
+	transform: translateY(2px);
 }
 
 .speaking {
+	border-color: var(--primary);
 	background: var(--primary);
+	color: var(--on-primary);
 	animation: pop 1s infinite;
 }
 </style>

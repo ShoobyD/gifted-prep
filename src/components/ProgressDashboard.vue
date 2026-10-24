@@ -166,7 +166,7 @@ const percent = (rate: number | undefined) => (rate === undefined ? '' : `${Math
 	align-items: center;
 	column-gap: 12px;
 	padding: 8px 0;
-	border-bottom: 1px solid #eeeaff;
+	border-bottom: 1px solid var(--line-soft);
 }
 
 .row-label { grid-area: label; font-weight: 700; }
@@ -177,7 +177,7 @@ const percent = (rate: number | undefined) => (rate === undefined ? '' : `${Math
 	grid-area: meter;
 	height: 10px;
 	border-radius: 5px;
-	background: #eeeaff;
+	background: var(--tint);
 	overflow: hidden;
 }
 
@@ -190,7 +190,7 @@ const percent = (rate: number | undefined) => (rate === undefined ? '' : `${Math
 .fill--good { background: var(--good); }
 .fill--warn { background: var(--warn); }
 .fill--bad { background: var(--bad); }
-.fill--none { background: #c9c3e6; }
+.fill--none { background: var(--line-strong); }
 
 /* Text stays in ink tones; the icon carries the state alongside the bar color. */
 .text--none { color: var(--muted); font-weight: 400; }
@@ -204,7 +204,7 @@ const percent = (rate: number | undefined) => (rate === undefined ? '' : `${Math
 .history th,
 .history td {
 	padding: 6px 4px;
-	border-bottom: 1px solid #eeeaff;
+	border-bottom: 1px solid var(--line-soft);
 	text-align: start;
 }
 

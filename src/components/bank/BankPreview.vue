@@ -68,7 +68,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
 	z-index: 20;
 	overflow-y: auto;
 	padding: 16px;
-	background: rgba(42, 37, 80, .45);
+	background: var(--overlay);
 }
 
 .sheet {
@@ -115,7 +115,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey));
 .badge {
 	padding: 2px 10px;
 	border-radius: 999px;
-	background: #eeeaff;
+	background: var(--tint);
 	font-size: 13px;
 }
 

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import AppIcon from '@/components/AppIcon.vue';
 import ChoiceList from '@/components/ChoiceList.vue';
 import NumPad from '@/components/NumPad.vue';
 import PassagePanel from '@/components/PassagePanel.vue';
 import QuestionStem from '@/components/QuestionStem.vue';
 import RichText from '@/components/RichText.vue';
+import StickerArt from '@/components/StickerArt.vue';
 import { isAnswered, isCorrect, PART_MINUTES, useMockTest, type Item, type MockAnswer } from '@/composables/useMockTest';
 import { useProgress } from '@/composables/useProgress';
 import type { MockTestEntry } from '@/data/mockTests';
@@ -104,7 +106,10 @@ function answerText(q: Question, value: MockAnswer | undefined): string {
 			<input v-model="timerOn" type="checkbox">
 			<span>עִם שָׁעוֹן ({{ PART_MINUTES }} דַּקּוֹת לַקְּרִיאָה וְ-{{ PART_MINUTES }} לַחֶשְׁבּוֹן)</span>
 		</label>
-		<button type="button" class="btn btn--primary" @click="begin">מַתְחִילִים! ✏️</button>
+		<button type="button" class="btn btn--primary" @click="begin">
+			<AppIcon name="pencil" />
+			מַתְחִילִים!
+		</button>
 	</section>
 
 	<!-- Running -->
@@ -116,8 +121,9 @@ function answerText(q: Question, value: MockAnswer | undefined): string {
 				<p class="section-title">{{ section.title }}</p>
 				<p v-if="section.instructions" class="instructions">{{ section.instructions }}</p>
 				<p v-if="timerOn" class="timer" :class="{ 'timer--over': !secondsLeft }">
-					<template v-if="secondsLeft">⏱ <bdi dir="ltr">{{ clock }}</bdi></template>
-					<template v-else>⏱ הַזְּמַן שֶׁל הַפֶּרֶק נִגְמַר – אֶפְשָׁר לְהַמְשִׁיךְ</template>
+					<AppIcon name="clock" />
+					<bdi v-if="secondsLeft" dir="ltr">{{ clock }}</bdi>
+					<template v-else>הַזְּמַן שֶׁל הַפֶּרֶק נִגְמַר – אֶפְשָׁר לְהַמְשִׁיךְ</template>
 				</p>
 			</header>
 
@@ -155,9 +161,18 @@ function answerText(q: Question, value: MockAnswer | undefined): string {
 			</article>
 
 			<div class="nav-buttons">
-				<button type="button" class="btn" :disabled="index === 0" @click="goTo(index - 1)">→ הַקּוֹדֶמֶת</button>
-				<button v-if="!isLast" type="button" class="btn btn--primary" @click="goTo(index + 1)">הַבָּאָה ←</button>
-				<button v-else type="button" class="btn btn--finish" @click="finish">סִיּוּם הַמִּבְחָן ✔</button>
+				<button type="button" class="btn" :disabled="index === 0" @click="goTo(index - 1)">
+					<AppIcon name="prev" />
+					הַקּוֹדֶמֶת
+				</button>
+				<button v-if="!isLast" type="button" class="btn btn--primary" @click="goTo(index + 1)">
+					הַבָּאָה
+					<AppIcon name="next" />
+				</button>
+				<button v-else type="button" class="btn btn--finish" @click="finish">
+					סִיּוּם הַמִּבְחָן
+					<AppIcon name="check" />
+				</button>
 			</div>
 		</div>
 	</div>
@@ -166,9 +181,13 @@ function answerText(q: Question, value: MockAnswer | undefined): string {
 	<section v-else class="results">
 		<div class="card score-card">
 			<p class="score">{{ correctCount }} / {{ items.length }}</p>
-			<p class="score-label">תְּשׁוּבוֹת נְכוֹנוֹת · +{{ correctCount * 2 }} ⭐</p>
+			<p class="score-label">תְּשׁוּבוֹת נְכוֹנוֹת</p>
+			<p v-if="correctCount" class="stars">
+				<AppIcon name="star" />
+				+{{ correctCount * 2 }} כּוֹכָבִים
+			</p>
 			<div v-if="earnedStickers.length" class="stickers">
-				<span v-for="s in earnedStickers" :key="s.id" class="sticker">{{ s.emoji }} {{ s.name }}</span>
+				<span v-for="s in earnedStickers" :key="s.id" class="sticker"><StickerArt :id="s.id" class="sticker-art" />{{ s.name }}</span>
 			</div>
 		</div>
 
@@ -180,7 +199,10 @@ function answerText(q: Question, value: MockAnswer | undefined): string {
 		</div>
 
 		<h2 v-if="mistakes.length" class="review-title">בּוֹאוּ נִלְמַד מֵהַטָּעֻיּוֹת</h2>
-		<p v-else class="review-title">אֵין אַף טָעוּת! 🏆</p>
+		<p v-else class="review-title review-title--perfect">
+			<AppIcon name="trophy" />
+			אֵין אַף טָעוּת!
+		</p>
 		<article v-for="m in mistakes" :key="m.question.id" class="card mistake">
 			<p class="mistake-section">{{ m.section.title }}</p>
 			<QuestionStem :question="m.question" :fill="m.question.answer.kind === 'number' ? String(m.question.answer.solution) : undefined" state="revealed" />
@@ -191,17 +213,18 @@ function answerText(q: Question, value: MockAnswer | undefined): string {
 
 		<div class="nav-buttons">
 			<RouterLink class="btn btn--primary" :to="{ name: 'test' }" replace>לְמִבְחָן אַחֵר</RouterLink>
-			<RouterLink class="btn" :to="{ name: 'home' }" replace>לְמָסַךְ הַבַּיִת</RouterLink>
+			<RouterLink class="btn" :to="{ name: 'home' }" replace>לָאַלְבּוֹם</RouterLink>
 		</div>
 	</section>
 </template>
 
 <style scoped>
+/* A leaf in the album: tinted paper on the page. */
 .card {
 	padding: 20px;
+	border: 2px solid var(--line-soft);
 	border-radius: var(--radius);
-	background: var(--surface);
-	box-shadow: var(--shadow);
+	background: var(--tint-soft);
 }
 
 /* Intro */
@@ -215,6 +238,9 @@ function answerText(q: Question, value: MockAnswer | undefined): string {
 
 .intro-title {
 	margin: 0;
+	font-size: 48px;
+	line-height: 1.05;
+	text-align: center;
 }
 
 .structure {
@@ -239,6 +265,7 @@ function answerText(q: Question, value: MockAnswer | undefined): string {
 .toggle input {
 	width: 28px;
 	height: 28px;
+	accent-color: var(--primary);
 }
 
 /* Running */
@@ -272,6 +299,9 @@ function answerText(q: Question, value: MockAnswer | undefined): string {
 }
 
 .timer {
+	display: flex;
+	align-items: center;
+	gap: 8px;
 	margin: 0;
 	font-weight: 700;
 }
@@ -287,18 +317,24 @@ function answerText(q: Question, value: MockAnswer | undefined): string {
 	gap: 8px;
 }
 
+/* The section's questions as numbered slots: dashed until answered. */
 .qnav-btn {
 	width: 48px;
 	height: 48px;
-	border: 3px solid #dcd6ff;
-	border-radius: 50%;
+	border: 2px dashed var(--line);
+	border-radius: 12px;
 	background: var(--surface);
+	color: var(--muted);
+	font-family: var(--font-display);
+	font-size: 28px;
 	font-weight: 700;
+	line-height: 1;
 }
 
 .qnav-btn.answered {
-	border-color: var(--primary);
-	background: #ece8ff;
+	border: 0;
+	background: var(--primary);
+	color: var(--on-primary);
 }
 
 .qnav-btn.current {
@@ -332,17 +368,24 @@ function answerText(q: Question, value: MockAnswer | undefined): string {
 }
 
 .btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
 	min-height: 64px;
 	padding: 0 28px;
-	border: 0;
+	border: 3px solid var(--line);
 	border-radius: 18px;
 	background: var(--surface);
 	color: var(--text);
 	font-size: 22px;
 	font-weight: 700;
-	line-height: 64px;
 	text-decoration: none;
-	box-shadow: var(--shadow);
+	box-shadow: var(--shadow-sm);
+}
+
+.btn:active:not(:disabled) {
+	transform: translateY(2px);
 }
 
 .btn:disabled {
@@ -350,13 +393,15 @@ function answerText(q: Question, value: MockAnswer | undefined): string {
 }
 
 .btn--primary {
+	border-color: var(--primary);
 	background: var(--primary);
-	color: #fff;
+	color: var(--on-primary);
 }
 
 .btn--finish {
+	border-color: var(--good);
 	background: var(--good);
-	color: #fff;
+	color: var(--on-primary);
 }
 
 /* Results */
@@ -373,14 +418,32 @@ function answerText(q: Question, value: MockAnswer | undefined): string {
 
 .score {
 	margin: 0;
-	font-size: 56px;
+	font-family: var(--font-display);
+	font-size: 88px;
 	font-weight: 700;
+	line-height: 1;
 	direction: ltr;
 }
 
 .score-label {
 	margin: 0;
 	color: var(--muted);
+}
+
+.stars {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 6px 0 0;
+	padding: 4px 18px;
+	border-radius: 999px;
+	background: var(--gold);
+	font-weight: 700;
+}
+
+.stars :deep(path) {
+	fill: currentColor;
+	stroke: none;
 }
 
 .stickers {
@@ -391,11 +454,22 @@ function answerText(q: Question, value: MockAnswer | undefined): string {
 	font-size: 22px;
 }
 
+.sticker {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.sticker-art {
+	width: 56px;
+	transform: rotate(-3deg);
+}
+
 .section-score {
 	display: flex;
 	justify-content: space-between;
 	padding: 6px 0;
-	border-bottom: 1px solid #eeeaff;
+	border-bottom: 1px solid var(--line-soft);
 }
 
 .section-score-value {
@@ -403,9 +477,20 @@ function answerText(q: Question, value: MockAnswer | undefined): string {
 }
 
 .review-title {
-	margin: 12px 0 0;
-	font-size: 26px;
+	margin: 20px 0 0;
+	font-size: 44px;
+	line-height: 1.05;
 	text-align: center;
+}
+
+.review-title--perfect {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	font-family: var(--font-display);
+	font-weight: 700;
+	color: var(--good);
 }
 
 .mistake {

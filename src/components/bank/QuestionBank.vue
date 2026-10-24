@@ -243,7 +243,7 @@ const snippet = (q: Question) => q.body ?? (q.math ? `$${q.math}$` : q.id);
 	grid-template-columns: 1fr 1fr;
 	padding: 4px;
 	border-radius: 14px;
-	background: #eeeaff;
+	background: var(--tint);
 }
 
 .segmented button {
@@ -271,7 +271,7 @@ select {
 	width: 100%;
 	min-height: 44px;
 	padding: 0 12px;
-	border: 2px solid #e2ddff;
+	border: 2px solid var(--line);
 	border-radius: 12px;
 	background: var(--surface);
 	font: inherit;
@@ -325,12 +325,12 @@ select {
 .badge {
 	padding: 2px 10px;
 	border-radius: 999px;
-	background: #eeeaff;
+	background: var(--tint);
 	font-size: 13px;
 }
 
 .badge--changed {
-	background: #fff1d6;
+	background: var(--warn-soft);
 }
 
 .row-actions {

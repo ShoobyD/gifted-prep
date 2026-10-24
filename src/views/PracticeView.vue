@@ -116,26 +116,32 @@ function again() {
 	}
 }
 
+/* The round's questions as a row of little slots, filled as they're answered. */
 .progress {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 8px;
+	gap: 6px;
 	justify-content: center;
 }
 
 .dot {
-	width: 18px;
-	height: 18px;
-	border-radius: 50%;
-	background: #dcd6ff;
+	width: 24px;
+	height: 24px;
+	border: 2px dashed var(--line);
+	border-radius: 7px;
 }
 
 .dot--done {
+	border: 0;
 	background: var(--primary);
+	transform: rotate(-4deg);
+}
+
+.dot--done:nth-child(odd) {
+	transform: rotate(3deg);
 }
 
 .dot--current {
-	outline: 3px solid var(--primary);
-	outline-offset: 2px;
+	border: 3px solid var(--primary);
 }
 </style>

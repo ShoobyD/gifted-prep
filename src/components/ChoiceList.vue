@@ -53,14 +53,14 @@ const emit = defineEmits<{ pick: [index: number] }>();
 	gap: 16px;
 	width: 100%;
 	min-height: 72px;
-	padding: 12px 16px;
-	border: 3px solid #e2ddff;
-	border-radius: 18px;
+	padding: 10px 14px;
+	border: 3px solid var(--line);
+	border-radius: 16px;
 	background: var(--surface);
 	text-align: start;
 	font-size: 24px;
-	box-shadow: var(--shadow);
-	transition: transform .1s, background .2s;
+	box-shadow: var(--shadow-sm);
+	transition: transform .1s, background-color .2s, border-color .2s;
 }
 
 .choice:active:not(:disabled) {
@@ -71,42 +71,61 @@ const emit = defineEmits<{ pick: [index: number] }>();
 	cursor: default;
 }
 
+/* The letter on a little tile, like a sticker's number. */
 .choice-label {
 	flex: none;
 	display: grid;
 	place-items: center;
 	width: 48px;
 	height: 48px;
-	border-radius: 50%;
-	background: #ece8ff;
+	border-radius: 12px;
+	background: var(--tint);
+	color: var(--primary);
+	font-family: var(--font-display);
+	font-size: 34px;
 	font-weight: 700;
+	line-height: 1;
 }
 
 .choice--wrong {
 	border-color: var(--bad);
-	background: #ffeceb;
+	background: var(--bad-soft);
 	opacity: .7;
 	animation: shake .35s;
 }
 
 .choice--correct {
 	border-color: var(--good);
-	background: #e3f8ef;
+	background: var(--good-soft);
 	animation: pop .35s;
 }
 
 .choice--selected {
 	border-color: var(--primary);
-	background: #ece8ff;
+	background: var(--tint);
+}
+
+/* On a tablet the answers grow with the question. */
+@media (min-width: 700px) {
+	.choice {
+		min-height: 84px;
+		font-size: 28px;
+	}
+
+	.choice-label {
+		width: 56px;
+		height: 56px;
+		font-size: 40px;
+	}
 }
 
 .choice--selected .choice-label {
 	background: var(--primary);
-	color: #fff;
+	color: var(--on-primary);
 }
 
 .choice--correct .choice-label {
 	background: var(--good);
-	color: #fff;
+	color: var(--on-primary);
 }
 </style>

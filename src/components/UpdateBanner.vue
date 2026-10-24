@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useRegisterSW } from 'virtual:pwa-register/vue';
+import AppIcon from './AppIcon.vue';
 
 // Registers the service worker and offers a new version instead of reloading on its own.
 const { needRefresh, updateServiceWorker } = useRegisterSW();
@@ -7,9 +8,10 @@ const { needRefresh, updateServiceWorker } = useRegisterSW();
 
 <template>
 	<div v-if="needRefresh" class="banner" role="status">
-		<span>יֵשׁ גִּרְסָה חֲדָשָׁה 🎁</span>
+		<AppIcon name="sparkle" class="sparkle" />
+		<span>יֵשׁ גִּרְסָה חֲדָשָׁה</span>
 		<button type="button" class="update" @click="updateServiceWorker(true)">עִדְכּוּן</button>
-		<button type="button" class="later" aria-label="אחר כך" @click="needRefresh = false">✕</button>
+		<button type="button" class="later" aria-label="אחר כך" @click="needRefresh = false"><AppIcon name="close" /></button>
 	</div>
 </template>
 
@@ -27,12 +29,17 @@ const { needRefresh, updateServiceWorker } = useRegisterSW();
 	padding: 12px 16px;
 	border-radius: 18px;
 	background: var(--text);
-	color: #fff;
-	box-shadow: 0 6px 20px rgba(0, 0, 0, .25);
+	color: var(--on-primary);
+	box-shadow: var(--shadow-float);
 }
 
 .banner span {
 	flex: 1;
+}
+
+.sparkle {
+	color: var(--gold);
+	font-size: 24px;
 }
 
 .update {
@@ -41,16 +48,19 @@ const { needRefresh, updateServiceWorker } = useRegisterSW();
 	border: 0;
 	border-radius: 14px;
 	background: var(--primary);
-	color: #fff;
+	color: var(--on-primary);
 	font-weight: 700;
 }
 
 .later {
+	display: grid;
+	place-items: center;
 	width: 40px;
 	height: 40px;
+	font-size: 22px;
 	border: 0;
 	border-radius: 50%;
 	background: transparent;
-	color: #fff;
+	color: var(--on-primary);
 }
 </style>

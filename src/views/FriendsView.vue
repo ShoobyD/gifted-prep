@@ -39,14 +39,21 @@ onMounted(refresh);
 
 .cards {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
-	gap: 16px;
+	grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
+	gap: 24px;
 }
 
+/* Stuck in by hand: each card a little crooked. */
 .link {
 	display: block;
-	border-radius: var(--radius);
+	border-radius: 20px;
 	text-decoration: none;
+	transform: rotate(-1.5deg);
+	transition: transform .15s ease-out;
+}
+
+.link:nth-child(even) {
+	transform: rotate(1.5deg);
 }
 
 .link:active {

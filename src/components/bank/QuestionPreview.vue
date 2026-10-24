@@ -83,13 +83,13 @@ const fill = computed(() =>
 	align-items: center;
 	gap: 10px;
 	padding: 6px 10px;
-	border: 2px solid #eeeaff;
+	border: 2px solid var(--line-soft);
 	border-radius: 12px;
 }
 
 .option.correct {
 	border-color: var(--good);
-	background: #e3f8ef;
+	background: var(--good-soft);
 	font-weight: 700;
 }
 
@@ -100,7 +100,7 @@ const fill = computed(() =>
 	width: 28px;
 	height: 28px;
 	border-radius: 50%;
-	background: #ece8ff;
+	background: var(--tint);
 	font-size: 15px;
 }
 

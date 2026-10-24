@@ -122,7 +122,7 @@ select {
 	width: 100%;
 	min-height: 44px;
 	padding: 8px 10px;
-	border: 2px solid #e2ddff;
+	border: 2px solid var(--line);
 	border-radius: 12px;
 	background: var(--surface);
 	font: inherit;
@@ -151,7 +151,7 @@ textarea {
 
 .question {
 	padding: 10px 12px;
-	border: 2px solid #e2ddff;
+	border: 2px solid var(--line);
 	border-radius: 14px;
 	background: var(--surface);
 }

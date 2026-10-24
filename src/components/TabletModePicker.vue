@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppIcon from '@/components/AppIcon.vue';
 import { useChildren } from '@/composables/useChildren';
 import type { TabletMode } from '@/composables/useTablet';
 
@@ -31,7 +32,7 @@ const { children } = useChildren();
 			:aria-checked="mode === 'shared'"
 			@click="emit('pick', 'shared')"
 		>
-			<span class="icon" aria-hidden="true">👨‍👩‍👧‍👦</span>
+			<AppIcon name="friends" class="icon icon--drawn" />
 			<span>משותף: בכל פתיחה בוחרים מי מתרגל</span>
 		</button>
 	</div>
@@ -51,7 +52,7 @@ const { children } = useChildren();
 	gap: 10px;
 	min-height: 56px;
 	padding: 8px 14px;
-	border: 2px solid #e2ddff;
+	border: 2px solid var(--line);
 	border-radius: 14px;
 	background: var(--surface);
 	font: inherit;
@@ -61,10 +62,15 @@ const { children } = useChildren();
 
 .mode.on {
 	border-color: var(--primary);
-	background: #eeeaff;
+	background: var(--tint);
 }
 
 .icon {
 	font-size: 28px;
+}
+
+/* A drawn icon beside the children's own pictures, in the album's ink. */
+.icon--drawn {
+	color: var(--primary);
 }
 </style>
