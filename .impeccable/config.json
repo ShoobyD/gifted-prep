@@ -1,0 +1,170 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-zoo-map.html"
+        ],
+        "createdAt": "2026-10-23T20:29:24.749Z",
+        "reason": "agent: the catalog world's own palette (#F5F1E4 in its system grammar), a decision-round sketch"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-10-23T20:29:24.906Z",
+        "reason": "agent: false positive, fixed-height pack with vertically centred content"
+      },
+      {
+        "rule": "nested-cards",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-10-23T20:29:25.065Z",
+        "reason": "agent: album page with sticker slots is the world itself, decision-round sketch"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-10-23T20:29:25.223Z",
+        "reason": "agent: neutral elevation shadow under stickers on a white page; dark ground is behind the album"
+      },
+      {
+        "rule": "nested-cards",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-10-23T20:29:25.399Z",
+        "reason": "agent: squares on a game board are the world itself, decision-round sketch"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-10-23T20:29:25.561Z",
+        "reason": "agent: offset, blurred elevation shadow of the board on the table colour"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/fix/8a-chapter-pages.html"
+        ],
+        "createdAt": "2026-10-24T11:21:58.068Z",
+        "reason": "before/after comparison mock for the user, not shipped UI"
+      },
+      {
+        "rule": "nested-cards",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/fix/8a-chapter-pages.html"
+        ],
+        "createdAt": "2026-10-24T11:21:58.228Z",
+        "reason": "before/after comparison mock for the user, not shipped UI"
+      },
+      {
+        "rule": "organic-clip-path",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/fix/8a-chapter-pages.html"
+        ],
+        "createdAt": "2026-10-24T11:21:58.385Z",
+        "reason": "before/after comparison mock for the user, not shipped UI"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/fix/8a-chapter-pages.html"
+        ],
+        "createdAt": "2026-10-24T11:21:58.557Z",
+        "reason": "before/after comparison mock for the user, not shipped UI"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/fix/8b-tabs.html"
+        ],
+        "createdAt": "2026-10-24T11:23:40.020Z",
+        "reason": "before/after comparison mock for the user, not shipped UI"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/fix/8b-tabs.html"
+        ],
+        "createdAt": "2026-10-24T11:24:08.107Z",
+        "reason": "before/after comparison mock for the user, not shipped UI"
+      },
+      {
+        "rule": "nested-cards",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/fix/8b-tabs.html"
+        ],
+        "createdAt": "2026-10-24T11:24:08.279Z",
+        "reason": "before/after comparison mock for the user, not shipped UI"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/fix/9-ceiling.html"
+        ],
+        "createdAt": "2026-10-24T13:08:05.634Z",
+        "reason": "before/after comparison mock for the user, not shipped UI"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/fix/9-ceiling.html"
+        ],
+        "createdAt": "2026-10-24T13:08:05.797Z",
+        "reason": "before/after comparison mock for the user, not shipped UI"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/fix/9-ceiling.html"
+        ],
+        "createdAt": "2026-10-24T13:08:52.894Z",
+        "reason": "before/after comparison mock for the user, not shipped UI"
+      },
+      {
+        "rule": "nested-cards",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/fix/9-ceiling.html"
+        ],
+        "createdAt": "2026-10-24T13:08:53.044Z",
+        "reason": "before/after comparison mock for the user, not shipped UI"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/**"
+        ],
+        "createdAt": "2026-10-24T13:31:46.586Z",
+        "reason": "decision sketches and fix illustrations are other worlds or comparisons, not the shipped system"
+      }
+    ]
+  }
+}

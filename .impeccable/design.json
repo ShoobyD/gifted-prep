@@ -1,0 +1,787 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-24T13:30:53.310Z",
+  "title": "Design System: מחוננים – תרגול",
+  "extensions": {
+    "colorMeta": {
+      "cover": {
+        "role": "primary",
+        "displayName": "Album Cover Blue",
+        "canonical": "#1446a0",
+        "oklch": "oklch(42.0% 0.156 261.2)",
+        "tonalRamp": [
+          "#000038",
+          "#001e5e",
+          "#063993",
+          "#295cb8",
+          "#4a7fde",
+          "#72a4fc",
+          "#accafe",
+          "#e6efff"
+        ]
+      },
+      "on-cover": {
+        "role": "neutral",
+        "displayName": "Cover White",
+        "canonical": "#ffffff",
+        "oklch": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "on-cover-soft": {
+        "role": "neutral",
+        "displayName": "Cover White, Soft",
+        "canonical": "rgba(255, 255, 255, .8)"
+      },
+      "primary": {
+        "role": "primary",
+        "displayName": "Album Cover Blue (action)",
+        "canonical": "#1446a0",
+        "oklch": "oklch(42.0% 0.156 261.2)",
+        "tonalRamp": [
+          "#000038",
+          "#001e5e",
+          "#063993",
+          "#295cb8",
+          "#4a7fde",
+          "#72a4fc",
+          "#accafe",
+          "#e6efff"
+        ]
+      },
+      "on-primary": {
+        "role": "neutral",
+        "displayName": "Ink on Colour",
+        "canonical": "#ffffff",
+        "oklch": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "bg": {
+        "role": "neutral",
+        "displayName": "Pale Cover Wash",
+        "canonical": "#eef2fa",
+        "oklch": "oklch(96.0% 0.012 264.5)",
+        "tonalRamp": [
+          "#090b10",
+          "#22252b",
+          "#3f4248",
+          "#5e6168",
+          "#7f8289",
+          "#a1a5ad",
+          "#c5c9d1",
+          "#ebeff7"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Page White",
+        "canonical": "#ffffff",
+        "oklch": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Navy Ink",
+        "canonical": "#10224f",
+        "oklch": "oklch(26.7% 0.086 264.7)",
+        "tonalRamp": [
+          "#00042f",
+          "#0f214e",
+          "#2b4070",
+          "#496092",
+          "#6981b7",
+          "#8aa5dc",
+          "#b0c9fd",
+          "#e7effe"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Faded Navy",
+        "canonical": "#5a6b96",
+        "oklch": "oklch(53.2% 0.071 267.4)",
+        "tonalRamp": [
+          "#020628",
+          "#162247",
+          "#314068",
+          "#4f608a",
+          "#6f81ae",
+          "#91a4d2",
+          "#b5c8f9",
+          "#e8eeff"
+        ]
+      },
+      "reading": {
+        "role": "tertiary",
+        "displayName": "Reading Pink-Red",
+        "canonical": "#d6305f",
+        "oklch": "oklch(58.2% 0.201 10.1)",
+        "tonalRamp": [
+          "#1f0005",
+          "#4b0119",
+          "#7d042f",
+          "#b20d48",
+          "#df3a66",
+          "#fc708c",
+          "#fdb1bc",
+          "#fee8eb"
+        ]
+      },
+      "math": {
+        "role": "tertiary",
+        "displayName": "Math Amber",
+        "canonical": "#ffb000",
+        "oklch": "oklch(81.2% 0.170 76.4)",
+        "tonalRamp": [
+          "#140800",
+          "#342100",
+          "#593b01",
+          "#825804",
+          "#ac7608",
+          "#d89718",
+          "#ffbb4c",
+          "#feecd1"
+        ]
+      },
+      "on-math": {
+        "role": "neutral",
+        "displayName": "Navy Ink on Amber",
+        "canonical": "#10224f",
+        "oklch": "oklch(26.7% 0.086 264.7)",
+        "tonalRamp": [
+          "#00042f",
+          "#0f214e",
+          "#2b4070",
+          "#496092",
+          "#6981b7",
+          "#8aa5dc",
+          "#b0c9fd",
+          "#e7effe"
+        ]
+      },
+      "test": {
+        "role": "tertiary",
+        "displayName": "Test Green",
+        "canonical": "#0f8a64",
+        "oklch": "oklch(56.3% 0.115 164.9)",
+        "tonalRamp": [
+          "#001007",
+          "#002d1e",
+          "#004f37",
+          "#007352",
+          "#289871",
+          "#53bc93",
+          "#7ae1b6",
+          "#c1ffe2"
+        ]
+      },
+      "parents": {
+        "role": "tertiary",
+        "displayName": "Friends Violet",
+        "canonical": "#6b4ae6",
+        "oklch": "oklch(53.9% 0.223 285.9)",
+        "tonalRamp": [
+          "#0c002f",
+          "#26006a",
+          "#430ca9",
+          "#5f3ad6",
+          "#7d61fe",
+          "#9e95fd",
+          "#c4c2fe",
+          "#edecff"
+        ]
+      },
+      "pack": {
+        "role": "secondary",
+        "displayName": "Sticker-Pack Crimson",
+        "canonical": "#c8264f",
+        "oklch": "oklch(54.7% 0.195 13.1)",
+        "tonalRamp": [
+          "#200004",
+          "#4c0016",
+          "#7e002a",
+          "#b50340",
+          "#de3e60",
+          "#ff6e85",
+          "#feb1b8",
+          "#ffe8ea"
+        ]
+      },
+      "gold": {
+        "role": "secondary",
+        "displayName": "Earned Gold",
+        "canonical": "#ffd23f",
+        "oklch": "oklch(87.9% 0.162 90.9)",
+        "tonalRamp": [
+          "#110a00",
+          "#2f2400",
+          "#514004",
+          "#765e0b",
+          "#9d7f14",
+          "#c7a009",
+          "#f1c429",
+          "#ffeebe"
+        ]
+      },
+      "flame": {
+        "role": "secondary",
+        "displayName": "Streak Flame",
+        "canonical": "#f26b1d",
+        "oklch": "oklch(68.4% 0.185 44.9)",
+        "tonalRamp": [
+          "#240000",
+          "#4c0000",
+          "#780000",
+          "#a01700",
+          "#c33f00",
+          "#e66004",
+          "#ff9156",
+          "#ffd5b9"
+        ]
+      },
+      "good": {
+        "role": "state",
+        "displayName": "Correct Green",
+        "canonical": "#0f8a64",
+        "oklch": "oklch(56.3% 0.115 164.9)",
+        "tonalRamp": [
+          "#001007",
+          "#002d1e",
+          "#004f37",
+          "#007352",
+          "#289871",
+          "#53bc93",
+          "#7ae1b6",
+          "#c1ffe2"
+        ]
+      },
+      "bad": {
+        "role": "state",
+        "displayName": "Revealed Red",
+        "canonical": "#d43a3a",
+        "oklch": "oklch(58.1% 0.191 25.4)",
+        "tonalRamp": [
+          "#200000",
+          "#4d0005",
+          "#7e0812",
+          "#b5121f",
+          "#de4442",
+          "#ff736b",
+          "#feb3ac",
+          "#ffe9e6"
+        ]
+      },
+      "warn": {
+        "role": "state",
+        "displayName": "Try-Again Amber",
+        "canonical": "#e09400",
+        "oklch": "oklch(72.5% 0.155 72.8)",
+        "tonalRamp": [
+          "#150800",
+          "#362000",
+          "#5b3a02",
+          "#845607",
+          "#af740e",
+          "#dc941d",
+          "#febb5f",
+          "#ffebd3"
+        ]
+      },
+      "tint-soft": {
+        "role": "neutral",
+        "displayName": "Tinted Paper, Soft",
+        "canonical": "#f2f5fb",
+        "oklch": "oklch(97.0% 0.009 264.5)",
+        "tonalRamp": [
+          "#090b0f",
+          "#232529",
+          "#404247",
+          "#5f6166",
+          "#808288",
+          "#a2a5ab",
+          "#c6c9cf",
+          "#ebeef4"
+        ]
+      },
+      "tint": {
+        "role": "neutral",
+        "displayName": "Tinted Paper",
+        "canonical": "#e6ecf8",
+        "oklch": "oklch(94.2% 0.017 264.5)",
+        "tonalRamp": [
+          "#080b13",
+          "#21252e",
+          "#3d424c",
+          "#5c616b",
+          "#7d828d",
+          "#a0a5b0",
+          "#c3c9d5",
+          "#e9effb"
+        ]
+      },
+      "tint-strong": {
+        "role": "neutral",
+        "displayName": "Tinted Paper, Strong",
+        "canonical": "#c9d4ec",
+        "oklch": "oklch(86.9% 0.035 266.0)",
+        "tonalRamp": [
+          "#050a1a",
+          "#1d2536",
+          "#394255",
+          "#586176",
+          "#788298",
+          "#9ba5bc",
+          "#bec9e1",
+          "#e7efff"
+        ]
+      },
+      "good-soft": {
+        "role": "state",
+        "displayName": "Correct Wash",
+        "canonical": "#dff4ec",
+        "oklch": "oklch(94.9% 0.024 171.0)",
+        "tonalRamp": [
+          "#020e0a",
+          "#192923",
+          "#354640",
+          "#54665f",
+          "#748780",
+          "#97aaa3",
+          "#bacfc7",
+          "#dff4ec"
+        ]
+      },
+      "bad-soft": {
+        "role": "state",
+        "displayName": "Revealed Wash",
+        "canonical": "#fde8e8",
+        "oklch": "oklch(94.8% 0.023 17.6)",
+        "tonalRamp": [
+          "#140708",
+          "#2f2121",
+          "#4e3d3d",
+          "#6e5c5c",
+          "#907d7d",
+          "#b3a0a0",
+          "#d8c4c4",
+          "#fee9e9"
+        ]
+      },
+      "warn-soft": {
+        "role": "state",
+        "displayName": "Try-Again Wash",
+        "canonical": "#fff3d6",
+        "oklch": "oklch(96.6% 0.040 88.2)",
+        "tonalRamp": [
+          "#110a00",
+          "#2d240c",
+          "#4b4129",
+          "#6b6047",
+          "#8c8167",
+          "#afa489",
+          "#d4c8ac",
+          "#faeed1"
+        ]
+      },
+      "accent-soft": {
+        "role": "state",
+        "displayName": "Reading Wash",
+        "canonical": "#fde6ee",
+        "oklch": "oklch(94.6% 0.027 354.5)",
+        "tonalRamp": [
+          "#14060c",
+          "#302026",
+          "#4e3c43",
+          "#6e5b62",
+          "#907c83",
+          "#b49ea6",
+          "#d9c2ca",
+          "#fee7ef"
+        ]
+      },
+      "test-soft": {
+        "role": "state",
+        "displayName": "Test Wash",
+        "canonical": "#e2f3ee",
+        "oklch": "oklch(95.0% 0.019 176.4)",
+        "tonalRamp": [
+          "#030e0b",
+          "#1b2825",
+          "#384542",
+          "#566561",
+          "#778682",
+          "#99a9a5",
+          "#bdcdc9",
+          "#e2f3ee"
+        ]
+      },
+      "line-soft": {
+        "role": "neutral",
+        "displayName": "Printed Line, Soft",
+        "canonical": "#e3e8f2",
+        "oklch": "oklch(93.0% 0.015 264.5)",
+        "tonalRamp": [
+          "#080b11",
+          "#21252c",
+          "#3e424a",
+          "#5d616a",
+          "#7e828b",
+          "#a0a5ae",
+          "#c4c9d3",
+          "#eaeff9"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Printed Line",
+        "canonical": "#c9d1e3",
+        "oklch": "oklch(86.0% 0.026 266.6)",
+        "tonalRamp": [
+          "#060b16",
+          "#1f2532",
+          "#3b4250",
+          "#5a6171",
+          "#7b8293",
+          "#9da5b6",
+          "#c1c9db",
+          "#e7effe"
+        ]
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Printed Line, Strong",
+        "canonical": "#9aa8c9",
+        "oklch": "oklch(73.2% 0.050 267.0)",
+        "tonalRamp": [
+          "#040920",
+          "#1a243e",
+          "#36415d",
+          "#54617f",
+          "#7582a1",
+          "#97a5c6",
+          "#bac9eb",
+          "#e7eeff"
+        ]
+      },
+      "on-topbar-soft": {
+        "role": "neutral",
+        "displayName": "Cover Button",
+        "canonical": "rgba(255, 255, 255, .16)"
+      },
+      "on-topbar-pressed": {
+        "role": "neutral",
+        "displayName": "Cover Button, Pressed",
+        "canonical": "rgba(255, 255, 255, .3)"
+      },
+      "overlay": {
+        "role": "neutral",
+        "displayName": "Dialog Overlay",
+        "canonical": "rgba(16, 34, 79, .5)"
+      }
+    },
+    "localColors": [
+      {
+        "name": "pack-foil-light",
+        "value": "#d93560",
+        "purpose": "Foil sheen, light stop of the day pack gradient. The pack only."
+      },
+      {
+        "name": "pack-foil-highlight",
+        "value": "#e25a7d",
+        "purpose": "Foil sheen highlight band at 50%. The pack only."
+      },
+      {
+        "name": "pack-foil-dark",
+        "value": "#b01f45",
+        "purpose": "Foil sheen, dark end. The pack only."
+      },
+      {
+        "name": "pack-seal",
+        "value": "#9e1b3d",
+        "purpose": "Crimp seals and the torn strip of the pack. The pack only."
+      }
+    ],
+    "typographyMeta": {
+      "display": {
+        "displayName": "Chapter Lettering",
+        "purpose": "Chapter title in the coloured chapter head; 56px on a phone."
+      },
+      "headline": {
+        "displayName": "Cover Lettering",
+        "purpose": "Album name on the cover, the pack title, the end-of-round title; 44-48px on a phone."
+      },
+      "title": {
+        "displayName": "Section Lettering",
+        "purpose": "Index and sticker-page headings, slot numbers, profile names; 38px on a phone."
+      },
+      "question": {
+        "displayName": "Question",
+        "purpose": "The question on a tablet; 26px / 1.7 on a phone."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Base text and instructions; answers 28px on a tablet, 24px on a phone."
+      },
+      "body-strong": {
+        "displayName": "Body Strong",
+        "purpose": "Row titles, button labels, feedback messages."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Meta lines, sticker hints, profile stats."
+      }
+    },
+    "shadows": [
+      {
+        "name": "shadow-page",
+        "value": "0 18px 40px rgba(5, 16, 50, .35)",
+        "purpose": "The page lifted off the cover."
+      },
+      {
+        "name": "shadow-float",
+        "value": "0 10px 24px rgba(5, 16, 50, .35)",
+        "purpose": "The update banner."
+      },
+      {
+        "name": "shadow",
+        "value": "0 6px 14px rgba(16, 34, 79, .16)",
+        "purpose": "Primary button, stars pill."
+      },
+      {
+        "name": "shadow-sm",
+        "value": "0 2px 4px rgba(16, 34, 79, .16)",
+        "purpose": "Resting answer cards, keys, speak button, secondary buttons."
+      },
+      {
+        "name": "shadow-up",
+        "value": "0 -2px 8px rgba(16, 34, 79, .08)",
+        "purpose": "Upward shadow token."
+      },
+      {
+        "name": "tab",
+        "value": "4px 6px 12px rgba(5, 16, 50, .3)",
+        "purpose": "Album tabs on the cover; 0 4px 8px rgba(16, 34, 79, .2) on a phone."
+      },
+      {
+        "name": "sticker",
+        "value": "drop-shadow(0 4px 6px rgba(16, 34, 79, .28))",
+        "purpose": "Sticker art (filter, follows the die-cut)."
+      },
+      {
+        "name": "pack",
+        "value": "drop-shadow(0 10px 12px rgba(16, 34, 79, .3))",
+        "purpose": "The day pack (filter); 0 3px 5px when squeezed."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-settle",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "Release after a press (tabs .35s, pack .45s), feedback slide .25s, pack and stars rising in."
+      },
+      {
+        "name": "press-in",
+        "value": ".08s",
+        "purpose": "Quick press-in duration for tabs and the pack."
+      },
+      {
+        "name": "ease-land",
+        "value": "cubic-bezier(.34, 1.4, .64, 1)",
+        "purpose": "A new sticker dropping into its slot (.7s), settling at -4deg."
+      },
+      {
+        "name": "tear",
+        "value": "cubic-bezier(.5, 0, .75, 0) .6s",
+        "purpose": "The pack strip tearing off at the end of a round."
+      },
+      {
+        "name": "shake",
+        "value": ".35s",
+        "purpose": "A wrong answer (translateX +-8px)."
+      },
+      {
+        "name": "pop",
+        "value": ".35s",
+        "purpose": "A correct answer (scale 1.04); 1s infinite on the speak button while speaking."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "prefers-reduced-motion: reduce",
+        "purpose": "Transitions off, presses become a 3-4px nudge, end-of-round shows its final state."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "tablet",
+        "value": "700px"
+      },
+      {
+        "name": "landscape",
+        "value": "1000px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The main action on a page: next question, finish, go again.",
+      "html": "<button class=\"ds-btn-primary\">הַשְּׁאֵלָה הַבָּאָה <svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M19 12H5M11 6l-6 6 6 6\"/></svg></button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 12px; min-height: 64px; padding: 0 28px; border: 3px solid var(--primary); border-radius: 18px; background: var(--primary); color: var(--on-primary); font-family: var(--font); font-size: 24px; font-weight: 700; box-shadow: var(--shadow); cursor: pointer; direction: rtl; } .ds-btn-primary:active { transform: translateY(2px); } .ds-btn-primary:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "A second action beside the primary one, white with a printed-line border.",
+      "html": "<button class=\"ds-btn-secondary\">לָאַלְבּוֹם</button>",
+      "css": ".ds-btn-secondary { min-height: 64px; padding: 0 28px; border: 3px solid var(--line); border-radius: 18px; background: var(--surface); color: var(--text); font-family: var(--font); font-size: 24px; font-weight: 700; box-shadow: var(--shadow-sm); cursor: pointer; } .ds-btn-secondary:active { transform: translateY(2px); } .ds-btn-secondary:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }"
+    },
+    {
+      "name": "Answer Choice",
+      "kind": "card",
+      "refersTo": "choice-answer",
+      "description": "A multiple-choice answer with its letter tile; selected, correct and wrong states.",
+      "html": "<div class=\"ds-choices\" dir=\"rtl\"><button class=\"ds-choice\"><span class=\"ds-choice-label\">א</span>שְׁלוֹשָׁה</button><button class=\"ds-choice ds-choice--selected\"><span class=\"ds-choice-label\">ב</span>אַרְבָּעָה</button><button class=\"ds-choice ds-choice--correct\"><span class=\"ds-choice-label\">ג</span>חֲמִשָּׁה</button></div>",
+      "css": ".ds-choices { display: grid; gap: 14px; } .ds-choice { display: flex; align-items: center; gap: 16px; width: 100%; min-height: 84px; padding: 10px 14px; border: 3px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--text); font-family: var(--font); font-size: 28px; text-align: start; box-shadow: var(--shadow-sm); transition: transform .1s, background-color .2s, border-color .2s; cursor: pointer; } .ds-choice:active { transform: translateY(2px); } .ds-choice:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; } .ds-choice-label { flex: none; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 12px; background: var(--tint); color: var(--primary); font-family: var(--font-display); font-size: 40px; font-weight: 700; line-height: 1; } .ds-choice--selected { border-color: var(--primary); background: var(--tint); } .ds-choice--selected .ds-choice-label { background: var(--primary); color: var(--on-primary); } .ds-choice--correct { border-color: var(--good); background: var(--good-soft); } .ds-choice--correct .ds-choice-label { background: var(--good); color: var(--on-primary); }"
+    },
+    {
+      "name": "Album Tabs",
+      "kind": "nav",
+      "refersTo": "album-tab-math",
+      "description": "One coloured tab per area on the page edge; the open chapter stands further out.",
+      "html": "<nav class=\"ds-tabs\" dir=\"rtl\"><a class=\"ds-tab\" href=\"#\" style=\"--tab: var(--reading); --tab-ink: var(--on-primary)\"><svg viewBox=\"0 0 24 24\" width=\"34\" height=\"34\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 6.5C10 5 6.5 4.5 3.5 5v13c3-.5 6.5 0 8.5 1.5 2-1.5 5.5-2 8.5-1.5V5c-3-.5-6.5 0-8.5 1.5z\"/><path d=\"M12 6.5v13\"/></svg><span>קְרִיאָה</span></a><a class=\"ds-tab ds-tab--on\" href=\"#\" style=\"--tab: var(--math); --tab-ink: var(--on-math)\"><svg viewBox=\"0 0 24 24\" width=\"34\" height=\"34\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M8 3.5v8M4 7.5h8M15 6l4 4M19 6l-4 4M13.5 17h7M3.5 15h8M3.5 19h8\"/></svg><span>חֶשְׁבּוֹן</span></a><a class=\"ds-tab\" href=\"#\" style=\"--tab: var(--test); --tab-ink: var(--on-primary)\"><svg viewBox=\"0 0 24 24\" width=\"34\" height=\"34\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 3h9l4 4v14H6z\"/><path d=\"M15 3v4h4M9 12h7M9 16h5\"/></svg><span>מִבְחָנִים</span></a></nav>",
+      "css": ".ds-tabs { display: grid; gap: 12px; width: 100px; padding: 12px 0; background: var(--cover); } .ds-tab { display: grid; justify-items: center; align-content: center; gap: 6px; width: 88px; min-height: 112px; padding: 12px 10px; border-radius: 0 18px 18px 0; background: var(--tab); color: var(--tab-ink); box-shadow: 4px 6px 12px rgba(5, 16, 50, .3); font-family: var(--font-display); font-size: 28px; font-weight: 700; line-height: 1; text-decoration: none; transition: transform .35s cubic-bezier(.16, 1, .3, 1); } .ds-tab--on { width: 100px; } .ds-tab:active { transform: translateX(10px); transition-duration: .08s; } .ds-tab:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }"
+    },
+    {
+      "name": "Index Row",
+      "kind": "custom",
+      "refersTo": "index-row",
+      "description": "A chapter index line: crooked area tile, title and meta, dotted leader, round next button.",
+      "html": "<a class=\"ds-row\" href=\"#\" dir=\"rtl\"><span class=\"ds-tile\">1</span><span class=\"ds-row-text\"><span class=\"ds-row-title\">תַּרְגִּילִים</span><span class=\"ds-row-meta\">חִבּוּר וְחִסּוּר</span></span><span class=\"ds-leader\"></span><span class=\"ds-go\"><svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M19 12H5M11 6l-6 6 6 6\"/></svg></span></a>",
+      "css": ".ds-row { display: flex; align-items: center; gap: 16px; min-height: 100px; padding: 10px 4px; border-bottom: 2px dashed var(--line); color: var(--text); font-family: var(--font); text-decoration: none; } .ds-row:active { background: var(--tint-soft); } .ds-row:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; } .ds-tile { flex: none; display: grid; place-items: center; width: 58px; height: 76px; border: 4px solid var(--surface); border-radius: 12px; background: var(--math); color: var(--on-math); font-family: var(--font-display); font-size: 30px; font-weight: 700; box-shadow: 0 3px 6px rgba(16, 34, 79, .25); transform: rotate(-3deg); } .ds-row-text { display: grid; gap: 2px; } .ds-row-title { font-size: 24px; font-weight: 700; line-height: 1.3; } .ds-row-meta { color: var(--muted); font-size: 16px; } .ds-leader { flex: 1; min-width: 16px; margin-top: 10px; border-bottom: 3px dotted var(--line); } .ds-go { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border: 3px solid var(--line); border-radius: 50%; color: var(--primary); }"
+    },
+    {
+      "name": "Sticker Slots",
+      "kind": "custom",
+      "refersTo": "sticker-slot",
+      "description": "Numbered dashed slots on the album page; an owned sticker covers its slot, tilted.",
+      "html": "<div class=\"ds-slots\" dir=\"rtl\"><span class=\"ds-slot ds-slot--got\"><span class=\"ds-sticker\"><span class=\"ds-sticker-face\"></span><span class=\"ds-sticker-num\">1</span></span></span><span class=\"ds-slot\">2</span><span class=\"ds-slot\">3</span><span class=\"ds-slot\">4</span></div>",
+      "css": ".ds-slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 480px; } .ds-slot { display: grid; place-items: center; aspect-ratio: 3 / 4; border: 3px dashed var(--line); border-radius: 14px; color: var(--muted); font-family: var(--font-display); font-size: 44px; font-weight: 700; line-height: 1; } .ds-slot--got { border-color: transparent; transform: rotate(-3deg); } .ds-sticker { display: grid; grid-template-rows: 1fr auto; width: 100%; height: 100%; padding: 6px; border-radius: 12px; background: var(--surface); filter: drop-shadow(0 4px 6px rgba(16, 34, 79, .28)); } .ds-sticker-face { border-radius: 8px; background: var(--reading); } .ds-sticker-num { justify-self: end; font-size: 22px; color: var(--text); }"
+    },
+    {
+      "name": "Day Pack",
+      "kind": "custom",
+      "refersTo": "daily-pack",
+      "description": "The day's foil sticker packet: the primary action on home. The printed wrapper line belongs to this object only.",
+      "html": "<a class=\"ds-pack\" href=\"#\" dir=\"rtl\"><span class=\"ds-pack-text\"><strong>חֲבִילָה לְהַיּוֹם</strong><span>שְׁאֵלוֹת חֶשְׁבּוֹן, קְצָת מִכָּל דָּבָר</span></span><span class=\"ds-pack-burst\"><b>10</b>שְׁאֵלוֹת</span></a>",
+      "css": ".ds-pack { position: relative; display: flex; align-items: center; min-height: 210px; margin-inline: 26px; padding: 44px 24px 40px 150px; background: radial-gradient(circle, rgba(255, 255, 255, .13) 2px, transparent 2.5px) 0 0 / 22px 22px, linear-gradient(115deg, #d93560 0%, var(--pack) 40%, #e25a7d 50%, var(--pack) 60%, #b01f45 100%); color: var(--on-primary); font-family: var(--font); filter: drop-shadow(0 10px 12px rgba(16, 34, 79, .3)); text-decoration: none; transition: transform .45s cubic-bezier(.16, 1, .3, 1), filter .45s cubic-bezier(.16, 1, .3, 1); } .ds-pack::before, .ds-pack::after { content: \"\"; position: absolute; top: 0; bottom: 0; width: 26px; background: repeating-linear-gradient(90deg, #9e1b3d 0 4px, #b5304f 4px 6px); } .ds-pack::before { right: -26px; } .ds-pack::after { left: -26px; } .ds-pack:active { transform: scale(.96) rotate(-1.5deg); filter: drop-shadow(0 3px 5px rgba(16, 34, 79, .32)); transition-duration: .08s; } .ds-pack:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; } .ds-pack-text { display: grid; gap: 6px; font-size: 22px; line-height: 1.35; text-wrap: balance; border-bottom: 6px solid var(--gold); padding-bottom: 12px; } .ds-pack-text strong { font-family: var(--font-display); font-size: 64px; line-height: .95; } .ds-pack-burst { position: absolute; inset-inline-end: 24px; top: 50%; display: grid; place-items: center; align-content: center; width: 112px; height: 112px; border: 3px solid var(--text); border-radius: 50%; background: var(--gold); color: var(--text); font-family: var(--font-display); font-size: 22px; font-weight: 700; line-height: 1; transform: translateY(-50%) rotate(-10deg); } .ds-pack-burst b { font-size: 46px; }"
+    },
+    {
+      "name": "Feedback Slip",
+      "kind": "card",
+      "refersTo": "feedback-slip",
+      "description": "A slip in the answer's colour with a tilted stamp, the message and the next button.",
+      "html": "<section class=\"ds-feedback\" dir=\"rtl\"><p class=\"ds-feedback-msg\"><span class=\"ds-stamp\"><svg viewBox=\"0 0 24 24\" width=\"30\" height=\"30\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4.5 12.5l5 5 10-11\"/></svg></span>כׇּל הַכָּבוֹד!</p></section>",
+      "css": ".ds-feedback { --tone: var(--good); display: grid; gap: 12px; padding: 16px 20px; border-radius: var(--radius); background: var(--good-soft); color: var(--text); font-family: var(--font); } .ds-feedback-msg { display: flex; align-items: center; gap: 14px; margin: 0; font-size: 28px; font-weight: 700; } .ds-stamp { flex: none; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--tone); color: var(--on-primary); transform: rotate(-8deg); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Child's Own Sticker Album",
+    "overview": "The app is a Panini or Pokémon sticker album that belongs to one child. A deep blue cover frames every screen. On it sits one white page with a rounded outer edge and a near-square spine edge, and coloured tabs stand out from that edge, one per area. Home is the album's sticker page: numbered slots, filled one by one with stickers the child earns. Each area is a chapter with a coloured head and a printed index. A practice round is the day's sticker pack. When it ends, the pack tears open and the new sticker drops into its slot, tilted.\n\nEverything is built for a 7–8 year old reading Hebrew with nikud, alone, right to left, on an 800×1280 portrait Android tablet. It also works on phones. Targets are big, type is big, and every press gives physical feedback. The lettering is Karantina, a narrow display face that runs very large. The reading text is Rubik. Colour is used generously but always follows a role: blue for the cover and the main action, one colour per area, gold for anything earned, and green, amber and red for answers.\n\nThe world rejects the category default: a grid of same-size app tiles, a streak or XP bar, and emoji used as decoration. Icons are drawn in one stroke (AppIcon, a 24×24 grid with a 2.4 stroke in the current text colour). Emoji remain in exactly two places, and both are user data or question content, not decoration: the avatar each child picks, and the picture-riddle questions (generated in `src/generators/pictureRiddles.ts`).\n\nScope: this system covers the child's screens and the app shell. The parent screens (`src/styles/parents.css`, the `.parents` subtree, the question-bank editor, the families admin) and the device-setup screens were outside the redesign. They inherit these tokens but are not part of the world. Do not take them as a pattern source.",
+    "keyCharacteristics": [
+      "A blue cover around one white page, with the corner at the spine nearly square.",
+      "Coloured album tabs on the page's edge, one per area. On a phone they run along the page's top.",
+      "Stickers have a white die-cut border, a slight tilt and a soft lifted shadow. Empty slots are dashed and numbered.",
+      "Karantina 700 for titles and big numbers. Rubik for everything that is read.",
+      "Soft shadows tinted navy. A press pushes the element down or squeezes it, and it springs back slowly."
+    ],
+    "rules": [
+      {
+        "name": "The Chapter Colour Rule",
+        "body": "Each area owns one colour. Its tab, chapter head and index tiles all wear it, and no other area borrows it.",
+        "section": "colors"
+      },
+      {
+        "name": "The Gold Is Earned Rule",
+        "body": "Gold marks what the child has earned (stars, the sticker count, the pack's burst) and the focus ring. It is never the fill for an ordinary button or panel.",
+        "section": "colors"
+      },
+      {
+        "name": "The Dark Ink on Amber Rule",
+        "body": "Anything on `math` or `gold` uses navy ink (`on-math` / `text`), never white.",
+        "section": "colors"
+      },
+      {
+        "name": "The Lettering Rule",
+        "body": "Karantina is used only at display sizes, for titles, counts, slot numbers and the pack. Anything the child reads in order to act (instructions, questions, answers, buttons) is set in Rubik.",
+        "section": "typography"
+      },
+      {
+        "name": "The Room for Nikud Rule",
+        "body": "Running text keeps a line-height of 1.55 or more, and the question grows on a tablet rather than shrinking to fit.",
+        "section": "typography"
+      },
+      {
+        "name": "The Lifted Paper Rule",
+        "body": "Shadows are soft and navy-tinted, and they say \"this is a piece of paper on top of another\". A hard offset shadow does not belong in this world.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Spine Rule",
+        "body": "The page, and the chapter head that bleeds to its top, are round on the outer edge and nearly square at the spine.",
+        "section": "shapes"
+      },
+      {
+        "name": "The Crooked Sticker Rule",
+        "body": "Anything stuck into the album sits a little crooked: owned stickers at -3°, 2° and -1° in a repeating pattern, area tiles at -3°, friend cards at ±1.5°, answered progress dots at -4° and 3°, and the feedback stamp at -8°. Empty slots and everything printed on the page stay upright.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "**Do** put every screen on the white page on the blue cover, with the page's 22px outer and 6px spine corners.",
+      "**Do** give each area its own colour across its tab, chapter head and tiles, with navy ink on amber and gold.",
+      "**Do** set titles, counts and slot numbers in Karantina 700 at display sizes, and everything the child reads to act in Rubik.",
+      "**Do** draw icons with AppIcon (one 2.4 stroke on a 24×24 grid, `currentColor`).",
+      "**Do** give every pressable thing a physical press (`translateY(2px)`, a tab pulled out, the pack squeezed) and a reduced-motion version.",
+      "**Do** keep stuck-in things a little crooked and printed things upright.",
+      "**Do** keep shadows soft and navy-tinted."
+    ],
+    "donts": [
+      "**Don't** lay the areas out as a grid of same-size app tiles, or add a streak or XP bar.",
+      "**Don't** use emoji as decoration. Only a child's chosen avatar and picture-riddle question content may be emoji.",
+      "**Don't** use text glyphs (arrows, ticks, crosses) as icons.",
+      "**Don't** add small tracked kicker or eyebrow lines above headings. The pack's printed wrapper line is part of that object and is not a pattern to copy.",
+      "**Don't** use hard offset or black shadows.",
+      "**Don't** put white text on `math` amber or `gold`.",
+      "**Don't** take patterns from the parent screens. They inherit these tokens but are not part of the album."
+    ]
+  }
+}
