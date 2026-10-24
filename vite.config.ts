@@ -22,8 +22,9 @@ export default defineConfig({
 				orientation: 'any',
 				start_url: './',
 				scope: './',
-				theme_color: '#5b4bdb',
-				background_color: '#f4f1ff',
+				// The album's blue cover: the status bar and the splash screen while it opens.
+				theme_color: '#1446a0',
+				background_color: '#1446a0',
 				icons: [
 					{ src: 'pwa-192.png', sizes: '192x192', type: 'image/png' },
 					{ src: 'pwa-512.png', sizes: '512x512', type: 'image/png' },
